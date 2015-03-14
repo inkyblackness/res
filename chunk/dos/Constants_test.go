@@ -8,12 +8,13 @@ import (
 )
 
 func emptyResourceFile() io.ReadSeeker {
-	encoder := serial.NewEncoder()
+	store := serial.NewByteStore()
+	encoder := serial.NewEncoder(store)
 
-	codeHeader(encoder)
+	codeHeader(encoder, store)
 	// write offset to dictionary - in this case right after header
 	{
-		dictionaryOffset := uint32(len(encoder.Data()) + 4)
+		dictionaryOffset := uint32(store.Len() + 4)
 		encoder.CodeUint32(&dictionaryOffset)
 	}
 	{
@@ -24,17 +25,16 @@ func emptyResourceFile() io.ReadSeeker {
 		encoder.CodeUint32(&firstChunkOffset)
 	}
 
-	return bytes.NewReader(encoder.Data())
+	return bytes.NewReader(store.Data())
 }
 
-func codeHeader(coder serial.Coder) {
+func codeHeader(coder serial.Coder, store *serial.ByteStore) {
 	var blank byte = 0x00
-	headerString := HeaderString
 	commentTerminator := CommentTerminator
 
-	coder.CodeString(&headerString)
+	coder.CodeBytes([]byte(HeaderString))
 	coder.CodeByte(&commentTerminator)
-	for coder.Len() < ChunkDirectoryFileOffsetPos {
+	for store.Len() < ChunkDirectoryFileOffsetPos {
 		coder.CodeByte(&blank)
 	}
 }

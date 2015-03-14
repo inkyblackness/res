@@ -5,37 +5,28 @@ import (
 )
 
 type EncoderSuite struct {
-	coder   Coder
-	encoder *Encoder
+	coder Coder
+	store *ByteStore
 }
 
 var _ = check.Suite(&EncoderSuite{})
 
 func (suite *EncoderSuite) SetUpTest(c *check.C) {
-	suite.encoder = NewEncoder()
-	suite.coder = suite.encoder
+	suite.store = NewByteStore()
+	suite.coder = NewEncoder(suite.store)
 }
 
 func (suite *EncoderSuite) TestDataOnEmptyEncoderReturnsEmptyArray(c *check.C) {
-	result := suite.encoder.Data()
+	result := suite.store.Data()
 
 	c.Assert(result, check.DeepEquals, make([]byte, 0))
-}
-
-func (suite *EncoderSuite) TestCodeStringEncodesTextInAscii(c *check.C) {
-	value := "AB"
-	suite.coder.CodeString(&value)
-
-	result := suite.encoder.Data()
-
-	c.Assert(result, check.DeepEquals, []byte{65, 66})
 }
 
 func (suite *EncoderSuite) TestCodeUint32EncodesIntegerValue(c *check.C) {
 	var value uint32 = 0x12345678
 	suite.coder.CodeUint32(&value)
 
-	result := suite.encoder.Data()
+	result := suite.store.Data()
 
 	c.Assert(result, check.DeepEquals, []byte{0x78, 0x56, 0x34, 0x12})
 }
@@ -44,7 +35,7 @@ func (suite *EncoderSuite) TestCodeUint16EncodesIntegerValue(c *check.C) {
 	var value uint16 = 0x3456
 	suite.coder.CodeUint16(&value)
 
-	result := suite.encoder.Data()
+	result := suite.store.Data()
 
 	c.Assert(result, check.DeepEquals, []byte{0x56, 0x34})
 }
@@ -53,7 +44,7 @@ func (suite *EncoderSuite) TestCodeByteEncodesByteValue(c *check.C) {
 	var value byte = 0x42
 	suite.coder.CodeByte(&value)
 
-	result := suite.encoder.Data()
+	result := suite.store.Data()
 
 	c.Assert(result, check.DeepEquals, []byte{0x42})
 }
