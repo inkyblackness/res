@@ -1,6 +1,7 @@
 package dos
 
 import (
+	"errors"
 	"io"
 
 	"github.com/inkyblackness/res/chunk"
@@ -9,8 +10,10 @@ import (
 type formatReader struct {
 }
 
-// NewReader returns a chunk provider reading from a random access reader
+// NewChunkProvider returns a chunk provider reading from a random access reader
 // over a DOS format resource file.
-func NewReader(source io.ReadSeeker) (chunk.Provider, error) {
-	return nil, nil
+func NewChunkProvider(source io.ReadSeeker) (provider chunk.Provider, err error) {
+	err = errors.New("source is nil")
+
+	return
 }
