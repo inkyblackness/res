@@ -1,13 +1,10 @@
 package dos
 
 import (
-	"bytes"
-	"io"
-
 	"github.com/inkyblackness/res/serial"
 )
 
-func emptyResourceFile() io.ReadSeeker {
+func emptyResourceFile() []byte {
 	store := serial.NewByteStore()
 	encoder := serial.NewEncoder(store)
 
@@ -25,7 +22,7 @@ func emptyResourceFile() io.ReadSeeker {
 		encoder.CodeUint32(&firstChunkOffset)
 	}
 
-	return bytes.NewReader(store.Data())
+	return store.Data()
 }
 
 func codeHeader(coder serial.Coder, store *serial.ByteStore) {
