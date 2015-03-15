@@ -48,3 +48,15 @@ func (suite *EncoderSuite) TestCodeByteEncodesByteValue(c *check.C) {
 
 	c.Assert(result, check.DeepEquals, []byte{0x42})
 }
+
+func (suite *EncoderSuite) TestSetCurPosRepositionsWritePointer(c *check.C) {
+	value := uint32(0)
+	suite.coder.CodeUint32(&value)
+	value = 0x13243546
+
+	suite.coder.SetCurPos(0)
+	suite.coder.CodeUint32(&value)
+	result := suite.store.Data()
+
+	c.Assert(result, check.DeepEquals, []byte{0x46, 0x35, 0x24, 0x13})
+}

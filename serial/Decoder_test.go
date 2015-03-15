@@ -54,3 +54,16 @@ func (suite *DecoderSuite) TestCodeBytesDecodesByteArray(c *check.C) {
 
 	c.Assert(value, check.DeepEquals, []byte{0x78, 0x12, 0x34})
 }
+
+func (suite *DecoderSuite) TestSetCurPosRepositionsReadOffset(c *check.C) {
+	var source = bytes.NewReader([]byte{0x78, 0x12, 0x34})
+	arrayValue := make([]byte, 3)
+	var intValue uint16
+
+	suite.coder = NewDecoder(source)
+	suite.coder.CodeBytes(arrayValue)
+	suite.coder.SetCurPos(1)
+	suite.coder.CodeUint16(&intValue)
+
+	c.Assert(intValue, check.Equals, uint16(0x3412))
+}

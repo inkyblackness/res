@@ -48,3 +48,12 @@ func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnMissingComment
 
 	c.Assert(err, check.ErrorMatches, "Format mismatch")
 }
+
+func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnInvalidDirectoryStart(c *check.C) {
+	sourceData := emptyResourceFile()
+	sourceData[ChunkDirectoryFileOffsetPos] = byte(0xFF)
+
+	_, err := NewChunkProvider(bytes.NewReader(sourceData))
+
+	c.Assert(err, check.ErrorMatches, "EOF")
+}

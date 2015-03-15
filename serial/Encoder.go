@@ -17,9 +17,9 @@ func NewEncoder(dest io.WriteSeeker) *Encoder {
 	return encoder
 }
 
-// Len returns the length of the current data buffer
-func (coder *Encoder) Len() int {
-	return coder.offset
+// SetCurPos sets the current position in the data
+func (coder *Encoder) SetCurPos(offset uint32) {
+	coder.dest.Seek(int64(offset), 0)
 }
 
 // CodeByte encodes a single byte

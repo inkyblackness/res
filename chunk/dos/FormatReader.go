@@ -30,6 +30,7 @@ func NewChunkProvider(source io.ReadSeeker) (provider chunk.Provider, err error)
 
 	skipAndVerifyHeaderString(coder)
 	skipAndVerifyComment(coder)
+	readAndVerifyDirectory(coder)
 
 	provider = &formatReader{}
 
@@ -66,4 +67,15 @@ func skipAndVerifyComment(coder serial.Coder) {
 	if !terminatorFound {
 		panic(errFormatMismatch)
 	}
+}
+
+func readAndVerifyDirectory(coder serial.Coder) {
+	directoryFileOffset := uint32(0)
+	directoryEntries := uint16(0)
+	firstChunkFileOffset := uint32(0)
+	coder.CodeUint32(&directoryFileOffset)
+	coder.SetCurPos(directoryFileOffset)
+
+	coder.CodeUint16(&directoryEntries)
+	coder.CodeUint32(&firstChunkFileOffset)
 }

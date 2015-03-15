@@ -14,6 +14,11 @@ func NewDecoder(source io.ReadSeeker) *Decoder {
 	return coder
 }
 
+// SetCurPos sets the current position in the data
+func (coder *Decoder) SetCurPos(offset uint32) {
+	coder.source.Seek(int64(offset), 0)
+}
+
 // CodeByte decodes a single byte
 func (coder *Decoder) CodeByte(value *byte) {
 	buf := coder.readBytes(1)
