@@ -5,18 +5,25 @@ import "io"
 // Decoder is for decoding from a random access stream
 type Decoder struct {
 	source io.ReadSeeker
+	offset uint32
 }
 
 // NewDecoder creates a new decoder from given source
 func NewDecoder(source io.ReadSeeker) *Decoder {
-	coder := &Decoder{source: source}
+	coder := &Decoder{source: source, offset: 0}
 
 	return coder
+}
+
+// CurPos gets the current position in the data
+func (coder *Decoder) CurPos() uint32 {
+	return coder.offset
 }
 
 // SetCurPos sets the current position in the data
 func (coder *Decoder) SetCurPos(offset uint32) {
 	coder.source.Seek(int64(offset), 0)
+	coder.offset = offset
 }
 
 // CodeByte decodes a single byte
@@ -27,7 +34,8 @@ func (coder *Decoder) CodeByte(value *byte) {
 
 // CodeBytes decodes the provided bytes
 func (coder *Decoder) CodeBytes(value []byte) {
-	_, err := coder.source.Read(value)
+	read, err := coder.source.Read(value)
+	coder.offset += uint32(read)
 	if err != nil {
 		panic(err)
 	}

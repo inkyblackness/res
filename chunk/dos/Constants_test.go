@@ -8,7 +8,7 @@ func emptyResourceFile() []byte {
 	store := serial.NewByteStore()
 	encoder := serial.NewEncoder(store)
 
-	codeHeader(encoder, store)
+	codeHeader(encoder)
 	// write offset to dictionary - in this case right after header
 	{
 		dictionaryOffset := uint32(store.Len() + 4)
@@ -16,22 +16,11 @@ func emptyResourceFile() []byte {
 	}
 	{
 		numberOfChunks := uint16(0)
-		firstChunkOffset := uint32(0)
+		firstChunkOffset := uint32(store.Len())
 
 		encoder.CodeUint16(&numberOfChunks)
 		encoder.CodeUint32(&firstChunkOffset)
 	}
 
 	return store.Data()
-}
-
-func codeHeader(coder serial.Coder, store *serial.ByteStore) {
-	var blank byte = 0x00
-	commentTerminator := CommentTerminator
-
-	coder.CodeBytes([]byte(HeaderString))
-	coder.CodeByte(&commentTerminator)
-	for store.Len() < ChunkDirectoryFileOffsetPos {
-		coder.CodeByte(&blank)
-	}
 }

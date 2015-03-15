@@ -4,7 +4,7 @@ import "io"
 
 // Encoder implements the Coder interface to write to a new byte array
 type Encoder struct {
-	offset int
+	offset uint32
 	dest   io.WriteSeeker
 }
 
@@ -15,6 +15,11 @@ func NewEncoder(dest io.WriteSeeker) *Encoder {
 		dest:   dest}
 
 	return encoder
+}
+
+// CurPos gets the current position in the data
+func (coder *Encoder) CurPos() uint32 {
+	return coder.offset
 }
 
 // SetCurPos sets the current position in the data
@@ -44,8 +49,8 @@ func (coder *Encoder) CodeUint32(value *uint32) {
 
 func (coder *Encoder) writeBytes(bytes ...byte) {
 	written, err := coder.dest.Write(bytes)
+	coder.offset += uint32(written)
 	if err != nil {
 		panic(err)
 	}
-	coder.offset += written
 }

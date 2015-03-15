@@ -2,6 +2,8 @@ package serial
 
 // Coder represents an encoder/decoder for binary data
 type Coder interface {
+	// CurPos gets the current position in the data
+	CurPos() uint32
 	// SetCurPos sets the current position in the data
 	SetCurPos(offset uint32)
 	// CodeUint16 serializes an unsigned 16bit integer value

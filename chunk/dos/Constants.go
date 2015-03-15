@@ -7,4 +7,6 @@ const (
 	CommentTerminator = byte(0x1A)
 	// ChunkDirectoryFileOffsetPos is the position of the file offset value to the chunk directory
 	ChunkDirectoryFileOffsetPos = 0x7C
+	// BoundarySize specifies at which multiple of bytes entries in the file start
+	BoundarySize = 4
 )
