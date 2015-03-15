@@ -57,7 +57,7 @@ func skipAndVerifyHeaderString(coder serial.Coder) {
 func skipAndVerifyComment(coder serial.Coder) {
 	terminatorFound := false
 
-	for remaining := ChunkDirectoryFileOffsetPos - len(HeaderString); remaining > 0; remaining-- {
+	for remaining := ChunkDirectoryFileOffsetPos - coder.CurPos(); remaining > 0; remaining-- {
 		temp := byte(0x00)
 		coder.CodeByte(&temp)
 		if temp == CommentTerminator {

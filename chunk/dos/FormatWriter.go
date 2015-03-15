@@ -16,6 +16,7 @@ type formatWriter struct {
 }
 
 // NewChunkConsumer creates a consumer which writes to a random access destination
+// using the DOS format.
 func NewChunkConsumer(dest io.WriteSeeker) chunk.Consumer {
 	coder := serial.NewEncoder(dest)
 	result := &formatWriter{coder: coder, chunksWritten: 0}
