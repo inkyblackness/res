@@ -14,10 +14,6 @@ type FormatReaderSuite struct {
 
 var _ = check.Suite(&FormatReaderSuite{})
 
-func (suite *FormatReaderSuite) SetUpTest(c *check.C) {
-
-}
-
 func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnNil(c *check.C) {
 	_, err := NewChunkProvider(nil)
 
