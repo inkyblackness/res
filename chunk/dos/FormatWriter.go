@@ -9,7 +9,7 @@ import (
 )
 
 type formatWriter struct {
-	coder serial.Coder
+	coder serial.PositioningCoder
 
 	firstChunkOffset uint32
 	chunksWritten    uint16
@@ -28,7 +28,7 @@ func NewChunkConsumer(dest io.WriteSeeker) chunk.Consumer {
 	return result
 }
 
-func codeHeader(coder serial.Coder) {
+func codeHeader(coder serial.PositioningCoder) {
 	var blank byte = 0x00
 	commentTerminator := CommentTerminator
 

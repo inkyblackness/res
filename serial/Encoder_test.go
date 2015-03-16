@@ -5,7 +5,7 @@ import (
 )
 
 type EncoderSuite struct {
-	coder Coder
+	coder PositioningCoder
 	store *ByteStore
 }
 

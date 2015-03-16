@@ -7,7 +7,7 @@ import (
 )
 
 type DecoderSuite struct {
-	coder Coder
+	coder PositioningCoder
 }
 
 var _ = check.Suite(&DecoderSuite{})

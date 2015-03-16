@@ -1,6 +1,6 @@
 package serial
 
-// ByteStore is implementing a WriteSeek
+// ByteStore is implementing a WriteSeeker storing in memory
 type ByteStore struct {
 	data   []byte
 	offset int

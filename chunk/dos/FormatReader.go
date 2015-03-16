@@ -54,7 +54,7 @@ func skipAndVerifyHeaderString(coder serial.Coder) {
 	}
 }
 
-func skipAndVerifyComment(coder serial.Coder) {
+func skipAndVerifyComment(coder serial.PositioningCoder) {
 	terminatorFound := false
 
 	for remaining := ChunkDirectoryFileOffsetPos - coder.CurPos(); remaining > 0; remaining-- {
@@ -69,7 +69,7 @@ func skipAndVerifyComment(coder serial.Coder) {
 	}
 }
 
-func readAndVerifyDirectory(coder serial.Coder) {
+func readAndVerifyDirectory(coder serial.PositioningCoder) {
 	directoryFileOffset := uint32(0)
 	directoryEntries := uint16(0)
 	firstChunkFileOffset := uint32(0)
