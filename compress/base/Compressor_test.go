@@ -31,6 +31,13 @@ func (suite *CompressorSuite) TestWriteCompressesFirstReocurrence(c *check.C) {
 	suite.thenWordsShouldBe(c, word(0x0000), word(0x0001), word(0x0100))
 }
 
+func (suite *CompressorSuite) TestWriteCompressesTest1(c *check.C) {
+	suite.compressor.Write([]byte{0x00, 0x01, 0x00, 0x02, 0x01, 0x00, 0x01})
+	suite.compressor.Close()
+
+	suite.thenWordsShouldBe(c, word(0x0000), word(0x0001), word(0x0000), word(0x0002), word(0x0101), word(0x0001))
+}
+
 func (suite *CompressorSuite) thenWordsShouldBe(c *check.C, expected ...word) {
 	source := bytes.NewReader(suite.store.Data())
 	reader := newWordReader(serial.NewDecoder(source))
