@@ -16,7 +16,7 @@ func newWordReader(coder *serial.Decoder) *wordReader {
 }
 
 func (reader *wordReader) read() (value word) {
-	remaining := wordSize
+	remaining := bitsPerWord
 
 	for remaining > reader.bufferBitsAvailable {
 		value = word((uint(value) << reader.bufferBitsAvailable) | uint(reader.buffer))

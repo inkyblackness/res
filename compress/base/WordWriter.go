@@ -21,9 +21,9 @@ func (writer *wordWriter) close() {
 }
 
 func (writer *wordWriter) write(value word) {
-	remaining := wordSize
+	remaining := bitsPerWord
 	for remaining >= writer.remainderFree {
-		writer.remainder |= value.partFrom(wordSize-remaining, writer.remainderFree)
+		writer.remainder |= value.partFrom(bitsPerWord-remaining, writer.remainderFree)
 		remaining -= writer.remainderFree
 
 		writer.writeByte(writer.remainder)
@@ -31,7 +31,7 @@ func (writer *wordWriter) write(value word) {
 		writer.remainderFree = 8
 	}
 	writer.remainderFree = 8 - remaining
-	writer.remainder = value.partFrom(wordSize-remaining, remaining) << writer.remainderFree
+	writer.remainder = value.partFrom(bitsPerWord-remaining, remaining) << writer.remainderFree
 }
 
 func (writer *wordWriter) writeByte(value byte) {
