@@ -8,7 +8,7 @@ type wordWriter struct {
 	remainderFree uint
 }
 
-func newWordWriter(coder *serial.Encoder) *wordWriter {
+func newWordWriter(coder serial.Coder) *wordWriter {
 	writer := &wordWriter{coder: coder, remainder: 0, remainderFree: 8}
 
 	return writer

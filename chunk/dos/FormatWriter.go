@@ -18,11 +18,11 @@ type formatWriter struct {
 // NewChunkConsumer creates a consumer which writes to a random access destination
 // using the DOS format.
 func NewChunkConsumer(dest io.WriteSeeker) chunk.Consumer {
-	coder := serial.NewEncoder(dest)
+	coder := serial.NewPositioningEncoder(dest)
 	result := &formatWriter{coder: coder, chunksWritten: 0}
 
 	codeHeader(coder)
-	result.writeDirectoryOffset(0)
+	result.writeDirectoryOffset(0xFFFFFFFF)
 	result.firstChunkOffset = coder.CurPos()
 
 	return result
@@ -40,10 +40,8 @@ func codeHeader(coder serial.PositioningCoder) {
 }
 
 func (writer *formatWriter) writeDirectoryOffset(offset uint32) {
-	oldPos := writer.coder.CurPos()
 	writer.coder.SetCurPos(ChunkDirectoryFileOffsetPos)
 	writer.coder.CodeUint32(&offset)
-	writer.coder.SetCurPos(oldPos)
 }
 
 func (writer *formatWriter) alignToBoundary() {
@@ -62,7 +60,10 @@ func (writer *formatWriter) Consume(id res.ResourceID, chunk chunk.BlockHolder) 
 // Finish marks the end of consumption. After calling Finish, the consumer can't be used anymore.
 func (writer *formatWriter) Finish() {
 	writer.alignToBoundary()
-	writer.writeDirectoryOffset(writer.coder.CurPos())
+
+	directoryStart := writer.coder.CurPos()
+	writer.writeDirectoryOffset(directoryStart)
+	writer.coder.SetCurPos(directoryStart)
 	writer.coder.CodeUint16(&writer.chunksWritten)
 	writer.coder.CodeUint32(&writer.firstChunkOffset)
 }

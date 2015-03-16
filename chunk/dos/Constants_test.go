@@ -6,7 +6,7 @@ import (
 
 func emptyResourceFile() []byte {
 	store := serial.NewByteStore()
-	encoder := serial.NewEncoder(store)
+	encoder := serial.NewPositioningEncoder(store)
 
 	codeHeader(encoder)
 	// write offset to dictionary - in this case right after header

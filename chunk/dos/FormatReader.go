@@ -26,7 +26,7 @@ func NewChunkProvider(source io.ReadSeeker) (provider chunk.Provider, err error)
 	if source == nil {
 		panic(fmt.Errorf("source is nil"))
 	}
-	coder := serial.NewDecoder(source)
+	coder := serial.NewPositioningDecoder(source)
 
 	skipAndVerifyHeaderString(coder)
 	skipAndVerifyComment(coder)

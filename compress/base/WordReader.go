@@ -9,7 +9,7 @@ type wordReader struct {
 	bufferBitsAvailable uint
 }
 
-func newWordReader(coder *serial.Decoder) *wordReader {
+func newWordReader(coder serial.Coder) *wordReader {
 	reader := &wordReader{coder: coder, buffer: 0x00, bufferBitsAvailable: 0}
 
 	return reader
