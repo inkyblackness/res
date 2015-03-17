@@ -1,8 +1,6 @@
 package base
 
 import (
-	"crypto/md5"
-	"fmt"
 	"io"
 
 	"github.com/inkyblackness/res/serial"
@@ -11,27 +9,35 @@ import (
 type compressor struct {
 	writer *wordWriter
 
-	chain      []byte
-	dictionary map[string]word
-	bestWord   word
-	overtime   int
+	overtime       int
+	dictionary     *dictEntry
+	dictionarySize int
+	curEntry       *dictEntry
 }
 
 // NewCompressor creates a new compressor instance over an encoder.
 func NewCompressor(coder serial.Coder) io.WriteCloser {
 	obj := &compressor{
-		writer:     newWordWriter(coder),
-		dictionary: make(map[string]word),
-		bestWord:   reset,
-		overtime:   0}
+		writer:         newWordWriter(coder),
+		dictionary:     rootDictEntry(),
+		dictionarySize: 0,
+		overtime:       0}
+
+	obj.resetDictionary()
 
 	return obj
 }
 
-func (obj *compressor) Close() error {
-	if obj.bestWord != reset {
-		obj.writer.write(obj.bestWord)
+func (obj *compressor) resetDictionary() {
+	obj.dictionarySize = 0
+	for i := 0; i < 0x100; i++ {
+		obj.dictionary.Add(byte(i), word(i))
 	}
+	obj.curEntry = obj.dictionary
+}
+
+func (obj *compressor) Close() error {
+	obj.writer.write(obj.curEntry.key)
 	obj.writer.close()
 
 	return nil
@@ -41,36 +47,36 @@ func (obj *compressor) Write(p []byte) (n int, err error) {
 	n = len(p)
 
 	for _, input := range p {
-		obj.chain = append(obj.chain, input)
-		key := createKey(obj.chain)
-
-		existingWord, ok := obj.dictionary[key]
-		if ok {
-			obj.bestWord = existingWord
-		} else {
-			if obj.bestWord != reset {
-				newWord := literalLimit + word(len(obj.dictionary))
-
-				obj.writer.write(obj.bestWord)
-				if newWord < reset {
-					obj.dictionary[key] = newWord
-				} else {
-					obj.overtime++
-					if obj.overtime >= 1000 {
-						obj.writer.write(reset)
-						obj.dictionary = make(map[string]word)
-					}
-				}
-			}
-
-			obj.bestWord = word(input)
-			obj.chain = []byte{input}
-		}
+		obj.addByte(input)
 	}
 
 	return
 }
 
-func createKey(data []byte) string {
-	return fmt.Sprintf("%x", md5.Sum(data))
+func (obj *compressor) addByte(value byte) {
+	nextEntry, nextExisting := obj.curEntry.next[value]
+	if nextExisting {
+		obj.curEntry = nextEntry
+	} else {
+		obj.writer.write(obj.curEntry.key)
+
+		key := word(int(literalLimit) + obj.dictionarySize)
+		if key < reset {
+			obj.curEntry.Add(value, key)
+			obj.dictionarySize++
+		} else {
+			obj.onKeySaturation()
+		}
+
+		obj.curEntry = obj.dictionary.next[value]
+	}
+}
+
+func (obj *compressor) onKeySaturation() {
+	obj.overtime++
+	if obj.overtime >= 1000 {
+		obj.writer.write(reset)
+		obj.resetDictionary()
+		obj.overtime = 0
+	}
 }
