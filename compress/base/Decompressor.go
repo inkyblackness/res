@@ -81,11 +81,11 @@ func (obj *decompressor) readNextWord() {
 
 		if nextExisting {
 			if obj.lastEntry.depth > 0 {
-				obj.addToDictionary(nextEntry.Data()[0])
+				obj.addToDictionary(nextEntry.FirstByte())
 			}
 			obj.lastEntry = nextEntry
 		} else if nextWord >= literalLimit {
-			nextValue := obj.lastEntry.Data()[0]
+			nextValue := obj.lastEntry.FirstByte()
 			obj.addToDictionary(nextValue)
 			obj.lastEntry = obj.lastEntry.next[nextValue]
 		} else {

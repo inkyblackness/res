@@ -36,3 +36,12 @@ func (entry *dictEntry) Data() []byte {
 
 	return bytes
 }
+
+func (entry *dictEntry) FirstByte() byte {
+	cur := entry
+	for cur.depth != 1 {
+		cur = entry.prev
+	}
+
+	return cur.value
+}
