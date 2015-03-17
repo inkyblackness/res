@@ -54,7 +54,7 @@ func (suite *DecompressorSuite) TestDecompressTest5(c *check.C) {
 func (suite *DecompressorSuite) TestDecompressTestRandom(c *check.C) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	for testCase := 0; testCase < 1; testCase++ {
+	for testCase := 0; testCase < 100; testCase++ {
 		input := make([]byte, r.Intn(1024))
 		for i := 0; i < len(input); i++ {
 			input[i] = byte(r.Intn(256))

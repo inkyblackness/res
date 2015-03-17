@@ -9,9 +9,11 @@ import (
 type decompressor struct {
 	reader *wordReader
 
-	isEndOfStream bool
-	dictionary    map[word][]byte
-	lastBlock     []byte
+	isEndOfStream  bool
+	dictionary     *dictEntry
+	dictionarySize int
+	lastEntry      *dictEntry
+	lookup         map[word]*dictEntry
 
 	leftover []byte
 }
@@ -19,10 +21,21 @@ type decompressor struct {
 // NewDecompressor creates a new decompressor instance over a decoder.
 func NewDecompressor(coder serial.Coder) io.Reader {
 	obj := &decompressor{
-		reader:     newWordReader(coder),
-		dictionary: make(map[word][]byte)}
+		reader: newWordReader(coder), dictionary: rootDictEntry()}
+	obj.resetDictionary()
 
 	return obj
+}
+
+func (obj *decompressor) resetDictionary() {
+	obj.dictionarySize = 0
+	obj.lookup = make(map[word]*dictEntry)
+	obj.dictionary = rootDictEntry()
+	for i := 0; i < 0x100; i++ {
+		entry := obj.dictionary.Add(byte(i), word(i))
+		obj.lookup[word(i)] = entry
+	}
+	obj.lastEntry = obj.dictionary
 }
 
 func (obj *decompressor) Read(p []byte) (n int, err error) {
@@ -58,26 +71,34 @@ func (obj *decompressor) takeFromLeftover(dest []byte, destOffset int) (provided
 func (obj *decompressor) readNextWord() {
 	nextWord := obj.reader.read()
 
+	obj.leftover = obj.lastEntry.Data()
 	if nextWord == endOfStream {
 		obj.isEndOfStream = true
 	} else if nextWord == reset {
-		obj.dictionary = make(map[word][]byte)
-		obj.lastBlock = nil
-	} else if len(obj.lastBlock) == 0 {
-		obj.lastBlock = []byte{byte(nextWord)}
-		obj.leftover = obj.lastBlock
+		obj.resetDictionary()
 	} else {
-		if nextWord < literalLimit {
-			obj.leftover = []byte{byte(nextWord)}
-		} else if existingBlock, existing := obj.dictionary[nextWord]; existing {
-			obj.leftover = existingBlock
+		nextEntry, nextExisting := obj.lookup[nextWord]
+
+		if nextExisting {
+			if obj.lastEntry.depth > 0 {
+				obj.addToDictionary(nextEntry.Data()[0])
+			}
+			obj.lastEntry = nextEntry
+		} else if nextWord >= literalLimit {
+			nextValue := obj.lastEntry.Data()[0]
+			obj.addToDictionary(nextValue)
+			obj.lastEntry = obj.lastEntry.next[nextValue]
 		} else {
-			obj.leftover = append(obj.lastBlock, obj.lastBlock[0])
+			nextValue := byte(nextWord)
+			obj.addToDictionary(nextValue)
+			obj.lastEntry = obj.dictionary.next[nextValue]
 		}
-
-		newWord := literalLimit + word(len(obj.dictionary))
-		obj.dictionary[newWord] = append(obj.lastBlock, obj.leftover[0])
-
-		obj.lastBlock = obj.leftover
 	}
+}
+
+func (obj *decompressor) addToDictionary(value byte) {
+	key := word(int(literalLimit) + obj.dictionarySize)
+	nextEntry := obj.lastEntry.Add(value, key)
+	obj.lookup[key] = nextEntry
+	obj.dictionarySize++
 }
