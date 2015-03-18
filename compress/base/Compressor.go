@@ -74,7 +74,7 @@ func (obj *compressor) addByte(value byte) {
 
 func (obj *compressor) onKeySaturation() {
 	obj.overtime++
-	if obj.overtime >= 1000 {
+	if obj.overtime > 1000 {
 		obj.writer.write(reset)
 		obj.resetDictionary()
 		obj.overtime = 0
