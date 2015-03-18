@@ -95,3 +95,17 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithContent(c *c
 
 	c.Assert(provider.Provide(0x3344).BlockData(0), check.DeepEquals, []byte{0xAA, 0xBB, 0xCC})
 }
+
+func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithDictionaryContent(c *check.C) {
+	store := serial.NewByteStore()
+	consumer := NewChunkConsumer(store)
+
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Data,
+		[][]byte{[]byte{0xAA, 0xBB, 0xCC}, []byte{0xDD, 0xEE, 0xFF}})
+	consumer.Consume(res.ResourceID(0x3344), blockHolder1)
+	consumer.Finish()
+
+	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
+
+	c.Assert(provider.Provide(0x3344).BlockData(1), check.DeepEquals, []byte{0xDD, 0xEE, 0xFF})
+}

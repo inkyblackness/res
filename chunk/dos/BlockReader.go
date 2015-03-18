@@ -40,17 +40,31 @@ func (reader *blockReader) BlockData(block uint16) []byte {
 
 func (reader *blockReader) ensureBlocksBuffered() {
 	if reader.blocks == nil {
-		//blockOffsets := []uint32{0}
+		blockCoder := serial.Coder(reader.coder)
 
 		reader.coder.SetCurPos(reader.address.startOffset)
-		/*
-			if ChunkType.HasDirectory() {
+		if reader.ChunkType().HasDirectory() {
+			blockCount := uint16(0)
+			firstStartOffset := uint32(0)
 
+			reader.coder.CodeUint16(&blockCount)
+			reader.blocks = make([][]byte, blockCount)
+
+			reader.coder.CodeUint32(&firstStartOffset)
+			lastStartOffset := firstStartOffset
+			for i := uint16(0); i < blockCount; i++ {
+				nextStartOffset := uint32(0)
+				reader.coder.CodeUint32(&nextStartOffset)
+				reader.blocks[i] = make([]byte, nextStartOffset-lastStartOffset)
+				lastStartOffset = nextStartOffset
 			}
-		*/
-		//reader.coder.SetCurPos(reader.address.startOffset + blockOffsets[0])
-		data := make([]byte, reader.address.uncompressedLength)
-		reader.coder.CodeBytes(data)
-		reader.blocks = [][]byte{data}
+			reader.coder.SetCurPos(reader.address.startOffset + firstStartOffset) // is this true for compressed as well?
+		} else {
+			reader.blocks = [][]byte{make([]byte, reader.address.uncompressedLength)}
+		}
+
+		for _, data := range reader.blocks {
+			blockCoder.CodeBytes(data)
+		}
 	}
 }
