@@ -5,6 +5,7 @@ import (
 
 	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/chunk"
+	"github.com/inkyblackness/res/compress/base"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -62,30 +63,42 @@ func (writer *formatWriter) Consume(id res.ResourceID, chunk chunk.BlockHolder) 
 		startOffset: writer.coder.CurPos(),
 		chunkType:   byte(chunk.ChunkType()),
 		contentType: byte(chunk.ContentType())}
+	blockCoder := serial.Coder(writer.coder)
+	chunkFinish := func() {}
 
 	if chunk.ChunkType().HasDirectory() {
-		blockCount := chunk.BlockCount()
-		blockStart := uint32(2 + 4*blockCount + 4)
-
-		writer.coder.CodeUint16(&blockCount)
-		for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
-			block := chunk.BlockData(blockIndex)
-			writer.coder.CodeUint32(&blockStart)
-			blockStart += uint32(len(block))
-		}
-		writer.coder.CodeUint32(&blockStart)
-		address.uncompressedLength = writer.coder.CurPos() - address.startOffset
+		writer.writeBlockDirectory(address, chunk)
+	}
+	if chunk.ChunkType().IsCompressed() {
+		compressor := base.NewCompressor(writer.coder)
+		chunkFinish = func() { compressor.Close() }
+		blockCoder = serial.NewEncoder(compressor)
 	}
 
 	for blockIndex := uint16(0); blockIndex < chunk.BlockCount(); blockIndex++ {
 		block := chunk.BlockData(blockIndex)
-		writer.coder.CodeBytes(block)
+		blockCoder.CodeBytes(block)
 		address.uncompressedLength += uint32(len(block))
 	}
+	chunkFinish()
 	address.chunkLength = writer.coder.CurPos() - address.startOffset
 
 	writer.resourceIDs = append(writer.resourceIDs, uint16(id))
 	writer.chunkAddresses[uint16(id)] = address
+}
+
+func (writer *formatWriter) writeBlockDirectory(address *chunkAddress, chunk chunk.BlockHolder) {
+	blockCount := chunk.BlockCount()
+	blockStart := uint32(2 + 4*blockCount + 4)
+
+	writer.coder.CodeUint16(&blockCount)
+	for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
+		block := chunk.BlockData(blockIndex)
+		writer.coder.CodeUint32(&blockStart)
+		blockStart += uint32(len(block))
+	}
+	writer.coder.CodeUint32(&blockStart)
+	address.uncompressedLength = writer.coder.CurPos() - address.startOffset
 }
 
 // Finish marks the end of consumption. After calling Finish, the consumer can't be used anymore.
