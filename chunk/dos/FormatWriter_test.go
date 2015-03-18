@@ -52,3 +52,32 @@ func (suite *FormatWriterSuite) TestConsumeOfFlatUncompressedChunkCanBeWritten(c
 	expected = append(expected, 0x00)                   // content type
 	c.Assert(result[ChunkDirectoryFileOffsetPos+4:], check.DeepEquals, expected)
 }
+
+func (suite *FormatWriterSuite) TestConsumeOfDirUncompressedChunkCanBeWritten(c *check.C) {
+	singleBlock1 := []byte{0xAB, 0x01, 0xCD}
+	singleBlock2 := []byte{0x11, 0x22, 0x33, 0x44}
+	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Data, [][]byte{singleBlock1, singleBlock2})
+
+	suite.consumer.Consume(res.ResourceID(0x5678), blockHolder)
+	suite.consumer.Finish()
+
+	result := suite.store.Data()
+
+	expected := []byte{}
+
+	expected = append(expected, 0x02, 0x00)             // number of blocks
+	expected = append(expected, 0x0E, 0x00, 0x00, 0x00) // offset to first block
+	expected = append(expected, 0x11, 0x00, 0x00, 0x00) // offset to second block
+	expected = append(expected, 0x15, 0x00, 0x00, 0x00) // size of chunk
+	expected = append(expected, singleBlock1...)
+	expected = append(expected, singleBlock2...)
+	expected = append(expected, 0x00, 0x00, 0x00)       // alignment for directory
+	expected = append(expected, 0x01, 0x00)             // chunk count
+	expected = append(expected, 0x80, 0x00, 0x00, 0x00) // offset to first chunk
+	expected = append(expected, 0x78, 0x56)             // chunk ID
+	expected = append(expected, 0x15, 0x00, 0x00)       // chunk length (uncompressed)
+	expected = append(expected, 0x02)                   // chunk type
+	expected = append(expected, 0x15, 0x00, 0x00)       // chunk length in file
+	expected = append(expected, 0x00)                   // content type
+	c.Assert(result[ChunkDirectoryFileOffsetPos+4:], check.DeepEquals, expected)
+}

@@ -63,6 +63,20 @@ func (writer *formatWriter) Consume(id res.ResourceID, chunk chunk.BlockHolder) 
 		chunkType:   byte(chunk.ChunkType()),
 		contentType: byte(chunk.ContentType())}
 
+	if chunk.ChunkType().HasDirectory() {
+		blockCount := chunk.BlockCount()
+		blockStart := uint32(2 + 4*blockCount + 4)
+
+		writer.coder.CodeUint16(&blockCount)
+		for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
+			block := chunk.BlockData(blockIndex)
+			writer.coder.CodeUint32(&blockStart)
+			blockStart += uint32(len(block))
+		}
+		writer.coder.CodeUint32(&blockStart)
+		address.uncompressedLength = writer.coder.CurPos() - address.startOffset
+	}
+
 	for blockIndex := uint16(0); blockIndex < chunk.BlockCount(); blockIndex++ {
 		block := chunk.BlockData(blockIndex)
 		writer.coder.CodeBytes(block)
