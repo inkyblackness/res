@@ -4,12 +4,12 @@ import "io"
 
 // decoder is for decoding from a random access stream
 type decoder struct {
-	source io.ReadSeeker
+	source io.Reader
 	offset uint32
 }
 
 // NewDecoder creates a new decoder from given source
-func NewDecoder(source io.ReadSeeker) Coder {
+func NewDecoder(source io.Reader) Coder {
 	coder := &decoder{source: source, offset: 0}
 
 	return coder

@@ -23,6 +23,6 @@ func (coder *positioningDecoder) CurPos() uint32 {
 
 // SetCurPos sets the current position in the data
 func (coder *positioningDecoder) SetCurPos(offset uint32) {
-	coder.source.Seek(int64(offset), 0)
+	coder.seeker.Seek(int64(offset), 0)
 	coder.offset = offset
 }
