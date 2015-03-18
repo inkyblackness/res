@@ -3,6 +3,7 @@ package dos
 import (
 	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/chunk"
+	"github.com/inkyblackness/res/compress/base"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -61,6 +62,11 @@ func (reader *blockReader) ensureBlocksBuffered() {
 			reader.coder.SetCurPos(reader.address.startOffset + firstStartOffset) // is this true for compressed as well?
 		} else {
 			reader.blocks = [][]byte{make([]byte, reader.address.uncompressedLength)}
+		}
+
+		if reader.ChunkType().IsCompressed() {
+			decompressor := base.NewDecompressor(reader.coder)
+			blockCoder = serial.NewDecoder(decompressor)
 		}
 
 		for _, data := range reader.blocks {
