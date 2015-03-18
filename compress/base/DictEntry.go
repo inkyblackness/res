@@ -40,7 +40,7 @@ func (entry *dictEntry) Data() []byte {
 func (entry *dictEntry) FirstByte() byte {
 	cur := entry
 	for cur.depth != 1 {
-		cur = entry.prev
+		cur = cur.prev
 	}
 
 	return cur.value
