@@ -3,13 +3,14 @@ package dos
 import (
 	"bytes"
 
-	check "gopkg.in/check.v1"
-
+	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/chunk"
+	"github.com/inkyblackness/res/serial"
+
+	check "gopkg.in/check.v1"
 )
 
 type FormatReaderSuite struct {
-	provider chunk.Provider
 }
 
 var _ = check.Suite(&FormatReaderSuite{})
@@ -52,4 +53,19 @@ func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnInvalidDirecto
 	_, err := NewChunkProvider(bytes.NewReader(sourceData))
 
 	c.Assert(err, check.ErrorMatches, "EOF")
+}
+
+func (suite *FormatReaderSuite) TestIDsReturnsTheStoredChunkIDsInOrder(c *check.C) {
+	store := serial.NewByteStore()
+	consumer := NewChunkConsumer(store)
+
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{[]byte{}})
+	consumer.Consume(res.ResourceID(0x5678), blockHolder1)
+	blockHolder2 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{[]byte{}})
+	consumer.Consume(res.ResourceID(0x1234), blockHolder2)
+	consumer.Finish()
+
+	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
+
+	c.Assert(provider.IDs(), check.DeepEquals, []res.ResourceID{0x5678, 0x1234})
 }

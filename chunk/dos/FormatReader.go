@@ -10,6 +10,8 @@ import (
 )
 
 type formatReader struct {
+	resourceIDs    []res.ResourceID
+	chunkAddresses map[res.ResourceID]*chunkAddress
 }
 
 var errFormatMismatch = fmt.Errorf("Format mismatch")
@@ -30,15 +32,16 @@ func NewChunkProvider(source io.ReadSeeker) (provider chunk.Provider, err error)
 
 	skipAndVerifyHeaderString(coder)
 	skipAndVerifyComment(coder)
-	readAndVerifyDirectory(coder)
+	ids, addresses := readAndVerifyDirectory(coder)
 
-	provider = &formatReader{}
+	provider = &formatReader{resourceIDs: ids,
+		chunkAddresses: addresses}
 
 	return
 }
 
 func (reader *formatReader) IDs() []res.ResourceID {
-	return nil
+	return reader.resourceIDs
 }
 
 // Provide implements the chunk.Provider interface
@@ -69,13 +72,29 @@ func skipAndVerifyComment(coder serial.PositioningCoder) {
 	}
 }
 
-func readAndVerifyDirectory(coder serial.PositioningCoder) {
+func readAndVerifyDirectory(coder serial.PositioningCoder) ([]res.ResourceID, map[res.ResourceID]*chunkAddress) {
 	directoryFileOffset := uint32(0)
 	directoryEntries := uint16(0)
 	firstChunkFileOffset := uint32(0)
+
 	coder.CodeUint32(&directoryFileOffset)
 	coder.SetCurPos(directoryFileOffset)
 
 	coder.CodeUint16(&directoryEntries)
 	coder.CodeUint32(&firstChunkFileOffset)
+	ids := make([]res.ResourceID, int(directoryEntries))
+	addresses := make(map[res.ResourceID]*chunkAddress)
+
+	for i := uint16(0); i < directoryEntries; i++ {
+		resourceID := uint16(0xFFFF)
+		address := &chunkAddress{}
+
+		coder.CodeUint16(&resourceID)
+		address.code(coder)
+
+		ids[i] = res.ResourceID(resourceID)
+		addresses[ids[i]] = address
+	}
+
+	return ids, addresses
 }
