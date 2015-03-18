@@ -10,8 +10,9 @@ import (
 )
 
 type formatReader struct {
-	resourceIDs    []res.ResourceID
-	chunkAddresses map[res.ResourceID]*chunkAddress
+	resourceIDs []res.ResourceID
+
+	blockHolder map[res.ResourceID]chunk.BlockHolder
 }
 
 var errFormatMismatch = fmt.Errorf("Format mismatch")
@@ -34,9 +35,16 @@ func NewChunkProvider(source io.ReadSeeker) (provider chunk.Provider, err error)
 	skipAndVerifyComment(coder)
 	ids, addresses := readAndVerifyDirectory(coder)
 
-	provider = &formatReader{resourceIDs: ids,
-		chunkAddresses: addresses}
+	formatReader := &formatReader{
+		resourceIDs: ids,
+		blockHolder: make(map[res.ResourceID]chunk.BlockHolder)}
 
+	for id, address := range addresses {
+		blockHolder := &blockReader{coder: coder, address: address}
+		formatReader.blockHolder[id] = blockHolder
+	}
+
+	provider = formatReader
 	return
 }
 
@@ -46,7 +54,7 @@ func (reader *formatReader) IDs() []res.ResourceID {
 
 // Provide implements the chunk.Provider interface
 func (reader *formatReader) Provide(id res.ResourceID) chunk.BlockHolder {
-	return nil
+	return reader.blockHolder[id]
 }
 
 func skipAndVerifyHeaderString(coder serial.Coder) {
@@ -75,13 +83,13 @@ func skipAndVerifyComment(coder serial.PositioningCoder) {
 func readAndVerifyDirectory(coder serial.PositioningCoder) ([]res.ResourceID, map[res.ResourceID]*chunkAddress) {
 	directoryFileOffset := uint32(0)
 	directoryEntries := uint16(0)
-	firstChunkFileOffset := uint32(0)
+	chunkFileOffset := uint32(0)
 
 	coder.CodeUint32(&directoryFileOffset)
 	coder.SetCurPos(directoryFileOffset)
 
 	coder.CodeUint16(&directoryEntries)
-	coder.CodeUint32(&firstChunkFileOffset)
+	coder.CodeUint32(&chunkFileOffset)
 	ids := make([]res.ResourceID, int(directoryEntries))
 	addresses := make(map[res.ResourceID]*chunkAddress)
 
@@ -91,6 +99,12 @@ func readAndVerifyDirectory(coder serial.PositioningCoder) ([]res.ResourceID, ma
 
 		coder.CodeUint16(&resourceID)
 		address.code(coder)
+
+		address.startOffset = chunkFileOffset
+		chunkFileOffset += address.chunkLength
+		if chunkFileOffset%BoundarySize != 0 {
+			chunkFileOffset += BoundarySize - chunkFileOffset%BoundarySize
+		}
 
 		ids[i] = res.ResourceID(resourceID)
 		addresses[ids[i]] = address
