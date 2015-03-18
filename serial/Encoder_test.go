@@ -22,6 +22,15 @@ func (suite *EncoderSuite) TestDataOnEmptyEncoderReturnsEmptyArray(c *check.C) {
 	c.Assert(result, check.DeepEquals, make([]byte, 0))
 }
 
+func (suite *EncoderSuite) TestCodeUint24EncodesIntegerValue(c *check.C) {
+	var value uint32 = 0x345678
+	suite.coder.CodeUint24(&value)
+
+	result := suite.store.Data()
+
+	c.Assert(result, check.DeepEquals, []byte{0x78, 0x56, 0x34})
+}
+
 func (suite *EncoderSuite) TestCodeUint32EncodesIntegerValue(c *check.C) {
 	var value uint32 = 0x12345678
 	suite.coder.CodeUint32(&value)

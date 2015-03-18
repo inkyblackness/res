@@ -12,14 +12,17 @@ type formatWriter struct {
 	coder serial.PositioningCoder
 
 	firstChunkOffset uint32
-	chunksWritten    uint16
+	resourceIDs      []uint16
+	chunkAddresses   map[uint16]*chunkAddress
 }
 
 // NewChunkConsumer creates a consumer which writes to a random access destination
 // using the DOS format.
 func NewChunkConsumer(dest io.WriteSeeker) chunk.Consumer {
 	coder := serial.NewPositioningEncoder(dest)
-	result := &formatWriter{coder: coder, chunksWritten: 0}
+	result := &formatWriter{coder: coder,
+		resourceIDs:    nil,
+		chunkAddresses: make(map[uint16]*chunkAddress)}
 
 	codeHeader(coder)
 	result.writeDirectoryOffset(0xFFFFFFFF)
@@ -54,16 +57,37 @@ func (writer *formatWriter) alignToBoundary() {
 
 // Consume adds the given chunk to the consumer.
 func (writer *formatWriter) Consume(id res.ResourceID, chunk chunk.BlockHolder) {
+	writer.alignToBoundary()
+	address := &chunkAddress{
+		startOffset: writer.coder.CurPos(),
+		chunkType:   byte(chunk.ChunkType()),
+		contentType: byte(chunk.ContentType())}
 
+	for blockIndex := uint16(0); blockIndex < chunk.BlockCount(); blockIndex++ {
+		block := chunk.BlockData(blockIndex)
+		writer.coder.CodeBytes(block)
+		address.uncompressedLength += uint32(len(block))
+	}
+	address.chunkLength = writer.coder.CurPos() - address.startOffset
+
+	writer.resourceIDs = append(writer.resourceIDs, uint16(id))
+	writer.chunkAddresses[uint16(id)] = address
 }
 
 // Finish marks the end of consumption. After calling Finish, the consumer can't be used anymore.
 func (writer *formatWriter) Finish() {
 	writer.alignToBoundary()
-
 	directoryStart := writer.coder.CurPos()
+
 	writer.writeDirectoryOffset(directoryStart)
 	writer.coder.SetCurPos(directoryStart)
-	writer.coder.CodeUint16(&writer.chunksWritten)
+	chunksWritten := uint16(len(writer.resourceIDs))
+	writer.coder.CodeUint16(&chunksWritten)
 	writer.coder.CodeUint32(&writer.firstChunkOffset)
+
+	for _, resourceID := range writer.resourceIDs {
+		address := writer.chunkAddresses[resourceID]
+		writer.coder.CodeUint16(&resourceID)
+		address.code(writer.coder)
+	}
 }

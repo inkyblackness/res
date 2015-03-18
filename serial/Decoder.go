@@ -36,6 +36,12 @@ func (coder *decoder) CodeUint16(value *uint16) {
 	*value = (uint16(buf[0]) << 0) | (uint16(buf[1]) << 8)
 }
 
+// CodeUint24 decodes a 24bit unsigned integer
+func (coder *decoder) CodeUint24(value *uint32) {
+	buf := coder.readBytes(3)
+	*value = (uint32(buf[0]) << 0) | (uint32(buf[1]) << 8) | (uint32(buf[2]) << 16)
+}
+
 // CodeUint32 decodes a 32bit unsigned integer
 func (coder *decoder) CodeUint32(value *uint32) {
 	buf := coder.readBytes(4)

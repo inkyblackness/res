@@ -32,6 +32,11 @@ func (coder *encoder) CodeUint16(value *uint16) {
 	coder.writeBytes(byte((*value>>0)&0xFF), byte((*value>>8)&0xFF))
 }
 
+// CodeUint24 encodes an unsigned 24bit value
+func (coder *encoder) CodeUint24(value *uint32) {
+	coder.writeBytes(byte((*value>>0)&0xFF), byte((*value>>8)&0xFF), byte((*value>>16)&0xFF))
+}
+
 // CodeUint32 encodes an unsigned 32bit value
 func (coder *encoder) CodeUint32(value *uint32) {
 	coder.writeBytes(byte((*value>>0)&0xFF), byte((*value>>8)&0xFF), byte((*value>>16)&0xFF), byte((*value>>24)&0xFF))

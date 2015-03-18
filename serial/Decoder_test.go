@@ -25,6 +25,16 @@ func (suite *DecoderSuite) TestCodeUint32DecodesIntegerValue(c *check.C) {
 	c.Assert(value, check.Equals, uint32(0x12345678))
 }
 
+func (suite *DecoderSuite) TestCodeUint24DecodesIntegerValue(c *check.C) {
+	var source = bytes.NewReader([]byte{0x78, 0x56, 0x34, 0x12})
+	var value uint32
+
+	suite.coder = NewDecoder(source)
+	suite.coder.CodeUint24(&value)
+
+	c.Assert(value, check.Equals, uint32(0x345678))
+}
+
 func (suite *DecoderSuite) TestCodeUint16DecodesIntegerValue(c *check.C) {
 	var source = bytes.NewReader([]byte{0x45, 0x23})
 	var value uint16
