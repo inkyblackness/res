@@ -16,7 +16,9 @@ func newWordWriter(coder serial.Coder) *wordWriter {
 
 func (writer *wordWriter) close() {
 	writer.write(endOfStream)
-	writer.writeByte(writer.remainder)
+	if writer.remainderFree < 8 {
+		writer.writeByte(writer.remainder)
+	}
 	writer.writeByte(byte(0x00))
 }
 

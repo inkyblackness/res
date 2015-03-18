@@ -25,6 +25,15 @@ func (suite *WordWriterSuite) TestCloseWritesEndOfStreamMarkerAndTrailingZeroByt
 	c.Assert(suite.store.Data(), check.DeepEquals, []byte{0xFF, 0xFC, 0x00})
 }
 
+func (suite *WordWriterSuite) TestCloseWritesRemainderOnlyIfNotEmpty(c *check.C) {
+	suite.writer.write(word(0x0000))
+	suite.writer.write(word(0x0000))
+	suite.writer.write(word(0x0000))
+	suite.writer.close()
+
+	c.Assert(suite.store.Data(), check.DeepEquals, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xFF, 0x00})
+}
+
 func (suite *WordWriterSuite) TestWriteAndCloseLinesUpBits(c *check.C) {
 	suite.writer.write(word(0x1FFE)) // 0111111 1111110
 	suite.writer.close()             // 1111111 1111111
