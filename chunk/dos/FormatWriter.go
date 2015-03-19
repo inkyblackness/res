@@ -67,7 +67,7 @@ func (writer *formatWriter) Consume(id res.ResourceID, chunk chunk.BlockHolder) 
 	chunkFinish := func() {}
 
 	if chunk.ChunkType().HasDirectory() {
-		writer.writeBlockDirectory(address, chunk)
+		writer.writeBlockDirectory(address, chunk, writer.getDirectoryPadding(id))
 	}
 	if chunk.ChunkType().IsCompressed() {
 		compressor := base.NewCompressor(writer.coder)
@@ -87,9 +87,17 @@ func (writer *formatWriter) Consume(id res.ResourceID, chunk chunk.BlockHolder) 
 	writer.chunkAddresses[uint16(id)] = address
 }
 
-func (writer *formatWriter) writeBlockDirectory(address *chunkAddress, chunk chunk.BlockHolder) {
+func (writer *formatWriter) getDirectoryPadding(id res.ResourceID) (padding uint32) {
+	// Some directories have a 2byte padding before the actual data
+	if id >= 0x08FC && id <= 0x094B { // all chunks in obj3d.res
+		padding = uint32(2)
+	}
+	return
+}
+
+func (writer *formatWriter) writeBlockDirectory(address *chunkAddress, chunk chunk.BlockHolder, padding uint32) {
 	blockCount := chunk.BlockCount()
-	blockStart := uint32(2 + 4*blockCount + 4)
+	blockStart := uint32(2+4*blockCount+4) + padding
 
 	writer.coder.CodeUint16(&blockCount)
 	for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
@@ -98,6 +106,10 @@ func (writer *formatWriter) writeBlockDirectory(address *chunkAddress, chunk chu
 		blockStart += uint32(len(block))
 	}
 	writer.coder.CodeUint32(&blockStart)
+	for i := uint32(0); i < padding; i++ {
+		zero := byte(0x00)
+		writer.coder.CodeByte(&zero)
+	}
 	address.uncompressedLength = writer.coder.CurPos() - address.startOffset
 }
 
