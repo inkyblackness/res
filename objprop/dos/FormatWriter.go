@@ -9,9 +9,7 @@ import (
 )
 
 type formatWriter struct {
-	coder serial.PositioningCoder
-	dest  io.Writer
-
+	coder   serial.PositioningCoder
 	entries map[res.ObjectID]*typeEntry
 }
 
@@ -19,7 +17,6 @@ type formatWriter struct {
 func NewConsumer(dest io.WriteSeeker, descriptors []objprop.ClassDescriptor) objprop.Consumer {
 	writer := &formatWriter{
 		coder:   serial.NewPositioningEncoder(dest),
-		dest:    dest,
 		entries: calculateEntryValues(descriptors)}
 
 	ensureCoderLength(writer.coder, expectedDataLength(descriptors))
