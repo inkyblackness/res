@@ -14,7 +14,7 @@ type FormatReaderSuite struct {
 
 var _ = check.Suite(&FormatReaderSuite{})
 
-func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnNil(c *check.C) {
+func (suite *FormatReaderSuite) TestNewProviderReturnsErrorOnNil(c *check.C) {
 	_, err := NewProvider(nil, []objprop.ClassDescriptor{})
 
 	c.Assert(err, check.ErrorMatches, "source is nil")
