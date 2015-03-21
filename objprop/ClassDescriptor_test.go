@@ -9,10 +9,6 @@ type ClassDescriptorSuite struct {
 
 var _ = check.Suite(&ClassDescriptorSuite{})
 
-func (suite *ClassDescriptorSuite) SetUpTest(c *check.C) {
-
-}
-
 func (suite *ClassDescriptorSuite) TestTotalDataLengthReturnsCompleteLength(c *check.C) {
 	var mainDesc ClassDescriptor
 
