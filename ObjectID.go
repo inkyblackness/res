@@ -15,3 +15,8 @@ type ObjectID struct {
 	Subclass ObjectSubclass
 	Type     ObjectType
 }
+
+// MakeObjectID returns an object ID with the provided values
+func MakeObjectID(class ObjectClass, subclass ObjectSubclass, objType ObjectType) ObjectID {
+	return ObjectID{Class: class, Subclass: subclass, Type: objType}
+}

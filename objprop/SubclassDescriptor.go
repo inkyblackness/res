@@ -8,7 +8,7 @@ type SubclassDescriptor struct {
 	SpecificDataLength uint32
 }
 
-// TotalDataLength returns the total length the subclass requires
+// TotalDataLength returns the total length the subclass requires in the properties file
 func (desc SubclassDescriptor) TotalDataLength() uint32 {
-	return desc.SpecificDataLength * desc.TypeCount
+	return (desc.SpecificDataLength + CommonPropertiesLength) * desc.TypeCount
 }
