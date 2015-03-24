@@ -1,3 +1,6 @@
+[![Build Status][drone-image]][drone-url]
+[![Coverage Status][coveralls-image]][coveralls-url]
+
 # Resource File Access
 
 This is a library as part of the [InkyBlackness](https://inkyblackness.github.io) project, written in [Go](http://golang.org/), to provide basic (binary) access to the resource files of System Shock.
@@ -16,3 +19,8 @@ The data format (framing) of the supported files is documented in the [ss-specs]
 ## License
 
 The project is available under the terms of the **New BSD License** (see LICENSE file).
+
+[drone-url]: https://drone.io/github.com/inkyblackness/res/latest
+[drone-image]: https://drone.io/github.com/inkyblackness/res/status.png
+[coveralls-url]: https://coveralls.io/r/inkyblackness/res
+[coveralls-image]: https://coveralls.io/repos/inkyblackness/res/badge.png
