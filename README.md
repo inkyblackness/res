@@ -23,4 +23,4 @@ The project is available under the terms of the **New BSD License** (see LICENSE
 [drone-url]: https://drone.io/github.com/inkyblackness/res/latest
 [drone-image]: https://drone.io/github.com/inkyblackness/res/status.png
 [coveralls-url]: https://coveralls.io/r/inkyblackness/res
-[coveralls-image]: https://coveralls.io/repos/inkyblackness/res/badge.png
+[coveralls-image]: https://coveralls.io/repos/inkyblackness/res/badge.svg
