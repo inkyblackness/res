@@ -18,14 +18,14 @@ var _ = check.Suite(&FormatReaderSuite{})
 func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnNil(c *check.C) {
 	_, err := NewChunkProvider(nil)
 
-	c.Assert(err, check.ErrorMatches, "source is nil")
+	c.Check(err, check.ErrorMatches, "source is nil")
 }
 
 func (suite *FormatReaderSuite) TestNewChunkProviderReturnsProviderOnEmptySource(c *check.C) {
 	source := bytes.NewReader(emptyResourceFile())
 	provider, _ := NewChunkProvider(source)
 
-	c.Assert(provider, check.NotNil)
+	c.Check(provider, check.NotNil)
 }
 
 func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnInvalidHeaderString(c *check.C) {
@@ -34,7 +34,7 @@ func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnInvalidHeaderS
 
 	_, err := NewChunkProvider(bytes.NewReader(sourceData))
 
-	c.Assert(err, check.ErrorMatches, "Format mismatch")
+	c.Check(err, check.ErrorMatches, "Format mismatch")
 }
 
 func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnMissingCommentTerminator(c *check.C) {
@@ -43,7 +43,7 @@ func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnMissingComment
 
 	_, err := NewChunkProvider(bytes.NewReader(sourceData))
 
-	c.Assert(err, check.ErrorMatches, "Format mismatch")
+	c.Check(err, check.ErrorMatches, "Format mismatch")
 }
 
 func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnInvalidDirectoryStart(c *check.C) {
@@ -52,7 +52,7 @@ func (suite *FormatReaderSuite) TestNewChunkProviderReturnsErrorOnInvalidDirecto
 
 	_, err := NewChunkProvider(bytes.NewReader(sourceData))
 
-	c.Assert(err, check.ErrorMatches, "EOF")
+	c.Check(err, check.ErrorMatches, "EOF")
 }
 
 func (suite *FormatReaderSuite) TestIDsReturnsTheStoredChunkIDsInOrder(c *check.C) {
@@ -67,7 +67,7 @@ func (suite *FormatReaderSuite) TestIDsReturnsTheStoredChunkIDsInOrder(c *check.
 
 	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
 
-	c.Assert(provider.IDs(), check.DeepEquals, []res.ResourceID{0x5678, 0x1234})
+	c.Check(provider.IDs(), check.DeepEquals, []res.ResourceID{0x5678, 0x1234})
 }
 
 func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderForKnownID(c *check.C) {
@@ -80,7 +80,7 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderForKnownID(c *ch
 
 	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
 
-	c.Assert(provider.Provide(0x1122), check.NotNil)
+	c.Check(provider.Provide(0x1122), check.NotNil)
 }
 
 func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithContent(c *check.C) {
@@ -93,7 +93,22 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithContent(c *c
 
 	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
 
-	c.Assert(provider.Provide(0x3344).BlockData(0), check.DeepEquals, []byte{0xAA, 0xBB, 0xCC})
+	c.Check(provider.Provide(0x3344).BlockData(0), check.DeepEquals, []byte{0xAA, 0xBB, 0xCC})
+}
+
+func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithMetaData(c *check.C) {
+	store := serial.NewByteStore()
+	consumer := NewChunkConsumer(store)
+
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Bitmap, [][]byte{[]byte{0xAA, 0xBB, 0xCC}})
+	consumer.Consume(res.ResourceID(0x3344), blockHolder1)
+	consumer.Finish()
+
+	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
+	holder := provider.Provide(0x3344)
+
+	c.Check(holder.BlockCount(), check.Equals, uint16(1))
+	c.Check(holder.ContentType(), check.Equals, res.Bitmap)
 }
 
 func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithDictionaryContent(c *check.C) {
@@ -106,8 +121,10 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithDictionaryCo
 	consumer.Finish()
 
 	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
+	holder := provider.Provide(0x3344)
 
-	c.Assert(provider.Provide(0x3344).BlockData(1), check.DeepEquals, []byte{0xDD, 0xEE, 0xFF})
+	c.Check(holder.BlockCount(), check.Equals, uint16(2))
+	c.Check(holder.BlockData(1), check.DeepEquals, []byte{0xDD, 0xEE, 0xFF})
 }
 
 func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithCompressedDictionaryContent(c *check.C) {
@@ -121,5 +138,5 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithCompressedDi
 
 	provider, _ := NewChunkProvider(bytes.NewReader(store.Data()))
 
-	c.Assert(provider.Provide(0x4455).BlockData(2), check.DeepEquals, []byte{0x05})
+	c.Check(provider.Provide(0x4455).BlockData(2), check.DeepEquals, []byte{0x05})
 }

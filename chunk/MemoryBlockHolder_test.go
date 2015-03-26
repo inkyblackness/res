@@ -11,10 +11,6 @@ type MemoryBlockHolderSuite struct {
 
 var _ = check.Suite(&MemoryBlockHolderSuite{})
 
-func (suite *MemoryBlockHolderSuite) SetUpTest(c *check.C) {
-
-}
-
 func (suite *MemoryBlockHolderSuite) TestChunkTypeReturnsProvidedValue(c *check.C) {
 	holder := NewBlockHolder(BasicChunkType.WithCompression(), res.Data, [][]byte{})
 
