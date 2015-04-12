@@ -1,21 +1,21 @@
 package dos
 
 import (
-	"io"
-
 	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/objprop"
 	"github.com/inkyblackness/res/serial"
 )
 
 type formatWriter struct {
+	dest    serial.SeekingWriteCloser
 	coder   serial.PositioningCoder
 	entries map[res.ObjectID]*typeEntry
 }
 
-// NewConsumer wraps the provided WriteSeeker in a consumer for object properties.
-func NewConsumer(dest io.WriteSeeker, descriptors []objprop.ClassDescriptor) objprop.Consumer {
+// NewConsumer wraps the provided destination in a consumer for object properties.
+func NewConsumer(dest serial.SeekingWriteCloser, descriptors []objprop.ClassDescriptor) objprop.Consumer {
 	writer := &formatWriter{
+		dest:    dest,
 		coder:   serial.NewPositioningEncoder(dest),
 		entries: calculateEntryValues(descriptors)}
 
@@ -37,6 +37,7 @@ func (writer *formatWriter) Finish() {
 
 	writer.coder.SetCurPos(0)
 	writer.coder.CodeUint32(&header)
+	writer.dest.Close()
 }
 
 func ensureCoderLength(coder serial.Coder, length uint32) {

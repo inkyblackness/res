@@ -49,6 +49,11 @@ func (store *ByteStore) Write(p []byte) (n int, err error) {
 	return size, nil
 }
 
+func (store *ByteStore) Close() error {
+	// ignored
+	return nil
+}
+
 func (store *ByteStore) ensureAvailable(size int) {
 	expected := store.offset + size
 	available := len(store.data)

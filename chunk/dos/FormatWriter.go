@@ -1,8 +1,6 @@
 package dos
 
 import (
-	"io"
-
 	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/chunk"
 	"github.com/inkyblackness/res/compress/base"
@@ -10,6 +8,7 @@ import (
 )
 
 type formatWriter struct {
+	dest  serial.SeekingWriteCloser
 	coder serial.PositioningCoder
 
 	firstChunkOffset uint32
@@ -19,9 +18,11 @@ type formatWriter struct {
 
 // NewChunkConsumer creates a consumer which writes to a random access destination
 // using the DOS format.
-func NewChunkConsumer(dest io.WriteSeeker) chunk.Consumer {
+func NewChunkConsumer(dest serial.SeekingWriteCloser) chunk.Consumer {
 	coder := serial.NewPositioningEncoder(dest)
-	result := &formatWriter{coder: coder,
+	result := &formatWriter{
+		dest:           dest,
+		coder:          coder,
 		resourceIDs:    nil,
 		chunkAddresses: make(map[uint16]*chunkAddress)}
 
@@ -129,4 +130,5 @@ func (writer *formatWriter) Finish() {
 		writer.coder.CodeUint16(&resourceID)
 		address.code(writer.coder)
 	}
+	writer.dest.Close()
 }
