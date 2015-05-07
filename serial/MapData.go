@@ -41,9 +41,13 @@ func MapData(dataStruct interface{}, coder Coder) {
 			temp := uint32(valueField.Int())
 			coder.CodeUint32(&temp)
 			valueField.SetInt(int64(temp))
-		} else if fieldKind == reflect.Array {
+		} else if (fieldKind == reflect.Array) && (structField.Type.Elem().Kind() == reflect.Uint8) {
 			temp := valueField.Slice(0, valueField.Len()).Bytes()
 			coder.CodeBytes(temp)
+		} else if fieldKind == reflect.Array || fieldKind == reflect.Slice {
+			for j := 0; j < valueField.Len(); j++ {
+				MapData(valueField.Index(j).Interface(), coder)
+			}
 		}
 	}
 }
