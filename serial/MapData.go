@@ -1,6 +1,7 @@
 package serial
 
 import (
+	"bytes"
 	"reflect"
 )
 
@@ -41,6 +42,19 @@ func MapData(dataStruct interface{}, coder Coder) {
 			temp := uint32(valueField.Int())
 			coder.CodeUint32(&temp)
 			valueField.SetInt(int64(temp))
+		} else if fieldKind == reflect.String {
+			for _, temp := range bytes.NewBufferString(valueField.String()).Bytes() {
+				coder.CodeByte(&temp)
+			}
+
+			var buf []byte = nil
+			temp := byte(0x00)
+			coder.CodeByte(&temp)
+			for temp != 0x00 {
+				buf = append(buf, temp)
+				coder.CodeByte(&temp)
+			}
+			valueField.SetString(bytes.NewBuffer(buf).String())
 		} else if (fieldKind == reflect.Array) && (structField.Type.Elem().Kind() == reflect.Uint8) {
 			temp := valueField.Slice(0, valueField.Len()).Bytes()
 			coder.CodeBytes(temp)

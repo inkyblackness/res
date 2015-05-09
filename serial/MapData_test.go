@@ -23,6 +23,10 @@ type TestDataList struct {
 	Entries []*TestData
 }
 
+type TestDataString struct {
+	SingleEntry string
+}
+
 type MapDataSuite struct {
 }
 
@@ -71,6 +75,13 @@ func (suite *MapDataSuite) TestMapDataCodesAllBitsSet(c *check.C) {
 func (suite *MapDataSuite) TestMapDataCodesArrayValues(c *check.C) {
 	v := &TestDataList{Entries: []*TestData{&TestData{}, &TestData{}}}
 	data := make([]byte, 19*len(v.Entries))
+
+	suite.verifyMapData(c, v, data)
+}
+
+func (suite *MapDataSuite) TestMapDataCodesStringValues(c *check.C) {
+	v := &TestDataString{}
+	data := []byte{0x31, 0x32, 0x33, 0x34, 0x00}
 
 	suite.verifyMapData(c, v, data)
 }
