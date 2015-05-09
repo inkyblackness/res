@@ -27,3 +27,11 @@ func (table *Table) String() (result string) {
 
 	return
 }
+
+func (table *Table) Size() int {
+	return len(table.Entries)
+}
+
+func (table *Table) Entry(index int) interface{} {
+	return table.Entries[index]
+}
