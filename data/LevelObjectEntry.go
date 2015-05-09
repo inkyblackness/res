@@ -43,6 +43,9 @@ func (entry *LevelObjectEntry) String() (result string) {
 	result += fmt.Sprintf("ObjectID: %d/%d/%d\n", entry.Class, entry.Subclass, entry.Type)
 	result += fmt.Sprintf("Coord: X: %v Y: %v Z: %d\n", entry.X, entry.Y, entry.Z)
 	result += fmt.Sprintf("Rotation: %d, %d, %d\n", entry.Rot1, entry.Rot2, entry.Rot3)
+	result += fmt.Sprintf("Class Table Index: %d\n", entry.ClassTableIndex)
+	result += fmt.Sprintf("Cross Reference Index: %d\n", entry.CrossReferenceTableIndex)
+	result += fmt.Sprintf("Links: <- %d | %d ->\n", entry.Previous, entry.Next)
 
 	return
 }
