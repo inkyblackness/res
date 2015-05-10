@@ -5,63 +5,76 @@ import (
 	"reflect"
 )
 
-// MapData either encodes or decodes the given data structure with the provided
-// Coder. Only those data types that can be serialized with the Coder are
-// supported.
-func MapData(dataStruct interface{}, coder Coder) {
-	valueType := reflect.TypeOf(dataStruct).Elem()
-	value := reflect.Indirect(reflect.ValueOf(dataStruct))
+func mapSingleData(valueType reflect.Type, value reflect.Value, coder Coder) {
+	valueKind := valueType.Kind()
+
+	if valueKind == reflect.Uint8 {
+		temp := byte(value.Uint())
+		coder.CodeByte(&temp)
+		value.SetUint(uint64(temp))
+	} else if valueKind == reflect.Int8 {
+		temp := byte(value.Int())
+		coder.CodeByte(&temp)
+		value.SetInt(int64(temp))
+	} else if valueKind == reflect.Uint16 {
+		temp := uint16(value.Uint())
+		coder.CodeUint16(&temp)
+		value.SetUint(uint64(temp))
+	} else if valueKind == reflect.Int16 {
+		temp := uint16(value.Int())
+		coder.CodeUint16(&temp)
+		value.SetInt(int64(temp))
+	} else if valueKind == reflect.Uint32 {
+		temp := uint32(value.Uint())
+		coder.CodeUint32(&temp)
+		value.SetUint(uint64(temp))
+	} else if valueKind == reflect.Int32 {
+		temp := uint32(value.Int())
+		coder.CodeUint32(&temp)
+		value.SetInt(int64(temp))
+	} else if valueKind == reflect.String {
+		for _, temp := range bytes.NewBufferString(value.String()).Bytes() {
+			coder.CodeByte(&temp)
+		}
+
+		var buf []byte = nil
+		temp := byte(0x00)
+		coder.CodeByte(&temp)
+		for temp != 0x00 {
+			buf = append(buf, temp)
+			coder.CodeByte(&temp)
+		}
+		value.SetString(bytes.NewBuffer(buf).String())
+	} else if (valueKind == reflect.Array) && (valueType.Elem().Kind() == reflect.Uint8) {
+		temp := value.Slice(0, value.Len()).Bytes()
+		coder.CodeBytes(temp)
+	} else if valueKind == reflect.Array || valueKind == reflect.Slice {
+		for j := 0; j < value.Len(); j++ {
+			MapData(value.Index(j).Interface(), coder)
+		}
+	} else if valueKind == reflect.Struct {
+		mapStructData(valueType, value, coder)
+	} else if valueKind == reflect.Ptr {
+		mapSingleData(valueType.Elem(), reflect.Indirect(value), coder)
+	} else {
+		panic("Unknown type")
+	}
+}
+
+func mapStructData(valueType reflect.Type, value reflect.Value, coder Coder) {
 	fields := valueType.NumField()
 
 	for i := 0; i < fields; i++ {
 		structField := valueType.Field(i)
-		valueField := value.Field(i)
-		fieldKind := structField.Type.Kind()
+		fieldValue := value.Field(i)
 
-		if fieldKind == reflect.Uint8 {
-			temp := byte(valueField.Uint())
-			coder.CodeByte(&temp)
-			valueField.SetUint(uint64(temp))
-		} else if fieldKind == reflect.Int8 {
-			temp := byte(valueField.Int())
-			coder.CodeByte(&temp)
-			valueField.SetInt(int64(temp))
-		} else if fieldKind == reflect.Uint16 {
-			temp := uint16(valueField.Uint())
-			coder.CodeUint16(&temp)
-			valueField.SetUint(uint64(temp))
-		} else if fieldKind == reflect.Int16 {
-			temp := uint16(valueField.Int())
-			coder.CodeUint16(&temp)
-			valueField.SetInt(int64(temp))
-		} else if fieldKind == reflect.Uint32 {
-			temp := uint32(valueField.Uint())
-			coder.CodeUint32(&temp)
-			valueField.SetUint(uint64(temp))
-		} else if fieldKind == reflect.Int32 {
-			temp := uint32(valueField.Int())
-			coder.CodeUint32(&temp)
-			valueField.SetInt(int64(temp))
-		} else if fieldKind == reflect.String {
-			for _, temp := range bytes.NewBufferString(valueField.String()).Bytes() {
-				coder.CodeByte(&temp)
-			}
-
-			var buf []byte = nil
-			temp := byte(0x00)
-			coder.CodeByte(&temp)
-			for temp != 0x00 {
-				buf = append(buf, temp)
-				coder.CodeByte(&temp)
-			}
-			valueField.SetString(bytes.NewBuffer(buf).String())
-		} else if (fieldKind == reflect.Array) && (structField.Type.Elem().Kind() == reflect.Uint8) {
-			temp := valueField.Slice(0, valueField.Len()).Bytes()
-			coder.CodeBytes(temp)
-		} else if fieldKind == reflect.Array || fieldKind == reflect.Slice {
-			for j := 0; j < valueField.Len(); j++ {
-				MapData(valueField.Index(j).Interface(), coder)
-			}
-		}
+		mapSingleData(structField.Type, fieldValue, coder)
 	}
+}
+
+// MapData either encodes or decodes the given data structure with the provided
+// Coder. Only those data types that can be serialized with the Coder are
+// supported.
+func MapData(dataStruct interface{}, coder Coder) {
+	mapSingleData(reflect.TypeOf(dataStruct), reflect.ValueOf(dataStruct), coder)
 }

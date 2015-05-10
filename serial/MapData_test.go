@@ -27,6 +27,12 @@ type TestDataString struct {
 	SingleEntry string
 }
 
+type TestDataNested struct {
+	TestData
+
+	ExtraByteArray [3]byte
+}
+
 type MapDataSuite struct {
 }
 
@@ -82,6 +88,13 @@ func (suite *MapDataSuite) TestMapDataCodesArrayValues(c *check.C) {
 func (suite *MapDataSuite) TestMapDataCodesStringValues(c *check.C) {
 	v := &TestDataString{}
 	data := []byte{0x31, 0x32, 0x33, 0x34, 0x00}
+
+	suite.verifyMapData(c, v, data)
+}
+
+func (suite *MapDataSuite) TestMapDataCodesNestedValues(c *check.C) {
+	v := &TestDataNested{}
+	data := make([]byte, 19+3)
 
 	suite.verifyMapData(c, v, data)
 }
