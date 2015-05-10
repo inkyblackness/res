@@ -18,6 +18,12 @@ type GameState struct {
 	Unknown0019 [0x20]byte
 
 	CurrentLevel byte
+
+	Unknown001B [0x4E6]byte
+
+	HackerX     TileCoordinate
+	Unknown0522 [2]byte
+	HackerY     TileCoordinate
 }
 
 func DefaultGameState() *GameState {
@@ -31,6 +37,7 @@ func (data *GameState) String() string {
 	info += fmt.Sprintf("Ratings: Co: %d, Mi: %d, Pu: %d, Cy: %d\n",
 		data.CombatRating, data.MissionRating, data.PuzzleRating, data.CyberRating)
 	info += fmt.Sprintf("Current Level: %d\n", data.CurrentLevel)
+	info += fmt.Sprintf("Hacker Coord: X: %v, Y: %v\n", data.HackerX, data.HackerY)
 
 	return info
 }
