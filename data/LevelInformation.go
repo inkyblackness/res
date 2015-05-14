@@ -10,6 +10,7 @@ const (
 	defaultHeightFactor uint32 = 3
 )
 
+// LevelInformation contains information about a single level.
 type LevelInformation struct {
 	MapWidth  uint32
 	MapHeight uint32
@@ -25,6 +26,7 @@ type LevelInformation struct {
 	Unknown001C [30]byte
 }
 
+// DefaultLevelInformation returns an instance of LevelInformation with default values.
 func DefaultLevelInformation() *LevelInformation {
 	info := &LevelInformation{
 		MapWidth:     defaultMapWidth,
@@ -44,6 +46,7 @@ func (info *LevelInformation) String() string {
 	return result
 }
 
+// IsCyberspace returns true for cyberspace levels
 func (info *LevelInformation) IsCyberspace() bool {
 	return info.CyberspaceFlag != 0
 }

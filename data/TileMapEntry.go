@@ -4,10 +4,11 @@ import (
 	"fmt"
 )
 
+// TileMapEntry describes one tile in the map.
 type TileMapEntry struct {
 	Type             TileType
-	Floor            FloorInfo
-	Ceiling          CeilingInfo
+	Floor            byte
+	Ceiling          byte
 	SlopeHeight      byte
 	FirstObjectIndex uint16
 	Textures         TileTextureInfo
@@ -15,6 +16,7 @@ type TileMapEntry struct {
 	UnknownState     [4]byte
 }
 
+// DefaultTileMapEntry returns a TileMapEntry instance with default values set.
 func DefaultTileMapEntry() *TileMapEntry {
 	entry := &TileMapEntry{
 		Type:         Solid,
@@ -30,7 +32,3 @@ func (entry *TileMapEntry) String() (result string) {
 
 	return
 }
-
-type FloorInfo byte
-
-type CeilingInfo byte

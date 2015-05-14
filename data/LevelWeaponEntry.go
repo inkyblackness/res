@@ -4,8 +4,10 @@ import (
 	"fmt"
 )
 
+// LevelWeaponEntrySize specifies the byte count of a serialized LevelWeaponEntry.
 const LevelWeaponEntrySize int = LevelObjectPrefixSize + 2
 
+// LevelWeaponEntry describes a 'weapon' level object.
 type LevelWeaponEntry struct {
 	LevelObjectPrefix
 
@@ -13,6 +15,7 @@ type LevelWeaponEntry struct {
 	AmmoCountOrTemperature byte
 }
 
+// NewLevelWeaponEntry returns a new instance of a LevelWeaponEntry.
 func NewLevelWeaponEntry() *LevelWeaponEntry {
 	return &LevelWeaponEntry{}
 }

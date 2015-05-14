@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// GameState contains the information about the hacker and any game related information.
 type GameState struct {
 	HackerName [20]byte
 
@@ -26,6 +27,7 @@ type GameState struct {
 	HackerY     TileCoordinate
 }
 
+// DefaultGameState returns a GameState instance with initialized default values.
 func DefaultGameState() *GameState {
 	return &GameState{}
 }
@@ -42,6 +44,7 @@ func (data *GameState) String() string {
 	return info
 }
 
+// HackerNameString returns the name in string form
 func (data *GameState) HackerNameString() string {
 	buffer := bytes.NewBuffer(data.HackerName[:])
 

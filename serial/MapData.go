@@ -37,7 +37,7 @@ func mapSingleData(valueType reflect.Type, value reflect.Value, coder Coder) {
 			coder.CodeByte(&temp)
 		}
 
-		var buf []byte = nil
+		var buf []byte
 		temp := byte(0x00)
 		coder.CodeByte(&temp)
 		for temp != 0x00 {
@@ -72,9 +72,8 @@ func mapStructData(valueType reflect.Type, value reflect.Value, coder Coder) {
 	}
 }
 
-// MapData either encodes or decodes the given data structure with the provided
-// Coder. Only those data types that can be serialized with the Coder are
-// supported.
+// MapData either encodes or decodes the given data structure with the provided Coder.
+// Only those data types that can be serialized with the Coder are supported.
 func MapData(dataStruct interface{}, coder Coder) {
 	mapSingleData(reflect.TypeOf(dataStruct), reflect.ValueOf(dataStruct), coder)
 }

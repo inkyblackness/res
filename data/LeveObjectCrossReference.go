@@ -4,8 +4,10 @@ import (
 	"fmt"
 )
 
+// LevelObjectCrossReferenceSize specifies the byte count of a serialized LevelObjectCrossReference.
 const LevelObjectCrossReferenceSize int = 10
 
+// LevelObjectCrossReference describes the cross reference between one or more map tiles and level objects.
 type LevelObjectCrossReference struct {
 	TileX uint16
 	TileY uint16
@@ -16,6 +18,7 @@ type LevelObjectCrossReference struct {
 	NextTileIndex   uint16
 }
 
+// DefaultLevelObjectCrossReference returns a new instance of LevelObjectCrossReference.
 func DefaultLevelObjectCrossReference() *LevelObjectCrossReference {
 	return &LevelObjectCrossReference{}
 }

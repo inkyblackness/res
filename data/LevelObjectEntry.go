@@ -6,8 +6,10 @@ import (
 	"github.com/inkyblackness/res"
 )
 
+// LevelObjectEntrySize specifies the byte count of a serialized LevelObjectEntry.
 const LevelObjectEntrySize int = 27
 
+// LevelObjectEntry describes the basic information about a level object.
 type LevelObjectEntry struct {
 	InUse    byte
 	Class    res.ObjectClass
@@ -34,6 +36,7 @@ type LevelObjectEntry struct {
 	Unknown0018 [4]byte
 }
 
+// DefaultLevelObjectEntry returns a new LevelObjectEntry instance.
 func DefaultLevelObjectEntry() *LevelObjectEntry {
 	return &LevelObjectEntry{}
 }
@@ -50,6 +53,7 @@ func (entry *LevelObjectEntry) String() (result string) {
 	return
 }
 
+// IsInUse returns true if the entry is active.
 func (entry *LevelObjectEntry) IsInUse() bool {
 	return entry.InUse != 0
 }
