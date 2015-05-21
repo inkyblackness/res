@@ -11,6 +11,21 @@ const (
 // BasicChunkType specifies an uncompressed, flat chunk
 const BasicChunkType = TypeID(0x00)
 
+func (id TypeID) String() (result string) {
+	if id.IsCompressed() {
+		result += "Compressed"
+	}
+	if id.HasDirectory() {
+		result += "Directory"
+	}
+
+	if result == "" {
+		result = "Basic"
+	}
+
+	return
+}
+
 func (id TypeID) hasFlag(flag byte) bool {
 	return (byte(id) & flag) != 0
 }
