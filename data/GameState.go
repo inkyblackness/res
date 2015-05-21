@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+// GameStateSize specifies the byte count of a serialized GameState.
+const GameStateSize int = 0x054D
+
 // GameState contains the information about the hacker and any game related information.
 type GameState struct {
 	HackerName [20]byte
