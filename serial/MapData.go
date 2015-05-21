@@ -45,7 +45,7 @@ func mapSingleData(valueType reflect.Type, value reflect.Value, coder Coder) {
 			coder.CodeByte(&temp)
 		}
 		value.SetString(bytes.NewBuffer(buf).String())
-	} else if (valueKind == reflect.Array) && (valueType.Elem().Kind() == reflect.Uint8) {
+	} else if ((valueKind == reflect.Array) || (valueKind == reflect.Slice)) && (valueType.Elem().Kind() == reflect.Uint8) {
 		temp := value.Slice(0, value.Len()).Bytes()
 		coder.CodeBytes(temp)
 	} else if valueKind == reflect.Array || valueKind == reflect.Slice {
