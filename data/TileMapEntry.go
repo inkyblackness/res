@@ -28,7 +28,7 @@ func DefaultTileMapEntry() *TileMapEntry {
 func (entry *TileMapEntry) String() (result string) {
 	result += fmt.Sprintf("Type: %v\n", entry.Type)
 	result += fmt.Sprintf("First Object Index: %d\n", entry.FirstObjectIndex)
-	result += fmt.Sprintf("Flags: %v\n", entry.Flags)
+	result += fmt.Sprintf("Flags: 0x%08X (%v)\n", uint32(entry.Flags), entry.Flags)
 
 	return
 }
