@@ -22,7 +22,7 @@ type LevelVariables struct {
 
 // NewLevelVariables returns a new instance of level variables.
 func NewLevelVariables() *LevelVariables {
-	return &LevelVariables{}
+	return &LevelVariables{Size: uint32(LevelVariablesSize)}
 }
 
 func (info *LevelVariables) String() (result string) {

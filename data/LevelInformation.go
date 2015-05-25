@@ -5,19 +5,19 @@ import (
 )
 
 const (
-	defaultMapWidth     uint32 = 64
-	defaultMapHeight    uint32 = 64
-	defaultHeightFactor uint32 = 3
+	defaultMapDimension      uint32 = 64
+	defaultMapDimensionShift uint32 = 6
+	defaultHeightShift       uint32 = 3
 )
 
 // LevelInformation contains information about a single level.
 type LevelInformation struct {
-	MapWidth  uint32
-	MapHeight uint32
+	Unknown0000 uint32
+	Unknown0004 uint32
+	Unknown0008 uint32
+	Unknown000C uint32
 
-	Unknown0008 [8]byte
-
-	HeightFactor uint32
+	HeightShift uint32
 
 	IgnoredPlaceholder uint32
 
@@ -29,19 +29,18 @@ type LevelInformation struct {
 // DefaultLevelInformation returns an instance of LevelInformation with default values.
 func DefaultLevelInformation() *LevelInformation {
 	info := &LevelInformation{
-		MapWidth:     defaultMapWidth,
-		MapHeight:    defaultMapHeight,
-		Unknown0008:  [8]byte{0x06, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00},
-		HeightFactor: defaultHeightFactor}
+		Unknown0000: defaultMapDimension,
+		Unknown0004: defaultMapDimension,
+		Unknown0008: defaultMapDimensionShift,
+		Unknown000C: defaultMapDimensionShift,
+		HeightShift: defaultHeightShift}
 
 	return info
 }
 
-func (info *LevelInformation) String() string {
-	result := ""
-
-	result += fmt.Sprintf("Map Dimension: %d x %d\n", info.MapWidth, info.MapHeight)
+func (info *LevelInformation) String() (result string) {
 	result += fmt.Sprintf("Cyberspace: %v\n", info.IsCyberspace())
+	result += fmt.Sprintf("Height Shift: %d\n", info.HeightShift)
 
 	return result
 }

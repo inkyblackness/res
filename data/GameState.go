@@ -23,7 +23,11 @@ type GameState struct {
 
 	CurrentLevel byte
 
-	Unknown001B [0x4E6]byte
+	Unknown003A [0x62]byte
+
+	HackerHealth byte
+
+	Unknown009D [0x483]byte
 
 	HackerX     TileCoordinate
 	Unknown0522 [2]byte
