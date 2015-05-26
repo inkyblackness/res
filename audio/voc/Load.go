@@ -12,12 +12,6 @@ var byteLookupTable = mem.L8ToL16Table()
 
 var errNotACreativeVoiceSound = fmt.Errorf("Not a Creative Voice Sound")
 
-const (
-	fileHeader         string = "Creative Voice File\u001A"
-	standardHeaderSize uint16 = 0x1A
-	versionCheckValue  uint16 = 0x1234
-)
-
 // Load reads from the provided source a Creative Voice Sound and returns the data.
 func Load(source io.Reader) (data *mem.L16SoundData, err error) {
 	defer func() {
