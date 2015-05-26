@@ -20,6 +20,11 @@ func (data *L16SoundData) SampleRate() float32 {
 	return data.sampleRate
 }
 
+// SampleCount returns the count of samples available in this data.
+func (data *L16SoundData) SampleCount() int {
+	return len(data.samples)
+}
+
 // Samples copies the internal buffer into the given destination buffer.
 func (data *L16SoundData) Samples(dest []int16) {
 	copy(dest, data.samples)

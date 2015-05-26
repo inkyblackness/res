@@ -8,6 +8,8 @@ import (
 	"github.com/inkyblackness/res/audio/mem"
 )
 
+var byteLookupTable = mem.L8ToL16Table()
+
 var errNotACreativeVoiceSound = fmt.Errorf("Not a Creative Voice Sound")
 
 const (
