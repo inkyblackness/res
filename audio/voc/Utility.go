@@ -23,5 +23,5 @@ func divisorToSampleRate(divisor byte) float32 {
 }
 
 func sampleRateToDivisor(sampleRate float32) byte {
-	return byte(256 - rateBase/sampleRate)
+	return byte(256 - int(rateBase/sampleRate))
 }
