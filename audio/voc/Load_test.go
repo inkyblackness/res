@@ -91,11 +91,12 @@ func (suite *LoadSuite) TestLoadReturnsSoundDataWithSampleRate(c *check.C) {
 
 func (suite *LoadSuite) TestLoadReturnsSoundDataWithSamples(c *check.C) {
 	writer := suite.newHeader()
+	samples := []byte{0x80, 0xFF, 0x00, 0xC0, 0x40, 0x7F, 0x81}
 
-	writer.Write([]byte{0x01})                                     // sound data
-	writer.Write([]byte{0x09, 0x00, 0x00})                         // block size
-	writer.Write([]byte{0x9C, 0x00})                               // divisor, sound type
-	writer.Write([]byte{0x80, 0xFF, 0x00, 0xC0, 0x40, 0x7F, 0x81}) // samples
+	writer.Write([]byte{0x01})             // sound data
+	writer.Write([]byte{0x09, 0x00, 0x00}) // block size
+	writer.Write([]byte{0x9C, 0x00})       // divisor, sound type
+	writer.Write(samples)                  // samples
 
 	writer.Write([]byte{0x00}) // Terminator
 
@@ -103,8 +104,6 @@ func (suite *LoadSuite) TestLoadReturnsSoundDataWithSamples(c *check.C) {
 	data, err := Load(source)
 
 	c.Assert(err, check.IsNil)
-	expected := []int16{0x0000, 0x7FFF, -0x8000, 0x4081, -0x4080, -0x0102, 0x0103}
-	samples := make([]int16, len(expected))
-	data.Samples(samples)
-	c.Check(samples, check.DeepEquals, expected)
+	result := data.Samples(0, data.SampleCount())
+	c.Check(result, check.DeepEquals, samples)
 }

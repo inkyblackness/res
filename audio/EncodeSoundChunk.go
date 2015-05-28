@@ -10,9 +10,7 @@ import (
 func EncodeSoundChunk(soundData SoundData) []byte {
 	writer := bytes.NewBuffer(nil)
 
-	samples := make([]int16, soundData.SampleCount())
-	soundData.Samples(samples)
-	voc.Save(writer, soundData.SampleRate(), samples)
+	voc.Save(writer, soundData.SampleRate(), soundData.Samples(0, soundData.SampleCount()))
 
 	return writer.Bytes()
 }

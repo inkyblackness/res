@@ -7,7 +7,7 @@ import (
 )
 
 // Save encodes the provided samples into the given writer
-func Save(writer io.Writer, sampleRate float32, samples []int16) {
+func Save(writer io.Writer, sampleRate float32, samples []byte) {
 	writeHeader(writer)
 	writeBasicSoundData(writer, sampleRate, samples)
 	writeEndOfFile(writer)
@@ -26,15 +26,13 @@ func writeBlockHeader(writer io.Writer, block blockType, dataBytes int) {
 	writer.Write([]byte{byte(block), byte(dataBytes), byte(dataBytes >> 8), byte(dataBytes >> 16)})
 }
 
-func writeBasicSoundData(writer io.Writer, sampleRate float32, samples []int16) {
+func writeBasicSoundData(writer io.Writer, sampleRate float32, samples []byte) {
 	sampleType := byte(0)
 
 	writeBlockHeader(writer, soundData, len(samples)+2)
 
 	writer.Write([]byte{sampleRateToDivisor(sampleRate), sampleType})
-	for _, sample := range samples {
-		writer.Write([]byte{byte(uint16(int(sample)+0x8000) >> 8)})
-	}
+	writer.Write(samples)
 }
 
 func writeEndOfFile(writer io.Writer) {

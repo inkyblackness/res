@@ -12,8 +12,8 @@ type CodeSoundChunkSuite struct {
 var _ = check.Suite(&CodeSoundChunkSuite{})
 
 func (suite *CodeSoundChunkSuite) TestChunkTypeReturnsProvidedValue(c *check.C) {
-	rawSoundSamples := []int16{-0x8000, 0x0000, 0x2041, 0x4081, 0x7FFF}
-	rawSound := mem.NewL16SoundData(20000.0, rawSoundSamples)
+	rawSoundSamples := []byte{0x00, 0x20, 0x40, 0x80, 0xC0, 0xFF}
+	rawSound := mem.NewL8SoundData(20000.0, rawSoundSamples)
 	encoded := EncodeSoundChunk(rawSound)
 	decoded, err := DecodeSoundChunk(encoded)
 
@@ -21,7 +21,6 @@ func (suite *CodeSoundChunkSuite) TestChunkTypeReturnsProvidedValue(c *check.C) 
 
 	c.Check(decoded.SampleRate(), check.Equals, rawSound.SampleRate())
 	c.Check(decoded.SampleCount(), check.Equals, rawSound.SampleCount())
-	samples := make([]int16, decoded.SampleCount())
-	decoded.Samples(samples)
+	samples := decoded.Samples(0, decoded.SampleCount())
 	c.Check(samples, check.DeepEquals, rawSoundSamples)
 }

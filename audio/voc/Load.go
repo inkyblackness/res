@@ -11,7 +11,7 @@ import (
 var errNotACreativeVoiceSound = fmt.Errorf("Not a Creative Voice Sound")
 
 // Load reads from the provided source a Creative Voice Sound and returns the data.
-func Load(source io.Reader) (data *mem.L16SoundData, err error) {
+func Load(source io.Reader) (data *mem.L8SoundData, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%s", r)
@@ -48,9 +48,9 @@ func readAndVerifyHeader(source io.Reader) {
 	source.Read(skip)
 }
 
-func readSoundData(source io.Reader) (data *mem.L16SoundData) {
+func readSoundData(source io.Reader) (data *mem.L8SoundData) {
 	sampleRate := float32(0.0)
-	var samples []int16
+	var samples []byte
 	done := false
 
 	for !done {
@@ -69,13 +69,10 @@ func readSoundData(source io.Reader) (data *mem.L16SoundData) {
 				source.Read(buf)
 
 				oldCount := len(samples)
-				newSamples := make([]int16, oldCount+newCount)
+				newSamples := make([]byte, oldCount+newCount)
 				copy(newSamples, samples)
+				copy(newSamples[oldCount:], buf)
 				samples = newSamples
-
-				for i, sample := range buf {
-					samples[oldCount+i] = byteLookupTable[sample]
-				}
 			}
 		case terminator:
 			{
@@ -87,7 +84,7 @@ func readSoundData(source io.Reader) (data *mem.L16SoundData) {
 	if len(samples) == 0 {
 		panic(fmt.Errorf("No audio found"))
 	} else {
-		data = mem.NewL16SoundData(sampleRate, samples)
+		data = mem.NewL8SoundData(sampleRate, samples)
 	}
 
 	return
