@@ -1,9 +1,5 @@
 package voc
 
-import (
-	"github.com/inkyblackness/res/audio/mem"
-)
-
 const (
 	fileHeader         string  = "Creative Voice File\u001A"
 	standardHeaderSize uint16  = 0x1A
@@ -11,8 +7,6 @@ const (
 	versionCheckValue  uint16  = 0x1234
 	rateBase           float32 = 1000000.0
 )
-
-var byteLookupTable = mem.L8ToL16Table()
 
 func lengthFromBlockStart(blockStart []byte) int {
 	return int(blockStart[3])<<16 + int(blockStart[2])<<8 + int(blockStart[1])
