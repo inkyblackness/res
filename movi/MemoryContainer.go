@@ -5,6 +5,8 @@ import (
 )
 
 type memoryContainer struct {
+	mediaDuration float32
+
 	videoWidth   uint16
 	videoHeight  uint16
 	startPalette color.Palette
@@ -12,6 +14,10 @@ type memoryContainer struct {
 	audioSampleRate uint16
 
 	entries []Entry
+}
+
+func (container *memoryContainer) MediaDuration() float32 {
+	return container.mediaDuration
 }
 
 func (container *memoryContainer) VideoWidth() uint16 {

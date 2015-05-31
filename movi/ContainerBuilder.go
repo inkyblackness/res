@@ -17,6 +17,12 @@ func (builder *ContainerBuilder) Build() Container {
 	return builder.container
 }
 
+// MediaDuration sets the duration for the new container in seconds.
+func (builder *ContainerBuilder) MediaDuration(value float32) *ContainerBuilder {
+	builder.container.mediaDuration = value
+	return builder
+}
+
 // VideoHeight sets the video height for the new container.
 func (builder *ContainerBuilder) VideoHeight(value uint16) *ContainerBuilder {
 	builder.container.videoHeight = value
