@@ -25,19 +25,24 @@ type Header struct {
 	// DurationSeconds is the length of the media in seconds.
 	DurationSeconds byte
 
-	Unknown0013 [5]byte
+	Unused0013 byte
+
+	Unknown0014 [4]byte
 
 	// VideoWidth specifies the width of the video.
 	VideoWidth uint16
 	// VideoHeight specifies the height of the video.
 	VideoHeight uint16
 
-	Unknown001C [10]byte
+	Unknown001C int16
+	Unknown001E int16
+	Unknown0020 int16
+	Unknown0022 int32
 
 	// SampleRate specifies the sample rate of the audio.
 	SampleRate uint16
 
-	Unknown [216]byte
+	Zero [216]byte
 }
 
 func (header *Header) String() (result string) {
