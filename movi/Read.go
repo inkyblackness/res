@@ -41,6 +41,7 @@ func verifyAndExtractHeader(source io.Reader, builder *ContainerBuilder, header 
 		panic(fmt.Errorf("Not a MOVI format"))
 	}
 
+	builder.MediaDuration(timeFromRaw(header.DurationSeconds, header.DurationFraction))
 	builder.VideoHeight(header.VideoHeight)
 	builder.VideoWidth(header.VideoWidth)
 	builder.AudioSampleRate(header.SampleRate)
