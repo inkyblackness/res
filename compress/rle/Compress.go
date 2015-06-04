@@ -42,9 +42,8 @@ func Compress(writer io.Writer, data []byte) {
 			for (start+diffByteCount) < end && !abort {
 				startValue = data[start+diffByteCount]
 				temp := countSameBytes(start+diffByteCount, startValue)
-				if startValue == 0 && temp >= 2 {
-					abort = true
-				} else if temp < 4 {
+
+				if startValue != 0 && temp < 4 {
 					diffByteCount += temp
 				} else {
 					abort = true
