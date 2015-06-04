@@ -11,9 +11,6 @@ type DecompressSuite struct {
 
 var _ = check.Suite(&DecompressSuite{})
 
-func (suite *DecompressSuite) SetUpTest(c *check.C) {
-}
-
 func (suite *DecompressSuite) TestEmptyArrayReturnsError(c *check.C) {
 	_, err := Decompress(bytes.NewReader(nil), 100)
 
