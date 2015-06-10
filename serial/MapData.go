@@ -50,7 +50,7 @@ func mapSingleData(valueType reflect.Type, value reflect.Value, coder Coder) {
 		coder.CodeBytes(temp)
 	} else if valueKind == reflect.Array || valueKind == reflect.Slice {
 		for j := 0; j < value.Len(); j++ {
-			MapData(value.Index(j).Interface(), coder)
+			mapSingleData(valueType.Elem(), value.Index(j), coder)
 		}
 	} else if valueKind == reflect.Struct {
 		mapStructData(valueType, value, coder)
