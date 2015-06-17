@@ -2,6 +2,7 @@ package serial
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 )
 
@@ -56,8 +57,10 @@ func mapSingleData(valueType reflect.Type, value reflect.Value, coder Coder) {
 		mapStructData(valueType, value, coder)
 	} else if valueKind == reflect.Ptr {
 		mapSingleData(valueType.Elem(), reflect.Indirect(value), coder)
+	} else if valueKind == reflect.Interface {
+		MapData(value.Interface(), coder)
 	} else {
-		panic("Unknown type")
+		panic(fmt.Errorf("Unknown type <%v>", valueKind))
 	}
 }
 
