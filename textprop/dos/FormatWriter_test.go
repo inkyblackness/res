@@ -21,13 +21,24 @@ func (suite *FormatWriterSuite) TestWriterCreatesCompatibleData(c *check.C) {
 	store := serial.NewByteStore()
 	consumer := NewConsumer(store)
 
-	consumer.Consume(prop0)
-	consumer.Consume(prop1)
-	consumer.Consume(prop2)
+	consumer.Consume(0, prop0)
+	consumer.Consume(1, prop1)
+	consumer.Consume(2, prop2)
+	consumer.Finish()
 
 	provider, _ := NewProvider(bytes.NewReader(store.Data()))
 
 	c.Assert(provider.Provide(1), check.DeepEquals, prop1)
+}
+
+func (suite *FormatWriterSuite) TestWriterCreatesScratchBuffer(c *check.C) {
+	store := serial.NewByteStore()
+	consumer := NewConsumer(store)
+
+	consumer.Finish()
+	provider, _ := NewProvider(bytes.NewReader(store.Data()))
+
+	c.Assert(provider.EntryCount(), check.DeepEquals, uint32(363))
 }
 
 func createTestProperties(filler byte) []byte {

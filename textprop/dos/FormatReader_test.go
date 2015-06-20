@@ -19,28 +19,37 @@ func (suite *FormatReaderSuite) TestNewProviderReturnsErrorOnNil(c *check.C) {
 	c.Assert(err, check.ErrorMatches, "source is nil")
 }
 
-func (suite *FormatReaderSuite) TestNewProviderReturnsErrorOnFileWithWrongSize(c *check.C) {
-	sourceData := make([]byte, textprop.TexturePropertiesLength-1)
+func (suite *FormatReaderSuite) TestNewProviderReturnsErrorOnFileWithWrongHeader(c *check.C) {
+	buf := bytes.NewBuffer(nil)
+	buf.Write([]byte{0x08, 0x00, 0x00, 0x00})
 
-	_, err := NewProvider(bytes.NewReader(sourceData))
+	_, err := NewProvider(bytes.NewReader(buf.Bytes()))
 
 	c.Assert(err, check.ErrorMatches, "Format mismatch")
 }
 
 func (suite *FormatReaderSuite) TestNewProviderReturnsProviderWithCountSet(c *check.C) {
-	source := bytes.NewReader(make([]byte, textprop.TexturePropertiesLength*4))
-	provider, _ := NewProvider(source)
+	buf := bytes.NewBuffer(nil)
+	buf.Write([]byte{0x09, 0x00, 0x00, 0x00})
+	buf.Write(make([]byte, textprop.TexturePropertiesLength*4))
+	source := bytes.NewReader(buf.Bytes())
+	provider, err := NewProvider(source)
 
-	c.Assert(provider.TextureCount(), check.Equals, uint32(4))
+	c.Assert(err, check.IsNil)
+	c.Check(provider.EntryCount(), check.Equals, uint32(4))
 }
 
 func (suite *FormatReaderSuite) TestNewProviderReturnsProviderWithData(c *check.C) {
-	sourceData := make([]byte, textprop.TexturePropertiesLength*3)
-	for i := byte(0); i < byte(len(sourceData)); i++ {
+	buf := bytes.NewBuffer(nil)
+	buf.Write([]byte{0x09, 0x00, 0x00, 0x00})
+	buf.Write(make([]byte, textprop.TexturePropertiesLength*2))
+	sourceData := buf.Bytes()
+	for i := byte(MagicHeaderSize); i < byte(len(sourceData)); i++ {
 		sourceData[i] = i
 	}
 	source := bytes.NewReader(sourceData)
-	provider, _ := NewProvider(source)
+	provider, err := NewProvider(source)
 
-	c.Assert(provider.Provide(1), check.DeepEquals, []byte{0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15})
+	c.Assert(err, check.IsNil)
+	c.Check(provider.Provide(1), check.DeepEquals, []byte{0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19})
 }

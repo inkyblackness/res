@@ -1,17 +1,16 @@
 package dos
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 
-	"github.com/inkyblackness/res"
-	"github.com/inkyblackness/res/serial"
 	"github.com/inkyblackness/res/textprop"
 )
 
 type formatReader struct {
-	coder        serial.PositioningCoder
-	textureCount uint32
+	source     io.ReadSeeker
+	entryCount uint32
 }
 
 var errFormatMismatch = fmt.Errorf("Format mismatch")
@@ -29,29 +28,32 @@ func NewProvider(source io.ReadSeeker) (provider textprop.Provider, err error) {
 	}
 	count := readAndVerifyEntryCount(source)
 
-	provider = &formatReader{coder: serial.NewPositioningDecoder(source), textureCount: count}
+	provider = &formatReader{source: source, entryCount: count}
 
 	return
 }
 
-func (provider *formatReader) TextureCount() uint32 {
-	return provider.textureCount
+func (provider *formatReader) EntryCount() uint32 {
+	return provider.entryCount
 }
 
-func (provider *formatReader) Provide(id res.TextureID) []byte {
-	data := make([]byte, textprop.TexturePropertiesLength)
+func (provider *formatReader) Provide(id uint32) []byte {
+	data := make([]byte, int(textprop.TexturePropertiesLength))
 
-	provider.coder.SetCurPos(textprop.TexturePropertiesLength * uint32(id))
-	provider.coder.CodeBytes(data)
+	provider.source.Seek(int64(MagicHeaderSize+textprop.TexturePropertiesLength*id), 0)
+	binary.Read(provider.source, binary.LittleEndian, data)
 
 	return data
 }
 
-func readAndVerifyEntryCount(source io.Seeker) uint32 {
+func readAndVerifyEntryCount(source io.ReadSeeker) uint32 {
 	sourceLength := getSeekerSize(source)
-	count := sourceLength / textprop.TexturePropertiesLength
+	count := uint32((sourceLength - MagicHeaderSize) / textprop.TexturePropertiesLength)
+	header := uint32(0)
 
-	if (count * textprop.TexturePropertiesLength) != sourceLength {
+	binary.Read(source, binary.LittleEndian, &header)
+
+	if header != MagicHeader {
 		panic(errFormatMismatch)
 	}
 
@@ -64,6 +66,7 @@ func getSeekerSize(seeker io.Seeker) uint32 {
 	if err != nil {
 		panic(err)
 	}
+	seeker.Seek(0, 0)
 
 	return uint32(length)
 }
