@@ -2,7 +2,7 @@ package chunk
 
 import "github.com/inkyblackness/res"
 
-// Store represents a dynamically accessable container of chunks.
+// Store represents a dynamically accessible container of chunks.
 type Store interface {
 	// IDs returns a list of available IDs this store currently contains.
 	IDs() []res.ResourceID
