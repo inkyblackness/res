@@ -33,7 +33,7 @@ func (suite *FormatWriterSuite) TestFinishWithoutAddingCreatesValidFileWithoutCh
 
 func (suite *FormatWriterSuite) TestConsumeOfFlatUncompressedChunkCanBeWritten(c *check.C) {
 	singleBlock := []byte{0xAB, 0x01, 0xCD, 0x02, 0xEF}
-	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{singleBlock})
+	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{singleBlock})
 
 	suite.consumer.Consume(res.ResourceID(0x1234), blockHolder)
 	suite.consumer.Finish()
@@ -56,7 +56,7 @@ func (suite *FormatWriterSuite) TestConsumeOfFlatUncompressedChunkCanBeWritten(c
 func (suite *FormatWriterSuite) TestConsumeOfDirUncompressedChunkCanBeWritten(c *check.C) {
 	singleBlock1 := []byte{0xAB, 0x01, 0xCD}
 	singleBlock2 := []byte{0x11, 0x22, 0x33, 0x44}
-	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Data, [][]byte{singleBlock1, singleBlock2})
+	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Palette, [][]byte{singleBlock1, singleBlock2})
 
 	suite.consumer.Consume(res.ResourceID(0x5678), blockHolder)
 	suite.consumer.Finish()
@@ -84,7 +84,7 @@ func (suite *FormatWriterSuite) TestConsumeOfDirUncompressedChunkCanBeWritten(c 
 
 func (suite *FormatWriterSuite) TestConsumeOfFlatCompressedChunkCanBeWritten(c *check.C) {
 	singleBlock := []byte{0x01, 0x02, 0x01, 0x02}
-	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType.WithCompression(), res.Data, [][]byte{singleBlock})
+	blockHolder := chunk.NewBlockHolder(chunk.BasicChunkType.WithCompression(), res.Palette, [][]byte{singleBlock})
 
 	suite.consumer.Consume(res.ResourceID(0x1122), blockHolder)
 	suite.consumer.Finish()

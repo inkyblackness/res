@@ -4,8 +4,8 @@ package res
 type DataTypeID byte
 
 const (
-	// Data refers to general data blocks
-	Data = DataTypeID(0x00)
+	// Palette refers to palette data blocks
+	Palette = DataTypeID(0x00)
 	// Text refers to texts
 	Text = DataTypeID(0x01)
 	// Bitmap refers to images

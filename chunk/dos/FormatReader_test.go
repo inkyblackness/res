@@ -59,9 +59,9 @@ func (suite *FormatReaderSuite) TestIDsReturnsTheStoredChunkIDsInOrder(c *check.
 	store := serial.NewByteStore()
 	consumer := NewChunkConsumer(store)
 
-	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{[]byte{}})
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{}})
 	consumer.Consume(res.ResourceID(0x5678), blockHolder1)
-	blockHolder2 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{[]byte{}})
+	blockHolder2 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{}})
 	consumer.Consume(res.ResourceID(0x1234), blockHolder2)
 	consumer.Finish()
 
@@ -74,7 +74,7 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderForKnownID(c *ch
 	store := serial.NewByteStore()
 	consumer := NewChunkConsumer(store)
 
-	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{[]byte{}})
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{}})
 	consumer.Consume(res.ResourceID(0x1122), blockHolder1)
 	consumer.Finish()
 
@@ -87,7 +87,7 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithContent(c *c
 	store := serial.NewByteStore()
 	consumer := NewChunkConsumer(store)
 
-	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Data, [][]byte{[]byte{0xAA, 0xBB, 0xCC}})
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{0xAA, 0xBB, 0xCC}})
 	consumer.Consume(res.ResourceID(0x3344), blockHolder1)
 	consumer.Finish()
 
@@ -115,7 +115,7 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithDictionaryCo
 	store := serial.NewByteStore()
 	consumer := NewChunkConsumer(store)
 
-	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Data,
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Palette,
 		[][]byte{[]byte{0xAA, 0xBB, 0xCC}, []byte{0xDD, 0xEE, 0xFF}})
 	consumer.Consume(res.ResourceID(0x3344), blockHolder1)
 	consumer.Finish()
@@ -131,7 +131,7 @@ func (suite *FormatReaderSuite) TestProvideReturnsABlockProviderWithCompressedDi
 	store := serial.NewByteStore()
 	consumer := NewChunkConsumer(store)
 
-	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory().WithCompression(), res.Data,
+	blockHolder1 := chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory().WithCompression(), res.Palette,
 		[][]byte{[]byte{0x01, 0x02, 0x01, 0x02}, []byte{0x03, 0x04}, []byte{0x05}})
 	consumer.Consume(res.ResourceID(0x4455), blockHolder1)
 	consumer.Finish()
