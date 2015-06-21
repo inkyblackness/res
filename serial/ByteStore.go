@@ -1,16 +1,26 @@
 package serial
 
+import (
+	"io"
+)
+
 // ByteStore is implementing a WriteSeeker storing in memory
 type ByteStore struct {
-	data   []byte
-	offset int
+	data    []byte
+	offset  int
+	onClose func([]byte)
 }
 
 // NewByteStore returns a new byte store instance
 func NewByteStore() *ByteStore {
+	return NewByteStoreFromData(make([]byte, 0), func([]byte) {})
+}
+
+func NewByteStoreFromData(data []byte, onClose func([]byte)) *ByteStore {
 	store := &ByteStore{
-		data:   make([]byte, 0),
-		offset: 0}
+		data:    data,
+		offset:  0,
+		onClose: onClose}
 
 	return store
 }
@@ -39,6 +49,22 @@ func (store *ByteStore) Seek(offset int64, whence int) (int64, error) {
 	return offset, nil
 }
 
+// Read implements the Reader interface
+func (store *ByteStore) Read(p []byte) (n int, err error) {
+	size := len(p)
+	n = len(store.data) - store.offset
+	if n > size {
+		n = size
+	}
+	if n < size && size > 0 {
+		err = io.EOF
+	}
+	copy(p, store.data[store.offset:store.offset+n])
+	store.offset += n
+
+	return
+}
+
 // Write implements the Writer interface
 func (store *ByteStore) Write(p []byte) (n int, err error) {
 	size := len(p)
@@ -50,7 +76,7 @@ func (store *ByteStore) Write(p []byte) (n int, err error) {
 }
 
 func (store *ByteStore) Close() error {
-	// ignored
+	store.onClose(store.data)
 	return nil
 }
 
