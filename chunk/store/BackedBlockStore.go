@@ -20,8 +20,12 @@ func newBackedBlockStore(holder chunk.BlockHolder, onModified ModifiedCallback) 
 		onModified: onModified,
 		retriever:  make([]blockRetriever, int(blockCount))}
 
+	makeRetriever := func(index uint16) func() []byte {
+		return func() []byte { return holder.BlockData(index) }
+	}
+
 	for index := range backed.retriever {
-		backed.retriever[index] = func() []byte { return holder.BlockData(uint16(index)) }
+		backed.retriever[index] = makeRetriever(uint16(index))
 	}
 
 	return backed
