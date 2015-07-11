@@ -160,6 +160,20 @@ func (suite *ProviderBackedSuite) TestGetReturnsProperBlockStore_WhenKnownIDRequ
 	c.Check(result30.BlockCount(), check.Equals, holderB.BlockCount())
 }
 
+func (suite *ProviderBackedSuite) TestGetReturnsSameBlockStoreAsBefore_WhenKnownIDRequested(c *check.C) {
+	testing := NewTestingResource()
+	holder := randomBlockHolder(1)
+	testing.Consume(res.ResourceID(20), holder)
+	backed := NewProviderBacked(testing, func() {})
+	data := []byte{0x11, 0xAA, 0xBB}
+	first := backed.Get(res.ResourceID(20))
+	first.Put(0, data)
+
+	second := backed.Get(res.ResourceID(20))
+
+	c.Check(second.Get(0), check.DeepEquals, data)
+}
+
 func (suite *ProviderBackedSuite) TestGetReturnsNil_WhenDeletedIDRequested(c *check.C) {
 	testing := NewTestingResource()
 	testing.Consume(res.ResourceID(20), emptyBlockHolder())

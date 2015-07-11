@@ -32,7 +32,15 @@ func NewProviderBacked(provider chunk.Provider, onModified ModifiedCallback) *Pr
 		chunks:     make(map[res.ResourceID]chunkRetriever)}
 
 	makeRetriever := func(id res.ResourceID) func() chunk.BlockStore {
-		return func() chunk.BlockStore { return newBackedBlockStore(provider.Provide(id), backed.onModified) }
+		var cachedStore chunk.BlockStore
+
+		return func() chunk.BlockStore {
+			if cachedStore == nil {
+				cachedStore = newBackedBlockStore(provider.Provide(id), backed.onModified)
+			}
+
+			return cachedStore
+		}
 	}
 
 	for index, id := range existingIDs {
