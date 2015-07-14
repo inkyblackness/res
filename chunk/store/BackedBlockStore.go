@@ -47,13 +47,13 @@ func (backed *backedBlockStore) BlockCount() uint16 {
 	return backed.holder.BlockCount()
 }
 
-// Get returns the data for the requested block index.
-func (backed *backedBlockStore) Get(block uint16) []byte {
+// BlockData returns the data for the requested block index.
+func (backed *backedBlockStore) BlockData(block uint16) []byte {
 	return backed.retriever[int(block)]()
 }
 
-// Put sets the data for the requested block index.
-func (backed *backedBlockStore) Put(block uint16, data []byte) {
+// SetBlockData sets the data for the requested block index.
+func (backed *backedBlockStore) SetBlockData(block uint16, data []byte) {
 	backed.retriever[int(block)] = func() []byte { return data }
 	backed.onModified()
 }

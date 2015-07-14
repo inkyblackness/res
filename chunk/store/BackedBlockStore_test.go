@@ -40,7 +40,7 @@ func (suite *BackedBlockStoreSuite) TestGetReturnsBlockDataFromHolder_WhenUnchan
 	holder := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{0x01}, []byte{0x02}})
 
 	backed := newBackedBlockStore(holder, func() {})
-	result := backed.Get(uint16(1))
+	result := backed.BlockData(uint16(1))
 
 	c.Check(result, check.DeepEquals, []byte{0x02})
 }
@@ -49,8 +49,8 @@ func (suite *BackedBlockStoreSuite) TestGetReturnsProperBlockDataFromHolder(c *c
 	holder := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{0x01}, []byte{0x02}})
 
 	backed := newBackedBlockStore(holder, func() {})
-	result0 := backed.Get(uint16(0))
-	result1 := backed.Get(uint16(1))
+	result0 := backed.BlockData(uint16(0))
+	result1 := backed.BlockData(uint16(1))
 
 	c.Check(result0, check.DeepEquals, []byte{0x01})
 	c.Check(result1, check.DeepEquals, []byte{0x02})
@@ -61,7 +61,7 @@ func (suite *BackedBlockStoreSuite) TestOnModifiedIsCalled_WhenBlockIsModified(c
 	called := false
 
 	backed := newBackedBlockStore(holder, func() { called = true })
-	backed.Put(uint16(1), []byte{0x03})
+	backed.SetBlockData(uint16(1), []byte{0x03})
 
 	c.Check(called, check.Equals, true)
 }
@@ -70,8 +70,8 @@ func (suite *BackedBlockStoreSuite) TestGetReturnsNewBlockData_WhenBlockIsModifi
 	holder := chunk.NewBlockHolder(chunk.BasicChunkType, res.Palette, [][]byte{[]byte{0x01}, []byte{0x02}})
 
 	backed := newBackedBlockStore(holder, func() {})
-	backed.Put(uint16(1), []byte{0x04})
-	result := backed.Get(uint16(1))
+	backed.SetBlockData(uint16(1), []byte{0x04})
+	result := backed.BlockData(uint16(1))
 
 	c.Check(result, check.DeepEquals, []byte{0x04})
 }

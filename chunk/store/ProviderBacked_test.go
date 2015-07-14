@@ -124,7 +124,7 @@ func (suite *ProviderBackedSuite) TestModifiedCallback_WhenChunkBlockDataModifie
 	testing.Consume(res.ResourceID(7), emptyBlockHolder())
 	called := false
 	backed := NewProviderBacked(testing, func() { called = true })
-	backed.Get(res.ResourceID(7)).Put(0, []byte{0x01})
+	backed.Get(res.ResourceID(7)).SetBlockData(0, []byte{0x01})
 
 	c.Check(called, check.Equals, true)
 }
@@ -167,11 +167,11 @@ func (suite *ProviderBackedSuite) TestGetReturnsSameBlockStoreAsBefore_WhenKnown
 	backed := NewProviderBacked(testing, func() {})
 	data := []byte{0x11, 0xAA, 0xBB}
 	first := backed.Get(res.ResourceID(20))
-	first.Put(0, data)
+	first.SetBlockData(0, data)
 
 	second := backed.Get(res.ResourceID(20))
 
-	c.Check(second.Get(0), check.DeepEquals, data)
+	c.Check(second.BlockData(0), check.DeepEquals, data)
 }
 
 func (suite *ProviderBackedSuite) TestGetReturnsNil_WhenDeletedIDRequested(c *check.C) {
