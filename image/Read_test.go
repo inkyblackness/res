@@ -66,7 +66,7 @@ func (suite *ReadSuite) getTestData(bmpType BitmapType, data []byte, withPalette
 	buf.Write(data)
 	if withPalette {
 		binary.Write(buf, binary.LittleEndian, privatePaletteFlag)
-		buf.Write(make([]byte, 256*3))
+		buf.Write(make([]byte, ColorsPerPixel*bytesPerColor))
 	}
 
 	return buf.Bytes()
