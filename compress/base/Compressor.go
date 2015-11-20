@@ -54,8 +54,8 @@ func (obj *compressor) Write(p []byte) (n int, err error) {
 }
 
 func (obj *compressor) addByte(value byte) {
-	nextEntry, nextExisting := obj.curEntry.next[value]
-	if nextExisting {
+	nextEntry := obj.curEntry.next[int(value)]
+	if nextEntry != nil {
 		obj.curEntry = nextEntry
 	} else {
 		obj.writer.write(obj.curEntry.key)

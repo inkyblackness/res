@@ -4,6 +4,8 @@ import (
 	"io"
 )
 
+const bufferCapacityIncrement = 1024 * 1024
+
 // ByteStore is implementing a WriteSeeker storing in memory
 type ByteStore struct {
 	data    []byte
@@ -13,7 +15,7 @@ type ByteStore struct {
 
 // NewByteStore returns a new byte store instance
 func NewByteStore() *ByteStore {
-	return NewByteStoreFromData(make([]byte, 0), func([]byte) {})
+	return NewByteStoreFromData(make([]byte, 0, bufferCapacityIncrement), func([]byte) {})
 }
 
 func NewByteStoreFromData(data []byte, onClose func([]byte)) *ByteStore {
@@ -85,9 +87,13 @@ func (store *ByteStore) ensureAvailable(size int) {
 	available := len(store.data)
 
 	if expected > available {
-		old := store.data
+		if expected > cap(store.data) {
+			old := store.data
 
-		store.data = make([]byte, expected)
-		copy(store.data, old)
+			store.data = make([]byte, expected, expected+bufferCapacityIncrement)
+			copy(store.data, old)
+		} else {
+			store.data = append(store.data, make([]byte, expected-available)...)
+		}
 	}
 }
