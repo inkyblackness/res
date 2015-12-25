@@ -3,6 +3,9 @@ package data
 // LevelSceneryEntrySize specifies the byte count of a serialized LevelSceneryEntry.
 const LevelSceneryEntrySize int = LevelObjectPrefixSize + 10
 
+// LevelSceneryEntryCount specifies the count how many entries are in one level.
+const LevelSceneryEntryCount int = 176
+
 // LevelSceneryEntry describes an 'Scenery' level object.
 type LevelSceneryEntry struct {
 	LevelObjectPrefix

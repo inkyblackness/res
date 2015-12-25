@@ -7,6 +7,9 @@ import (
 // LevelWeaponEntrySize specifies the byte count of a serialized LevelWeaponEntry.
 const LevelWeaponEntrySize int = LevelObjectPrefixSize + 2
 
+// LevelWeaponEntryCount specifies the count how many entries are in one level.
+const LevelWeaponEntryCount int = 16
+
 // LevelWeaponEntry describes a 'weapon' level object.
 type LevelWeaponEntry struct {
 	LevelObjectPrefix

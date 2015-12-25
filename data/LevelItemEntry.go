@@ -3,6 +3,9 @@ package data
 // LevelItemEntrySize specifies the byte count of a serialized LevelItemEntry.
 const LevelItemEntrySize int = LevelObjectPrefixSize + 10
 
+// LevelItemEntryCount specifies the count how many entries are in one level.
+const LevelItemEntryCount int = 128
+
 // LevelItemEntry describes an 'item' level object.
 type LevelItemEntry struct {
 	LevelObjectPrefix
