@@ -33,7 +33,7 @@ type LevelObjectEntry struct {
 
 	Unknown0015 [2]byte
 
-	Unknown0018 [4]byte
+	Unknown0017 [4]byte
 }
 
 // DefaultLevelObjectEntry returns a new LevelObjectEntry instance.
