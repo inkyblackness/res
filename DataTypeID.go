@@ -16,8 +16,8 @@ const (
 	VideoClip = DataTypeID(0x04)
 	// Sound refers to audio samples
 	Sound = DataTypeID(0x07)
-	// Model refers to 3D models
-	Model = DataTypeID(0x0F)
+	// Geometry refers to 3D models
+	Geometry = DataTypeID(0x0F)
 	// Media refers to audio logs/cutscenes
 	Media = DataTypeID(0x11)
 	// Map refers to level data
