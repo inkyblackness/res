@@ -42,7 +42,7 @@ func (suite *LoadModelSuite) TestLoadModelReturnsModelInstanceOnValidData(c *che
 
 func (suite *LoadModelSuite) TestModelContainsSingleVertex(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
 	}))
 	model, err := LoadModel(source)
 
@@ -52,7 +52,8 @@ func (suite *LoadModelSuite) TestModelContainsSingleVertex(c *check.C) {
 
 func (suite *LoadModelSuite) TestModelContainsMultipleVertices(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertices([]Vector{Vector{1, 0, 0}, Vector{0, 2, 0}, Vector{0, 0, 3}})
+		writer.WriteDefineVertices([]geometry.Vector{
+			NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 2, 0}), NewFixedVector(Vector{0, 0, 3})})
 	}))
 	model, err := LoadModel(source)
 
@@ -62,7 +63,7 @@ func (suite *LoadModelSuite) TestModelContainsMultipleVertices(c *check.C) {
 
 func (suite *LoadModelSuite) TestModelContainsSingleOffsetVertices(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
 		writer.WriteDefineOneOffsetVertex(CmdDefineOffsetVertexX, 1, 0, 1.0)
 		writer.WriteDefineOneOffsetVertex(CmdDefineOffsetVertexY, 2, 0, 1.0)
 		writer.WriteDefineOneOffsetVertex(CmdDefineOffsetVertexZ, 3, 0, 1.0)
@@ -75,7 +76,7 @@ func (suite *LoadModelSuite) TestModelContainsSingleOffsetVertices(c *check.C) {
 
 func (suite *LoadModelSuite) TestLoadModelReturnsErrorForSingleOffsetVertexWhenNewIndexIsNotEqualCurrentCount(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
 		writer.WriteDefineOneOffsetVertex(CmdDefineOffsetVertexX, 2, 0, 1.0)
 	}))
 	_, err := LoadModel(source)
@@ -85,7 +86,7 @@ func (suite *LoadModelSuite) TestLoadModelReturnsErrorForSingleOffsetVertexWhenN
 
 func (suite *LoadModelSuite) TestModelContainsDoubleOffsetVertices(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
 		writer.WriteDefineTwoOffsetVertex(CmdDefineOffsetVertexXY, 1, 0, 1.0, 2.0)
 		writer.WriteDefineTwoOffsetVertex(CmdDefineOffsetVertexXZ, 2, 0, 1.0, 2.0)
 		writer.WriteDefineTwoOffsetVertex(CmdDefineOffsetVertexYZ, 3, 0, 1.0, 2.0)
@@ -98,7 +99,7 @@ func (suite *LoadModelSuite) TestModelContainsDoubleOffsetVertices(c *check.C) {
 
 func (suite *LoadModelSuite) TestLoadModelReturnsErrorForDoubleOffsetVertexWhenNewIndexIsNotEqualCurrentCount(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
 		writer.WriteDefineTwoOffsetVertex(CmdDefineOffsetVertexXY, 2, 0, 1.0, 2.0)
 	}))
 	_, err := LoadModel(source)
@@ -108,8 +109,8 @@ func (suite *LoadModelSuite) TestLoadModelReturnsErrorForDoubleOffsetVertexWhenN
 
 func (suite *LoadModelSuite) TestModelCanHaveANodeAnchor(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
-		writer.WriteNodeAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 2, 4)
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
+		writer.WriteNodeAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 2, 4)
 		writer.WriteEndOfNode() // end of root node
 		writer.WriteEndOfNode() // end of left node
 	}))
@@ -123,8 +124,8 @@ func (suite *LoadModelSuite) TestModelCanHaveANodeAnchor(c *check.C) {
 
 func (suite *LoadModelSuite) TestLoadModelReturnsErrorForInvalidNodeAnchorOffsets(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
-		writer.WriteNodeAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 2, 5)
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
+		writer.WriteNodeAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 2, 5)
 		writer.WriteEndOfNode() // end of root node
 		writer.WriteEndOfNode() // end of left node
 	}))
@@ -135,12 +136,12 @@ func (suite *LoadModelSuite) TestLoadModelReturnsErrorForInvalidNodeAnchorOffset
 
 func (suite *LoadModelSuite) TestModelCanHaveNestedNodeAnchors(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
 		// root node
-		writer.WriteNodeAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 2, 2+cmdDefineNodeAnchorSize+2+2+2)
+		writer.WriteNodeAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 2, 2+cmdDefineNodeAnchorSize+2+2+2)
 		writer.WriteEndOfNode() // end of root node
 		// root.left node
-		writer.WriteNodeAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 4, 2)
+		writer.WriteNodeAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 4, 2)
 		writer.WriteEndOfNode() // end of root.left node
 		// root.left.right node
 		writer.WriteEndOfNode() // end of root.left.right node
@@ -159,8 +160,8 @@ func (suite *LoadModelSuite) TestModelCanHaveNestedNodeAnchors(c *check.C) {
 
 func (suite *LoadModelSuite) TestModelCanHaveAFaceAnchor(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertex(Vector{0, 0, 0})
-		writer.WriteFaceAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 0)
+		writer.WriteDefineVertex(NewFixedVector(Vector{0, 0, 0}))
+		writer.WriteFaceAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 0)
 	}))
 	model, err := LoadModel(source)
 
@@ -172,8 +173,9 @@ func (suite *LoadModelSuite) TestModelCanHaveAFaceAnchor(c *check.C) {
 
 func (suite *LoadModelSuite) TestModelCanHaveAFlatColoredFace(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertices([]Vector{Vector{0, 0, 0}, Vector{1, 0, 0}, Vector{1, 1, 0}})
-		writer.WriteFaceAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 4+8)
+		writer.WriteDefineVertices([]geometry.Vector{
+			NewFixedVector(Vector{0, 0, 0}), NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{1, 1, 0})})
+		writer.WriteFaceAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 4+8)
 		writer.WriteSetColor(0x00AB)
 		writer.WriteColoredFace([]int{0, 1, 2})
 	}))
@@ -189,8 +191,9 @@ func (suite *LoadModelSuite) TestModelCanHaveAFlatColoredFace(c *check.C) {
 
 func (suite *LoadModelSuite) TestModelCanHaveAShadeColoredFace(c *check.C) {
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertices([]Vector{Vector{0, 0, 0}, Vector{1, 0, 0}, Vector{1, 1, 0}})
-		writer.WriteFaceAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 6+8)
+		writer.WriteDefineVertices([]geometry.Vector{
+			NewFixedVector(Vector{0, 0, 0}), NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{1, 1, 0})})
+		writer.WriteFaceAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 6+8)
 		writer.WriteSetColorAndShade(0x0012, 0x0002)
 		writer.WriteColoredFace([]int{0, 1, 2})
 	}))
@@ -209,8 +212,9 @@ func (suite *LoadModelSuite) TestModelCanHaveATextureMappedFace(c *check.C) {
 	textureCoordinates := []geometry.TextureCoordinate{geometry.NewSimpleTextureCoordinate(0, 0.0, 0.0),
 		geometry.NewSimpleTextureCoordinate(1, 1.0, 0.0), geometry.NewSimpleTextureCoordinate(2, 1.0, 1.0)}
 	source := bytes.NewReader(suite.anEmptyModelWith(func(writer *Writer) {
-		writer.WriteDefineVertices([]Vector{Vector{0, 0, 0}, Vector{1, 0, 0}, Vector{1, 1, 0}})
-		writer.WriteFaceAnchor(Vector{1, 0, 0}, Vector{0, 0, 0}, 34+10)
+		writer.WriteDefineVertices([]geometry.Vector{
+			NewFixedVector(Vector{0, 0, 0}), NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{1, 1, 0})})
+		writer.WriteFaceAnchor(NewFixedVector(Vector{1, 0, 0}), NewFixedVector(Vector{0, 0, 0}), 34+10)
 		writer.WriteTextureMapping(textureCoordinates)
 		writer.WriteTexturedFace([]int{0, 1, 2}, 0x1234)
 	}))
@@ -221,6 +225,7 @@ func (suite *LoadModelSuite) TestModelCanHaveATextureMappedFace(c *check.C) {
 	model.WalkAnchors(suite)
 	face := suite.faces[0].(geometry.TextureMappedFace)
 	c.Check(face.Vertices(), check.DeepEquals, []int{0, 1, 2})
+	c.Check(face.TextureID(), check.Equals, uint16(0x1234))
 	c.Check(face.TextureCoordinates(), check.DeepEquals, textureCoordinates)
 }
 

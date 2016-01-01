@@ -6,6 +6,7 @@ type simpleTextureCoordinate struct {
 	v      float32
 }
 
+// NewSimpleTextureCoordinate returns a TextureCoordinate instance with given parameters.
 func NewSimpleTextureCoordinate(vertex int, u, v float32) TextureCoordinate {
 	return &simpleTextureCoordinate{
 		vertex: vertex,

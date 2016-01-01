@@ -129,9 +129,9 @@ func loadNodeData(coder serial.PositioningCoder, model *geometry.DynamicModel, n
 				reference := new(Vector)
 				size := uint16(0)
 
+				coder.CodeUint16(&size)
 				normal.Code(coder)
 				reference.Code(coder)
-				coder.CodeUint16(&size)
 
 				endPos := startPos + uint32(size)
 				anchor := geometry.NewDynamicFaceAnchor(NewFixedVector(*normal), NewFixedVector(*reference))
@@ -273,7 +273,7 @@ func loadFaces(coder serial.PositioningCoder, anchor *geometry.DynamicFaceAnchor
 					coder.CodeUint16(&index)
 					vertices[i] = int(index)
 				}
-				anchor.AddFace(geometry.NewSimpleTextureMappedFace(vertices, textureCoordinates))
+				anchor.AddFace(geometry.NewSimpleTextureMappedFace(vertices, textureId, textureCoordinates))
 			}
 		default:
 			{

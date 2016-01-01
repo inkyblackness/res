@@ -14,8 +14,7 @@ type Writer struct {
 
 // NewWriter returns a writer instance.
 func NewWriter() *Writer {
-	return &Writer{
-		buf: bytes.NewBuffer(nil)}
+	return &Writer{buf: bytes.NewBuffer(nil)}
 }
 
 func (writer *Writer) write16(value uint16) {
@@ -26,15 +25,20 @@ func (writer *Writer) write32(value uint32) {
 	binary.Write(writer.buf, binary.LittleEndian, &value)
 }
 
-func (writer *Writer) writeVector(value Vector) {
-	writer.write32(uint32(value.X))
-	writer.write32(uint32(value.Y))
-	writer.write32(uint32(value.Z))
+func (writer *Writer) writeVector(value geometry.Vector) {
+	writer.write32(uint32(ToFixed(value.X())))
+	writer.write32(uint32(ToFixed(value.Y())))
+	writer.write32(uint32(ToFixed(value.Z())))
 }
 
 // Bytes returns the current byte buffer of the writer
 func (writer *Writer) Bytes() []byte {
 	return writer.buf.Bytes()
+}
+
+// WriteBytes adds an array of arbitrary bytes to the buffer.
+func (writer *Writer) WriteBytes(bytes []byte) {
+	writer.buf.Write(bytes)
 }
 
 // WriteHeader writes the command header.
@@ -46,14 +50,14 @@ func (writer *Writer) WriteHeader(faceCount int) {
 }
 
 // WriteDefineVertex writes the command.
-func (writer *Writer) WriteDefineVertex(vector Vector) {
+func (writer *Writer) WriteDefineVertex(vector geometry.Vector) {
 	writer.write16(uint16(CmdDefineVertex))
 	writer.write16(uint16(0))
 	writer.writeVector(vector)
 }
 
 // WriteDefineVertices writes the command.
-func (writer *Writer) WriteDefineVertices(vectors []Vector) {
+func (writer *Writer) WriteDefineVertices(vectors []geometry.Vector) {
 	writer.write16(uint16(CmdDefineVertices))
 	writer.write16(uint16(len(vectors)))
 	writer.write16(uint16(0))
@@ -85,7 +89,7 @@ func (writer *Writer) WriteEndOfNode() {
 }
 
 // WriteNodeAnchor writes the command. The left and right offset values are excluding the size of this command.
-func (writer *Writer) WriteNodeAnchor(normal Vector, reference Vector, leftOffset int, rightOffset int) {
+func (writer *Writer) WriteNodeAnchor(normal geometry.Vector, reference geometry.Vector, leftOffset int, rightOffset int) {
 	writer.write16(uint16(CmdDefineNodeAnchor))
 	writer.writeVector(normal)
 	writer.writeVector(reference)
@@ -94,11 +98,11 @@ func (writer *Writer) WriteNodeAnchor(normal Vector, reference Vector, leftOffse
 }
 
 // WriteFaceAnchor writes the command. The length parameter is excluding the size of this command
-func (writer *Writer) WriteFaceAnchor(normal Vector, reference Vector, size int) {
+func (writer *Writer) WriteFaceAnchor(normal geometry.Vector, reference geometry.Vector, size int) {
 	writer.write16(uint16(CmdDefineFaceAnchor))
+	writer.write16(uint16(cmdDefineFaceAnchorSize + size))
 	writer.writeVector(normal)
 	writer.writeVector(reference)
-	writer.write16(uint16(cmdDefineFaceAnchorSize + size))
 }
 
 // WriteSetColor writes the command.
