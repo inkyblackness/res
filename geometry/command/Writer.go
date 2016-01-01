@@ -24,6 +24,12 @@ func (writer *Writer) write32(value uint32) {
 	binary.Write(writer.buf, binary.LittleEndian, &value)
 }
 
+func (writer *Writer) writeVector(value Vector) {
+	writer.write32(uint32(value.X))
+	writer.write32(uint32(value.Y))
+	writer.write32(uint32(value.Z))
+}
+
 // Bytes returns the current byte buffer of the writer
 func (writer *Writer) Bytes() []byte {
 	return writer.buf.Bytes()
@@ -41,9 +47,7 @@ func (writer *Writer) WriteHeader(faceCount int) {
 func (writer *Writer) WriteDefineVertex(vector Vector) {
 	writer.write16(uint16(CmdDefineVertex))
 	writer.write16(uint16(0))
-	writer.write32(uint32(vector.X))
-	writer.write32(uint32(vector.Y))
-	writer.write32(uint32(vector.Z))
+	writer.writeVector(vector)
 }
 
 // WriteDefineVertices writes the command.
@@ -52,9 +56,7 @@ func (writer *Writer) WriteDefineVertices(vectors []Vector) {
 	writer.write16(uint16(len(vectors)))
 	writer.write16(uint16(0))
 	for _, vector := range vectors {
-		writer.write32(uint32(vector.X))
-		writer.write32(uint32(vector.Y))
-		writer.write32(uint32(vector.Z))
+		writer.writeVector(vector)
 	}
 }
 
@@ -78,4 +80,13 @@ func (writer *Writer) WriteDefineTwoOffsetVertex(cmd ModelCommandID, newIndex in
 // WriteEndOfNode writes the command.
 func (writer *Writer) WriteEndOfNode() {
 	writer.write16(uint16(CmdEndOfNode))
+}
+
+// WriteNodeAnchor writes the command. The left and right offset values are excluding the size of this command.
+func (writer *Writer) WriteNodeAnchor(normal Vector, reference Vector, leftOffset int, rightOffset int) {
+	writer.write16(uint16(CmdDefineNodeAnchor))
+	writer.writeVector(normal)
+	writer.writeVector(reference)
+	writer.write16(uint16(leftOffset + cmdDefineNodeAnchorSize))
+	writer.write16(uint16(rightOffset + cmdDefineNodeAnchorSize))
 }

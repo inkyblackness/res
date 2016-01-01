@@ -26,3 +26,7 @@ const (
 	CmdTextureMapping = ModelCommandID(0x0025)
 	CmdTexturedFace   = ModelCommandID(0x0026)
 )
+
+const (
+	cmdDefineNodeAnchorSize = 30
+)

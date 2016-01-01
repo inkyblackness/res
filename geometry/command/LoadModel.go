@@ -38,6 +38,7 @@ func LoadModel(source io.ReadSeeker) (model geometry.Model, err error) {
 }
 
 func loadNodeData(coder serial.PositioningCoder, model *geometry.DynamicModel, node geometry.ExtensibleNode) {
+	pendingNodes := make(map[uint32]geometry.ExtensibleNode)
 	done := false
 
 	for !done {
@@ -103,12 +104,40 @@ func loadNodeData(coder serial.PositioningCoder, model *geometry.DynamicModel, n
 					func(offset1, offset2 float32) Modifier { return AddingModifier(offset1) },
 					func(offset1, offset2 float32) Modifier { return AddingModifier(offset2) })
 			}
+		case CmdDefineNodeAnchor:
+			{
+				normal := new(Vector)
+				reference := new(Vector)
+				leftOffset := uint16(0)
+				rightOffset := uint16(0)
+
+				normal.Code(coder)
+				reference.Code(coder)
+				coder.CodeUint16(&leftOffset)
+				coder.CodeUint16(&rightOffset)
+
+				left := geometry.NewDynamicNode()
+				right := geometry.NewDynamicNode()
+				anchor := geometry.NewSimpleNodeAnchor(NewFixedVector(*normal), NewFixedVector(*reference), left, right)
+				node.AddAnchor(anchor)
+				pendingNodes[startPos+uint32(leftOffset)] = left
+				pendingNodes[startPos+uint32(rightOffset)] = right
+			}
 		default:
 			{
 				panic(fmt.Errorf("Unknown model command 0x%04X at offset 0x%X", rawCommand, startPos))
 			}
 		}
+	}
 
+	for curPos := coder.CurPos(); pendingNodes[curPos] != nil; curPos = coder.CurPos() {
+		pendingNode := pendingNodes[curPos]
+		delete(pendingNodes, curPos)
+		loadNodeData(coder, model, pendingNode)
+	}
+
+	if len(pendingNodes) != 0 {
+		panic(fmt.Errorf("Wrong offset values for node anchor"))
 	}
 }
 
