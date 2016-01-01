@@ -29,4 +29,5 @@ const (
 
 const (
 	cmdDefineNodeAnchorSize = 30
+	cmdDefineFaceAnchorSize = 28
 )

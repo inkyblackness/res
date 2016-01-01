@@ -123,6 +123,21 @@ func loadNodeData(coder serial.PositioningCoder, model *geometry.DynamicModel, n
 				pendingNodes[startPos+uint32(leftOffset)] = left
 				pendingNodes[startPos+uint32(rightOffset)] = right
 			}
+		case CmdDefineFaceAnchor:
+			{
+				normal := new(Vector)
+				reference := new(Vector)
+				size := uint16(0)
+
+				normal.Code(coder)
+				reference.Code(coder)
+				coder.CodeUint16(&size)
+
+				endPos := startPos + uint32(size)
+				anchor := geometry.NewDynamicFaceAnchor(NewFixedVector(*normal), NewFixedVector(*reference))
+				node.AddAnchor(anchor)
+				loadFaces(coder, anchor, endPos)
+			}
 		default:
 			{
 				panic(fmt.Errorf("Unknown model command 0x%04X at offset 0x%X", rawCommand, startPos))
@@ -193,4 +208,77 @@ func loadDefineOffsetVertexTwo(coder serial.PositioningCoder, model *geometry.Dy
 	offset2 := fixedOffset2.Float()
 	model.AddVertex(geometry.NewSimpleVertex(NewModifiedVector(reference.Position(),
 		xModFactory(offset1, offset2), yModFactory(offset1, offset2), zModFactory(offset1, offset2))))
+}
+
+func loadFaces(coder serial.PositioningCoder, anchor *geometry.DynamicFaceAnchor, endPos uint32) {
+	currentColor := uint16(0)
+	currentShade := uint16(0xFFFF)
+	var textureCoordinates []geometry.TextureCoordinate
+
+	for startPos := coder.CurPos(); startPos < endPos; startPos = coder.CurPos() {
+		rawCommand := uint16(0)
+
+		coder.CodeUint16(&rawCommand)
+		switch ModelCommandID(rawCommand) {
+		case CmdSetColor:
+			{
+				coder.CodeUint16(&currentColor)
+			}
+		case CmdSetColorAndShade:
+			{
+				coder.CodeUint16(&currentColor)
+				coder.CodeUint16(&currentShade)
+			}
+		case CmdColoredFace:
+			{
+				vertexCount := uint16(0)
+				coder.CodeUint16(&vertexCount)
+				vertices := make([]int, int(vertexCount))
+				for i := uint16(0); i < vertexCount; i++ {
+					index := uint16(0)
+					coder.CodeUint16(&index)
+					vertices[i] = int(index)
+				}
+				if currentShade == 0xFFFF {
+					anchor.AddFace(geometry.NewSimpleFlatColoredFace(vertices, geometry.ColorIndex(currentColor)))
+				} else {
+					anchor.AddFace(geometry.NewSimpleShadeColoredFace(vertices, geometry.ColorIndex(currentColor), currentShade))
+				}
+			}
+		case CmdTextureMapping:
+			{
+				entryCount := uint16(0)
+				coder.CodeUint16(&entryCount)
+				textureCoordinates = make([]geometry.TextureCoordinate, int(entryCount))
+				for i := uint16(0); i < entryCount; i++ {
+					vertex := uint16(0)
+					u := Fixed(0)
+					v := Fixed(0)
+
+					coder.CodeUint16(&vertex)
+					CodeFixed(coder, &u)
+					CodeFixed(coder, &v)
+					textureCoordinates[i] = geometry.NewSimpleTextureCoordinate(int(vertex), u.Float(), v.Float())
+				}
+			}
+		case CmdTexturedFace:
+			{
+				textureId := uint16(0)
+				vertexCount := uint16(0)
+				coder.CodeUint16(&textureId)
+				coder.CodeUint16(&vertexCount)
+				vertices := make([]int, int(vertexCount))
+				for i := uint16(0); i < vertexCount; i++ {
+					index := uint16(0)
+					coder.CodeUint16(&index)
+					vertices[i] = int(index)
+				}
+				anchor.AddFace(geometry.NewSimpleTextureMappedFace(vertices, textureCoordinates))
+			}
+		default:
+			{
+				panic(fmt.Errorf("Unknown face command 0x%04X at offset 0x%X", rawCommand, startPos))
+			}
+		}
+	}
 }

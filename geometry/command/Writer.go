@@ -3,6 +3,8 @@ package command
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/inkyblackness/res/geometry"
 )
 
 // Writer implements helper functions to write the commands
@@ -87,6 +89,57 @@ func (writer *Writer) WriteNodeAnchor(normal Vector, reference Vector, leftOffse
 	writer.write16(uint16(CmdDefineNodeAnchor))
 	writer.writeVector(normal)
 	writer.writeVector(reference)
-	writer.write16(uint16(leftOffset + cmdDefineNodeAnchorSize))
-	writer.write16(uint16(rightOffset + cmdDefineNodeAnchorSize))
+	writer.write16(uint16(cmdDefineNodeAnchorSize + leftOffset))
+	writer.write16(uint16(cmdDefineNodeAnchorSize + rightOffset))
+}
+
+// WriteFaceAnchor writes the command. The length parameter is excluding the size of this command
+func (writer *Writer) WriteFaceAnchor(normal Vector, reference Vector, size int) {
+	writer.write16(uint16(CmdDefineFaceAnchor))
+	writer.writeVector(normal)
+	writer.writeVector(reference)
+	writer.write16(uint16(cmdDefineFaceAnchorSize + size))
+}
+
+// WriteSetColor writes the command.
+func (writer *Writer) WriteSetColor(color uint16) {
+	writer.write16(uint16(CmdSetColor))
+	writer.write16(color)
+}
+
+// WriteSetColorAndShade writes the command.
+func (writer *Writer) WriteSetColorAndShade(color uint16, shade uint16) {
+	writer.write16(uint16(CmdSetColorAndShade))
+	writer.write16(color)
+	writer.write16(shade)
+}
+
+// WriteColoredFace writes the command.
+func (writer *Writer) WriteColoredFace(vertices []int) {
+	writer.write16(uint16(CmdColoredFace))
+	writer.write16(uint16(len(vertices)))
+	for _, vertex := range vertices {
+		writer.write16(uint16(vertex))
+	}
+}
+
+// WriteColoredFace writes the command.
+func (writer *Writer) WriteTextureMapping(textureCoordinates []geometry.TextureCoordinate) {
+	writer.write16(uint16(CmdTextureMapping))
+	writer.write16(uint16(len(textureCoordinates)))
+	for _, coord := range textureCoordinates {
+		writer.write16(uint16(coord.Vertex()))
+		writer.write32(uint32(ToFixed(coord.U())))
+		writer.write32(uint32(ToFixed(coord.V())))
+	}
+}
+
+// WriteTexturedFace writes the command.
+func (writer *Writer) WriteTexturedFace(vertices []int, textureId uint16) {
+	writer.write16(uint16(CmdTexturedFace))
+	writer.write16(textureId)
+	writer.write16(uint16(len(vertices)))
+	for _, vertex := range vertices {
+		writer.write16(uint16(vertex))
+	}
 }
