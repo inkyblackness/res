@@ -17,7 +17,7 @@ func SaveVertices(writer *Writer, container geometry.VertexContainer) {
 
 	if lastDissimilar > 0 {
 		writer.WriteDefineVertices(positions[:lastDissimilar+1])
-	} else {
+	} else if len(positions) > 0 {
 		writer.WriteDefineVertex(positions[0])
 	}
 
