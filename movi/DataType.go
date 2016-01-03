@@ -16,8 +16,8 @@ const (
 	Subtitle = DataType(3)
 	// Palette data
 	Palette = DataType(4)
-	// NewPalette contains the same data as Palette.
-	NewPalette = DataType(0x4C)
+	// PaletteReset is a zero-byte entry immediately before a Palette entry.
+	PaletteReset = DataType(0x4C)
 	// PaletteIndex for high compression video.
 	PaletteIndex = DataType(5)
 	// ControlDictionary for high compression video
