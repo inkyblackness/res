@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/inkyblackness/res/image"
 	"github.com/inkyblackness/res/movi/format"
 )
 
@@ -14,7 +15,7 @@ const indexHeaderSizeIncrement = 0x0400
 func Write(dest io.Writer, container Container) {
 	var indexEntries []format.IndexTableEntry
 	var header format.Header
-	palette := make([]byte, 0x300)
+	palette := paletteDataFromContainer(container)
 
 	// setup header
 	copy(header.Tag[:], bytes.NewBufferString(format.Tag).Bytes())
@@ -66,6 +67,20 @@ func Write(dest io.Writer, container Container) {
 		dataEntry := container.Entry(i)
 		dest.Write(dataEntry.Data())
 	}
+}
+
+func paletteDataFromContainer(container Container) (data []byte) {
+	palette := container.StartPalette()
+
+	if palette != nil {
+		buf := bytes.NewBuffer(nil)
+		image.SavePalette(buf, palette)
+		data = buf.Bytes()
+	} else {
+		data = make([]byte, 0x300)
+	}
+
+	return
 }
 
 func indexTableSizeFor(entryCount int) int {

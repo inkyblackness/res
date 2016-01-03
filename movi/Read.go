@@ -5,7 +5,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"os"
 
+	"github.com/inkyblackness/res/image"
 	"github.com/inkyblackness/res/movi/format"
 )
 
@@ -24,7 +26,7 @@ func Read(source io.ReadSeeker) (container Container, err error) {
 	}
 
 	var header format.Header
-	startPos, _ := source.Seek(0, 1)
+	startPos, _ := source.Seek(0, os.SEEK_CUR)
 
 	binary.Read(source, binary.LittleEndian, &header)
 	builder := NewContainerBuilder()
@@ -48,9 +50,13 @@ func verifyAndExtractHeader(source io.Reader, builder *ContainerBuilder, header 
 }
 
 func readPalette(source io.Reader, builder *ContainerBuilder) {
-	data := make([]byte, 0x300)
+	palette, err := image.LoadPalette(source)
 
-	source.Read(data)
+	if err != nil {
+		panic(err)
+	}
+
+	builder.StartPalette(palette)
 }
 
 func readIndexAndEntries(source io.ReadSeeker, startPos int64, builder *ContainerBuilder, header *format.Header) {

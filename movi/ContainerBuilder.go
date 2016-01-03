@@ -1,5 +1,9 @@
 package movi
 
+import (
+	"image/color"
+)
+
 // ContainerBuilder is the builder implementation for a Container.
 type ContainerBuilder struct {
 	container *memoryContainer
@@ -32,6 +36,12 @@ func (builder *ContainerBuilder) VideoHeight(value uint16) *ContainerBuilder {
 // VideoWidth sets the video width for the new container.
 func (builder *ContainerBuilder) VideoWidth(value uint16) *ContainerBuilder {
 	builder.container.videoWidth = value
+	return builder
+}
+
+// StartPalette sets the initial palette of the new container
+func (builder *ContainerBuilder) StartPalette(palette color.Palette) *ContainerBuilder {
+	builder.container.startPalette = palette
 	return builder
 }
 
