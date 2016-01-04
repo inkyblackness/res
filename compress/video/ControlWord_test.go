@@ -15,6 +15,12 @@ func (suite *ControlWordSuite) TestPackedReturnsPackedControlWord(c *check.C) {
 	c.Check(word.Packed(128), check.Equals, PackedControlWord(0x80FFAA55))
 }
 
+func (suite *ControlWordSuite) TestPackedClearsHighestByteBeforeSettingCount(c *check.C) {
+	word := ControlWord(0x55FFAA55)
+
+	c.Check(word.Packed(0xC0), check.Equals, PackedControlWord(0xC0FFAA55))
+}
+
 func (suite *ControlWordSuite) TestCountReturnsBits20To23(c *check.C) {
 	word := ControlWord(0x00F00000)
 

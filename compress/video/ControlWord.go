@@ -5,7 +5,7 @@ type ControlWord uint32
 
 // Packed returns the control word packed in a PackedControlWord with the given number of times.
 func (word ControlWord) Packed(times int) PackedControlWord {
-	return PackedControlWord(uint32(word) | (uint32(times) << 24))
+	return PackedControlWord((uint32(word) & 0x00FFFFFF) | (uint32(times) << 24))
 }
 
 // Count returns the count value of the control

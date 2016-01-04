@@ -13,6 +13,6 @@ const (
 
 	CtrlSkip = ControlType(5)
 
-	CtrlRepeatPreviousA = ControlType(6)
-	Unknown             = ControlType(7)
+	CtrlRepeatPrevious = ControlType(6)
+	CtrlUnknown        = ControlType(7)
 )
