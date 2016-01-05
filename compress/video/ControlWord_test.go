@@ -42,13 +42,13 @@ func (suite *ControlWordSuite) TestIsLongOffsetReturnsFalseForCountGreater0(c *c
 func (suite *ControlWordSuite) TestLongOffsetReturnsBits00To19(c *check.C) {
 	word := ControlWord(0xFFFA6665)
 
-	c.Check(word.LongOffset(), check.Equals, 0xA6665)
+	c.Check(word.LongOffset(), check.Equals, uint32(0xA6665))
 }
 
 func (suite *ControlWordSuite) TestParameterReturnsBits00To16(c *check.C) {
 	word := ControlWord(0xFFFF1665)
 
-	c.Check(word.Parameter(), check.Equals, 0x11665)
+	c.Check(word.Parameter(), check.Equals, uint32(0x11665))
 }
 
 func (suite *ControlWordSuite) TestTypeReturnsBits17To19(c *check.C) {

@@ -19,8 +19,8 @@ func (word ControlWord) IsLongOffset() bool {
 }
 
 // LongOffset returns the long offset value. Only relevant if IsLongOffset() returns true.
-func (word ControlWord) LongOffset() int {
-	return int((uint32(word) >> 0) & 0xFFFFF)
+func (word ControlWord) LongOffset() uint32 {
+	return uint32((uint32(word) >> 0) & 0xFFFFF)
 }
 
 // Type returns the type of the control. Only relevant if IsLongOffset() returns false.
@@ -29,6 +29,6 @@ func (word ControlWord) Type() ControlType {
 }
 
 // Parameter returns the type specific parameter value.
-func (word ControlWord) Parameter() int {
-	return int((uint32(word) >> 0) & 0x1FFFF)
+func (word ControlWord) Parameter() uint32 {
+	return uint32((uint32(word) >> 0) & 0x1FFFF)
 }
