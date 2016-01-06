@@ -17,11 +17,11 @@ func (suite *TabledCodepageSuite) SetUpTest(c *check.C) {
 func (suite *TabledCodepageSuite) TestEncode(c *check.C) {
 	result := suite.cp.Encode("ä")
 
-	c.Check(result, check.DeepEquals, []byte{132})
+	c.Check(result, check.DeepEquals, []byte{132, 0x00})
 }
 
 func (suite *TabledCodepageSuite) TestDecode(c *check.C) {
-	result := suite.cp.Decode([]byte{212, 225})
+	result := suite.cp.Decode([]byte{212, 225, 0x00})
 
 	c.Check(result, check.Equals, "Èß")
 }
