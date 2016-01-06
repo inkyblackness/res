@@ -4,10 +4,10 @@ package movi
 type SubtitleControl uint32
 
 const (
-	SubtitleArea    = uint32(0x41455241)
-	SubtitleTextStd = uint32(0x20445453)
-	SubtitleTextFrn = uint32(0x204E5246)
-	SubtitleTextGer = uint32(0x20524547)
+	SubtitleArea    = SubtitleControl(0x41455241)
+	SubtitleTextStd = SubtitleControl(0x20445453)
+	SubtitleTextFrn = SubtitleControl(0x204E5246)
+	SubtitleTextGer = SubtitleControl(0x20524547)
 )
 
 // String returns the string presentation of the control value.
