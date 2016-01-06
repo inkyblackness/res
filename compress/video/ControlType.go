@@ -4,12 +4,11 @@ package video
 type ControlType byte
 
 const (
-	CtrlParamTwoPixel = ControlType(0)
-	CtrlParamTwoIndex = ControlType(1)
-
-	CtrlParamOffset4Pixel = ControlType(2)
-	CtrlParamOffset8Pixel = ControlType(3)
-	CtrlParamOfset16Pixel = ControlType(4)
+	CtrlColorTile2ColorsStatic  = ControlType(0)
+	CtrlColorTile2ColorsMasked  = ControlType(1)
+	CtrlColorTile4ColorsMasked  = ControlType(2)
+	CtrlColorTile8ColorsMasked  = ControlType(3)
+	CtrlColorTile16ColorsMasked = ControlType(4)
 
 	CtrlSkip = ControlType(5)
 
