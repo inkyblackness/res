@@ -18,8 +18,8 @@ const (
 	Palette = DataType(4)
 	// PaletteReset is a zero-byte entry immediately before a Palette entry.
 	PaletteReset = DataType(0x4C)
-	// PaletteIndex for high compression video.
-	PaletteIndex = DataType(5)
+	// PaletteLookupList for high compression video.
+	PaletteLookupList = DataType(5)
 	// ControlDictionary for high compression video
 	ControlDictionary = DataType(0x0D)
 )
