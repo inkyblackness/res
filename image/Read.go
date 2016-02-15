@@ -26,11 +26,10 @@ func Read(source io.ReadSeeker) (bmp Bitmap, err error) {
 	var palette color.Palette = nil
 
 	binary.Read(source, binary.LittleEndian, &header)
+	data = make([]byte, int(header.Height)*int(header.Stride))
 	if header.Type == CompressedBitmap {
-		expectedSize := int(header.Height) * int(header.Stride)
-		data, err = rle.Decompress(source, expectedSize)
+		err = rle.Decompress(source, data)
 	} else {
-		data = make([]byte, int(header.Height)*int(header.Stride))
 		_, err = source.Read(data)
 	}
 

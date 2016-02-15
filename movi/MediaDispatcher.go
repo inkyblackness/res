@@ -105,13 +105,8 @@ func (dispatcher *MediaDispatcher) process(entry Entry) (dispatched bool, err er
 			reader := bytes.NewReader(entry.Data())
 
 			binary.Read(reader, binary.LittleEndian, &videoHeader)
-			deltaFrame, frameErr := rle.Decompress(reader, len(dispatcher.frameBuffer))
+			frameErr := rle.Decompress(reader, dispatcher.frameBuffer)
 			if frameErr == nil {
-				for index, pixel := range deltaFrame {
-					if pixel != 0x00 {
-						dispatcher.frameBuffer[index] = pixel
-					}
-				}
 				dispatcher.notifyVideoFrame(entry.Timestamp())
 				dispatched = true
 			} else {

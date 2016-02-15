@@ -58,14 +58,3 @@ func (suite *CompressSuite) TestWriteRawOfLessThan80(c *check.C) {
 
 	c.Check(writer.Bytes(), check.DeepEquals, []byte{0x03, 0x0A, 0x0B, 0x0C})
 }
-
-func (suite *CompressSuite) verifyRecompress(c *check.C, original []byte) {
-	uncompressed, _ := Decompress(bytes.NewReader(append(original, []byte{0x05, 0xAA, 0x80, 0x00, 0x00}...)), 0)
-
-	compressed := bytes.NewBuffer(nil)
-	Compress(compressed, uncompressed)
-
-	result := compressed.Bytes()
-	c.Check(result[0:len(result)-5], check.DeepEquals, original)
-
-}
