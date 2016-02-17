@@ -54,10 +54,10 @@ const VideoClipSequenceEntryTag = byte(0x04)
 
 // VideoClipSequenceEntry describes an entry of a video clip sequence.
 type VideoClipSequenceEntry struct {
-	Tag         byte
-	FirstFrame  byte
-	LastFrame   byte
-	Unknown0003 [2]byte
+	Tag        byte
+	FirstFrame byte
+	LastFrame  byte
+	FrameTime  uint16
 }
 
 // DefaultVideoClipSequenceEntry returns a new instance of an entry
@@ -68,9 +68,8 @@ func DefaultVideoClipSequenceEntry() *VideoClipSequenceEntry {
 }
 
 func (entry *VideoClipSequenceEntry) String() (result string) {
-	result += fmt.Sprintf("%02d - %02d: 0x%02X 0x%02X (%d)",
-		entry.FirstFrame, entry.LastFrame, entry.Unknown0003[0], entry.Unknown0003[1],
-		int(entry.Unknown0003[1])<<8+int(entry.Unknown0003[0]))
+	result += fmt.Sprintf("%02d - %02d: frame time %d",
+		entry.FirstFrame, entry.LastFrame, entry.FrameTime)
 
 	return
 }
