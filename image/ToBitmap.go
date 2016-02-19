@@ -20,8 +20,8 @@ func ToBitmap(img image.PalettedImage, palette color.Palette) *MemoryBitmap {
 
 	data := make([]byte, int(header.Width*header.Height))
 	dataOffset := 0
-	for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
-		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
 			data[dataOffset] = img.ColorIndexAt(x, y)
 			dataOffset++
 		}
@@ -31,8 +31,10 @@ func ToBitmap(img image.PalettedImage, palette color.Palette) *MemoryBitmap {
 }
 
 func highestBitShift(value uint16) (result byte) {
-	for (value >> result) != 0 {
-		result++
+	if value != 0 {
+		for (value >> result) != 1 {
+			result++
+		}
 	}
 
 	return
