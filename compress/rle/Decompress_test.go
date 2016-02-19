@@ -33,6 +33,16 @@ func (suite *DecompressSuite) Test800000AppendsRemainingZeroes(c *check.C) {
 	c.Check(result, check.DeepEquals, make([]byte, 10))
 }
 
+func (suite *DecompressSuite) Test800000IsConsumedAtEnd(c *check.C) {
+	result := []byte{}
+	reader := bytes.NewReader([]byte{0x80, 0x00, 0x00})
+	err := Decompress(reader, result)
+
+	c.Assert(err, check.IsNil)
+	pos, _ := reader.Seek(0, 1)
+	c.Check(pos, check.Equals, int64(3))
+}
+
 func (suite *DecompressSuite) Test00WritesNNBytesOfColorZZ(c *check.C) {
 	result := make([]byte, 5)
 	err := Decompress(bytes.NewReader([]byte{0x00, 0x05, 0xCC, 0x80, 0x00, 0x00}), result)
@@ -104,7 +114,7 @@ func (suite *DecompressSuite) Test80ReturnsErrorForUndefinedCase(c *check.C) {
 	input := bytes.NewBuffer(nil)
 	input.Write([]byte{0x80, 0x00, 0xC0})
 	input.Write([]byte{0x80, 0x00, 0x00})
-	err := Decompress(bytes.NewReader(input.Bytes()), make([]byte, 0))
+	err := Decompress(bytes.NewReader(input.Bytes()), make([]byte, 1))
 
 	c.Check(err, check.NotNil)
 }

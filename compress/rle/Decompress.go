@@ -8,14 +8,14 @@ import (
 // Decompress decompresses from the given reader and writes into the provided output buffer.
 func Decompress(reader io.Reader, output []byte) (err error) {
 	outIndex := 0
-	outSize := len(output)
+	done := false
 	nextByte := func() byte {
 		zz := []byte{0x00}
 		_, err = reader.Read(zz)
 		return zz[0]
 	}
 
-	for (err == nil) && (outIndex < outSize) {
+	for !done && (err == nil) {
 		first := nextByte()
 
 		if first == 0x00 {
@@ -26,9 +26,10 @@ func Decompress(reader io.Reader, output []byte) (err error) {
 		} else if first < 0x80 {
 			outIndex += writeBytesOfValue(output[outIndex:outIndex+int(first)], nextByte)
 		} else if first == 0x80 {
-			control := uint16(nextByte()) + (uint16(nextByte()) << 8)
+			control := uint16(nextByte())
+			control += uint16(nextByte()) << 8
 			if control == 0x0000 {
-				outIndex = outSize
+				done = true
 			} else if control < 0x8000 {
 				outIndex += int(control)
 			} else if control < 0xC000 {
