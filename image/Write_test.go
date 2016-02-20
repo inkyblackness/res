@@ -64,8 +64,8 @@ func (suite *WriteSuite) getTestData(bmpType BitmapType, data []byte, withPalett
 	header.Width = 1
 	header.Stride = 1
 	header.Height = 1
-	header.WidthFactor = 1
-	header.HeightFactor = 1
+	header.WidthFactor = 0
+	header.HeightFactor = 0
 	if withPalette {
 		header.PaletteOffset = int32(binary.Size(header) + len(data))
 	}
