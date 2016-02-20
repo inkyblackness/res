@@ -23,7 +23,13 @@ func StandardProperties() []ClassDescriptor {
 	}
 	{ // Clips
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 15, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 3, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 14, Subclasses: subclasses})
 	}
@@ -50,19 +56,31 @@ func StandardProperties() []ClassDescriptor {
 	}
 	{ // Hardware
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 15, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 5, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 10, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 9, Subclasses: subclasses})
 	}
 	{ // Softs
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 22, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 3, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 4, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 5, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 3, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 5, Subclasses: subclasses})
 	}
 	{ // Fixtures
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 77, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 9, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 10, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 11, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 4, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 9, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 8, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 16, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 10, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 2, Subclasses: subclasses})
 	}
@@ -92,7 +110,11 @@ func StandardProperties() []ClassDescriptor {
 	}
 	{ // Portals
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 41, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 10, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 9, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 5, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 10, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 1, Subclasses: subclasses})
 	}
@@ -106,13 +128,21 @@ func StandardProperties() []ClassDescriptor {
 	}
 	{ // Marker
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 19, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 13, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 1, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 5, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 1, Subclasses: subclasses})
 	}
 	{ // Container
 		subclasses := []SubclassDescriptor{
-			SubclassDescriptor{TypeCount: 46, SpecificDataLength: 1}}
+			SubclassDescriptor{TypeCount: 3, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 3, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 4, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 8, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 13, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 1},
+			SubclassDescriptor{TypeCount: 8, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 3, Subclasses: subclasses})
 	}
