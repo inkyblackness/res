@@ -19,3 +19,14 @@ func (suite *ConstantsSuite) TestStandardPropertiesReturnsProperLength(c *check.
 
 	c.Assert(totalLength, check.Equals, uint32(17951)) // as taken from original CD
 }
+
+func (suite *ConstantsSuite) TestStandardPropertiesReturnsProperAmount(c *check.C) {
+	descriptor := StandardProperties()
+	total := uint32(0)
+
+	for _, classDesc := range descriptor {
+		total += classDesc.TotalTypeCount()
+	}
+
+	c.Assert(total, check.Equals, uint32(476))
+}
