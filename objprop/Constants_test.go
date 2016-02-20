@@ -1,6 +1,8 @@
 package objprop
 
 import (
+	"github.com/inkyblackness/res"
+
 	check "gopkg.in/check.v1"
 )
 
@@ -29,4 +31,22 @@ func (suite *ConstantsSuite) TestStandardPropertiesReturnsProperAmount(c *check.
 	}
 
 	c.Assert(total, check.Equals, uint32(476))
+}
+
+func (suite *ConstantsSuite) TestObjectIDToIndexReturnsNegative1ForUnknown(c *check.C) {
+	result := ObjectIDToIndex(nil, res.MakeObjectID(0, 1, 2))
+
+	c.Assert(result, check.Equals, -1)
+}
+
+func (suite *ConstantsSuite) TestObjectIDToIndexReturns0ForFirstEntry(c *check.C) {
+	result := ObjectIDToIndex(StandardProperties(), res.MakeObjectID(0, 0, 0))
+
+	c.Assert(result, check.Equals, 0)
+}
+
+func (suite *ConstantsSuite) TestObjectIDToIndexReturns475ForLastEntry(c *check.C) {
+	result := ObjectIDToIndex(StandardProperties(), res.MakeObjectID(14, 4, 1))
+
+	c.Assert(result, check.Equals, 475)
 }
