@@ -97,7 +97,7 @@ func StandardProperties() []ClassDescriptor {
 
 		result = append(result, ClassDescriptor{GenericDataLength: 2, Subclasses: subclasses})
 	}
-	{ // Switches
+	{ // Panels
 		subclasses := []SubclassDescriptor{
 			SubclassDescriptor{TypeCount: 9, SpecificDataLength: 1},
 			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 1},
@@ -108,7 +108,7 @@ func StandardProperties() []ClassDescriptor {
 
 		result = append(result, ClassDescriptor{GenericDataLength: 1, Subclasses: subclasses})
 	}
-	{ // Portals
+	{ // Barriers
 		subclasses := []SubclassDescriptor{
 			SubclassDescriptor{TypeCount: 10, SpecificDataLength: 1},
 			SubclassDescriptor{TypeCount: 9, SpecificDataLength: 1},
@@ -150,8 +150,8 @@ func StandardProperties() []ClassDescriptor {
 		subclasses := []SubclassDescriptor{
 			SubclassDescriptor{TypeCount: 9, SpecificDataLength: 1},
 			SubclassDescriptor{TypeCount: 12, SpecificDataLength: 2},
-			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 2}, // amount guessed until sizes worked out!
-			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 6}, // amount guessed until sizes worked out!
+			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 2},
+			SubclassDescriptor{TypeCount: 7, SpecificDataLength: 6},
 			SubclassDescriptor{TypeCount: 2, SpecificDataLength: 1}}
 
 		result = append(result, ClassDescriptor{GenericDataLength: 75, Subclasses: subclasses})
