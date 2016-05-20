@@ -76,7 +76,7 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapReturnsAnIndex(c *check.
 	list := suite.aClearListOfSize(4)
 	locations := []TileLocation{AtTile(1, 1)}
 
-	index := list.AddObjectToMap(1, suite.referencer, locations)
+	index, _ := list.AddObjectToMap(1, suite.referencer, locations)
 
 	c.Check(index, check.Not(check.Equals), CrossReferenceListIndex(0))
 }
@@ -99,7 +99,7 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapSetsPropertiesOfSingleEn
 	location1 := AtTile(7, 8)
 	locations := []TileLocation{location1}
 
-	index := list.AddObjectToMap(20, suite.referencer, locations)
+	index, _ := list.AddObjectToMap(20, suite.referencer, locations)
 
 	firstEntry := list.entry(index)
 	c.Check(firstEntry, check.DeepEquals, &data.LevelObjectCrossReference{
@@ -116,7 +116,7 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapSetsPropertiesOfMultiple
 	location2 := AtTile(5, 6)
 	locations := []TileLocation{location1, location2}
 
-	index := list.AddObjectToMap(10, suite.referencer, locations)
+	index, _ := list.AddObjectToMap(10, suite.referencer, locations)
 
 	firstEntry := list.entry(index)
 	c.Check(firstEntry, check.DeepEquals, &data.LevelObjectCrossReference{
@@ -141,12 +141,47 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapKeepsReferencesOfObjects
 	location2 := AtTile(1, 2)
 
 	list.AddObjectToMap(40, suite.referencer, []TileLocation{AtTile(100, 100)})
-	existingIndex := list.AddObjectToMap(50, suite.referencer, []TileLocation{location1})
-	index := list.AddObjectToMap(60, suite.referencer, []TileLocation{location1, location2})
+	existingIndex, _ := list.AddObjectToMap(50, suite.referencer, []TileLocation{location1})
+	index, _ := list.AddObjectToMap(60, suite.referencer, []TileLocation{location1, location2})
 
 	firstEntry := list.entry(index)
 	c.Check(firstEntry.NextObjectIndex, check.Equals, uint16(0))
 
 	secondEntry := list.entry(index - 1)
 	c.Check(secondEntry.NextObjectIndex, check.Equals, uint16(existingIndex))
+}
+
+func (suite *CrossReferenceListSuite) TestAddObjectToMapReturnsErrorIfExhausted(c *check.C) {
+	list := suite.aClearListOfSize(2)
+
+	list.AddObjectToMap(40, suite.referencer, []TileLocation{AtTile(100, 100)})
+
+	_, err := list.AddObjectToMap(50, suite.referencer, []TileLocation{AtTile(10, 10)})
+
+	c.Check(err, check.NotNil)
+}
+
+func (suite *CrossReferenceListSuite) TestAddObjectToMapRevertsIntermediateChangesOfEntriesIfExhausted(c *check.C) {
+	list := suite.aClearListOfSize(3)
+
+	list.AddObjectToMap(40, suite.referencer, []TileLocation{AtTile(100, 100)})
+
+	_, err := list.AddObjectToMap(50, suite.referencer, []TileLocation{AtTile(10, 10), AtTile(20, 20)})
+	c.Assert(err, check.NotNil)
+
+	newIndex, newErr := list.AddObjectToMap(60, suite.referencer, []TileLocation{AtTile(12, 34)})
+	c.Check(newErr, check.IsNil)
+	c.Check(newIndex, check.Equals, CrossReferenceListIndex(2))
+}
+
+func (suite *CrossReferenceListSuite) TestAddObjectToMapRevertsMapReferencesIfExhausted(c *check.C) {
+	list := suite.aClearListOfSize(3)
+
+	list.AddObjectToMap(40, suite.referencer, []TileLocation{AtTile(100, 100)})
+
+	_, err := list.AddObjectToMap(50, suite.referencer, []TileLocation{AtTile(10, 10), AtTile(20, 20)})
+	c.Assert(err, check.NotNil)
+
+	c.Check(suite.referencer.ReferenceIndex(AtTile(10, 10)), check.Equals, CrossReferenceListIndex(0))
+	c.Check(suite.referencer.ReferenceIndex(AtTile(20, 20)), check.Equals, CrossReferenceListIndex(0))
 }

@@ -3,6 +3,7 @@ package logic
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 
 	"github.com/inkyblackness/res/data"
 )
@@ -44,11 +45,10 @@ func (list *CrossReferenceList) Encode() []byte {
 // pool of available entries.
 func (list *CrossReferenceList) Clear() {
 	size := list.size()
-	for index := 0; index < size; index++ {
-		entry := list.entry(CrossReferenceListIndex(index))
 
-		list.resetEntry(entry)
-		entry.NextObjectIndex = uint16((index + 1) % size)
+	list.resetEntry(list.entry(0))
+	for index := size - 1; index > 0; index-- {
+		list.addEntryToAvailablePool(CrossReferenceListIndex(index))
 	}
 }
 
@@ -69,12 +69,24 @@ func (list *CrossReferenceList) resetEntry(entry *data.LevelObjectCrossReference
 // AddObjectToMap adds an object to the map, at the specified locations.
 // The returned value is the first cross-reference index to be stored in the specified object.
 func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileMapReferencer,
-	locations []TileLocation) (entryIndex CrossReferenceListIndex) {
+	locations []TileLocation) (entryIndex CrossReferenceListIndex, err error) {
+	affectedIndices := []CrossReferenceListIndex{}
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%s", r)
+
+			for _, index := range affectedIndices {
+				list.addEntryToAvailablePool(index)
+			}
+		}
+	}()
 
 	startEntry := list.entry(0)
-	var firstEntry *data.LevelObjectCrossReference
 
 	for _, location := range locations {
+		if startEntry.NextObjectIndex == 0 {
+			panic(fmt.Errorf("Cross-Reference list is exhausted. Can not add more objects."))
+		}
 		oldTileIndex := tileMap.ReferenceIndex(location)
 		newReferenceIndex := CrossReferenceListIndex(startEntry.NextObjectIndex)
 		newEntry := list.entry(newReferenceIndex)
@@ -86,13 +98,22 @@ func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileM
 		newEntry.NextTileIndex = uint16(entryIndex)
 		newEntry.TileX, newEntry.TileY = location.XY()
 
-		tileMap.SetReferenceIndex(location, newReferenceIndex)
 		entryIndex = newReferenceIndex
-		if firstEntry == nil {
-			firstEntry = newEntry
-		}
+		affectedIndices = append(affectedIndices, newReferenceIndex)
 	}
-	firstEntry.NextTileIndex = uint16(entryIndex)
+	list.entry(affectedIndices[0]).NextTileIndex = uint16(entryIndex)
+	for locationIndex, location := range locations {
+		tileMap.SetReferenceIndex(location, affectedIndices[locationIndex])
+	}
 
 	return
+}
+
+func (list *CrossReferenceList) addEntryToAvailablePool(index CrossReferenceListIndex) {
+	startEntry := list.entry(0)
+	entry := list.entry(index)
+
+	list.resetEntry(entry)
+	entry.NextObjectIndex = startEntry.NextObjectIndex
+	startEntry.NextObjectIndex = uint16(index)
 }
