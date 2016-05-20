@@ -29,9 +29,8 @@ type LevelObjectEntry struct {
 
 	Unknown0013 [1]byte
 
-	Type res.ObjectType
-
-	Unknown0015 [2]byte
+	Type      res.ObjectType
+	Hitpoints uint16
 
 	Unknown0017 [4]byte
 }
@@ -49,6 +48,7 @@ func (entry *LevelObjectEntry) String() (result string) {
 	result += fmt.Sprintf("Class Table Index: %d\n", entry.ClassTableIndex)
 	result += fmt.Sprintf("Cross Reference Index: %d\n", entry.CrossReferenceTableIndex)
 	result += fmt.Sprintf("Links: <- %d | %d ->\n", entry.Previous, entry.Next)
+	result += fmt.Sprintf("Hitpoints: %d\n", entry.Hitpoints)
 
 	return
 }
