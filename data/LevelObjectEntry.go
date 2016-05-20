@@ -20,8 +20,8 @@ type LevelObjectEntry struct {
 	Previous                 uint16
 	Next                     uint16
 
-	X    TileCoordinate
-	Y    TileCoordinate
+	X    MapCoordinate
+	Y    MapCoordinate
 	Z    byte
 	Rot1 byte
 	Rot2 byte
