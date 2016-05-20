@@ -21,8 +21,7 @@ type CrossReferenceList struct {
 // The size of the list defaults to the expected size of the cross-reference table.
 func NewCrossReferenceList() *CrossReferenceList {
 	references := new([1600]data.LevelObjectCrossReference)
-	list := &CrossReferenceList{
-		references: references[:]}
+	list := &CrossReferenceList{references: references[:]}
 
 	return list
 }
@@ -109,6 +108,37 @@ func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileM
 	}
 
 	return
+}
+
+// RemoveEntriesFromMap removes all entries starting with the provided index.
+// The index should be one previously returned from AddObjectToMap.
+func (list *CrossReferenceList) RemoveEntriesFromMap(firstIndex CrossReferenceListIndex, tileMap TileMapReferencer) {
+	processEntry := func(index CrossReferenceListIndex) (nextIndex CrossReferenceListIndex) {
+		entry := list.entry(index)
+		location := AtTile(entry.TileX, entry.TileY)
+
+		nextIndex = CrossReferenceListIndex(entry.NextTileIndex)
+
+		tileIndex := tileMap.ReferenceIndex(location)
+		if tileIndex == index {
+			tileMap.SetReferenceIndex(location, CrossReferenceListIndex(entry.NextObjectIndex))
+		} else {
+			otherEntry := list.entry(tileIndex)
+
+			for otherEntry.NextObjectIndex != uint16(index) {
+				otherEntry = list.entry(CrossReferenceListIndex(otherEntry.NextObjectIndex))
+			}
+			otherEntry.NextObjectIndex = entry.NextObjectIndex
+		}
+		list.addEntryToAvailablePool(index)
+
+		return
+	}
+
+	nextIndex := processEntry(firstIndex)
+	for nextIndex != firstIndex {
+		nextIndex = processEntry(nextIndex)
+	}
 }
 
 func (list *CrossReferenceList) addEntryToAvailablePool(index CrossReferenceListIndex) {

@@ -31,6 +31,16 @@ func (suite *CrossReferenceListSuite) aClearListOfSize(size int) *CrossReference
 	return list
 }
 
+func (suite *CrossReferenceListSuite) someLocations(count int) []TileLocation {
+	locations := make([]TileLocation, count)
+
+	for index := 0; index < count; index++ {
+		locations[index] = AtTile(uint16(index), uint16(index))
+	}
+
+	return locations
+}
+
 func (suite *CrossReferenceListSuite) TestNewCrossReferenceListReturnsListWithASizeOf1600(c *check.C) {
 	list := NewCrossReferenceList()
 
@@ -184,4 +194,48 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapRevertsMapReferencesIfEx
 
 	c.Check(suite.referencer.ReferenceIndex(AtTile(10, 10)), check.Equals, CrossReferenceListIndex(0))
 	c.Check(suite.referencer.ReferenceIndex(AtTile(20, 20)), check.Equals, CrossReferenceListIndex(0))
+}
+
+func (suite *CrossReferenceListSuite) TestRemoveEntriesFromMapMakesEntriesAvailable(c *check.C) {
+	list := suite.aClearListOfSize(3)
+
+	firstIndex, _ := list.AddObjectToMap(40, suite.referencer, suite.someLocations(2))
+	list.RemoveEntriesFromMap(firstIndex, suite.referencer)
+
+	_, err := list.AddObjectToMap(50, suite.referencer, suite.someLocations(2))
+	c.Check(err, check.IsNil)
+}
+
+func (suite *CrossReferenceListSuite) TestRemoveEntriesFromMapClearsMapReferences(c *check.C) {
+	list := suite.aClearListOfSize(10)
+
+	locations := suite.someLocations(2)
+	firstIndex, _ := list.AddObjectToMap(40, suite.referencer, locations)
+	list.RemoveEntriesFromMap(firstIndex, suite.referencer)
+
+	c.Check(suite.referencer.ReferenceIndex(locations[0]), check.Equals, CrossReferenceListIndex(0))
+	c.Check(suite.referencer.ReferenceIndex(locations[1]), check.Equals, CrossReferenceListIndex(0))
+}
+
+func (suite *CrossReferenceListSuite) TestRemoveEntriesFromMapKeepsEntriesOfOtherObjectsInTile(c *check.C) {
+	list := suite.aClearListOfSize(10)
+
+	locations := suite.someLocations(2)
+	existingIndex, _ := list.AddObjectToMap(22, suite.referencer, locations[0:1])
+	firstIndex, _ := list.AddObjectToMap(40, suite.referencer, locations)
+	list.RemoveEntriesFromMap(firstIndex, suite.referencer)
+
+	c.Check(suite.referencer.ReferenceIndex(locations[0]), check.Equals, existingIndex)
+}
+
+func (suite *CrossReferenceListSuite) TestRemoveEntriesFromMapModifiesEntriesOfOtherObjectsInTile(c *check.C) {
+	list := suite.aClearListOfSize(10)
+
+	locations := suite.someLocations(2)
+	existingIndex, _ := list.AddObjectToMap(22, suite.referencer, locations[0:1])
+	firstIndex, _ := list.AddObjectToMap(40, suite.referencer, locations)
+	latestIndex, _ := list.AddObjectToMap(23, suite.referencer, locations[0:1])
+	list.RemoveEntriesFromMap(firstIndex, suite.referencer)
+
+	c.Check(list.entry(latestIndex).NextObjectIndex, check.Equals, uint16(existingIndex))
 }
