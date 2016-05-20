@@ -7,6 +7,9 @@ import (
 	"github.com/inkyblackness/res/data"
 )
 
+// CrossReferenceListIndex is an index into a cross reference list
+type CrossReferenceListIndex uint16
+
 // CrossReferenceList provides the logic for handling the cross-reference table
 // in level archives.
 type CrossReferenceList struct {
@@ -42,7 +45,7 @@ func (list *CrossReferenceList) Encode() []byte {
 func (list *CrossReferenceList) Clear() {
 	size := list.size()
 	for index := 0; index < size; index++ {
-		entry := list.entry(index)
+		entry := list.entry(CrossReferenceListIndex(index))
 
 		list.resetEntry(entry)
 		entry.NextObjectIndex = uint16((index + 1) % size)
@@ -50,7 +53,7 @@ func (list *CrossReferenceList) Clear() {
 }
 
 // Entry returns a pointer to the entry of given index.
-func (list *CrossReferenceList) entry(index int) *data.LevelObjectCrossReference {
+func (list *CrossReferenceList) entry(index CrossReferenceListIndex) *data.LevelObjectCrossReference {
 	return &list.references[index]
 }
 
@@ -63,8 +66,33 @@ func (list *CrossReferenceList) resetEntry(entry *data.LevelObjectCrossReference
 	entry.NextObjectIndex = 0
 }
 
-// AddObjectToMap adds an object to the map.
+// AddObjectToMap adds an object to the map, at the specified locations.
 // The returned value is the first cross-reference index to be stored in the specified object.
-func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileMapReferencer) uint16 {
-	return 0
+func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileMapReferencer,
+	locations []TileLocation) (entryIndex CrossReferenceListIndex) {
+
+	startEntry := list.entry(0)
+	var firstEntry *data.LevelObjectCrossReference
+
+	for _, location := range locations {
+		oldTileIndex := tileMap.ReferenceIndex(location)
+		newReferenceIndex := CrossReferenceListIndex(startEntry.NextObjectIndex)
+		newEntry := list.entry(newReferenceIndex)
+
+		startEntry.NextObjectIndex = newEntry.NextObjectIndex
+
+		newEntry.NextObjectIndex = uint16(oldTileIndex)
+		newEntry.LevelObjectTableIndex = objectIndex
+		newEntry.NextTileIndex = uint16(entryIndex)
+		newEntry.TileX, newEntry.TileY = location.XY()
+
+		tileMap.SetReferenceIndex(location, newReferenceIndex)
+		entryIndex = newReferenceIndex
+		if firstEntry == nil {
+			firstEntry = newEntry
+		}
+	}
+	firstEntry.NextTileIndex = uint16(entryIndex)
+
+	return
 }
