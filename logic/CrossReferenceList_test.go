@@ -145,18 +145,8 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapKeepsReferencesOfObjects
 	index := list.AddObjectToMap(60, suite.referencer, []TileLocation{location1, location2})
 
 	firstEntry := list.entry(index)
-	c.Check(firstEntry, check.DeepEquals, &data.LevelObjectCrossReference{
-		LevelObjectTableIndex: 60,
-		NextObjectIndex:       0,
-		NextTileIndex:         uint16(index - 1),
-		TileX:                 1,
-		TileY:                 2})
+	c.Check(firstEntry.NextObjectIndex, check.Equals, uint16(0))
 
 	secondEntry := list.entry(index - 1)
-	c.Check(secondEntry, check.DeepEquals, &data.LevelObjectCrossReference{
-		LevelObjectTableIndex: 60,
-		NextObjectIndex:       uint16(existingIndex),
-		NextTileIndex:         uint16(index),
-		TileX:                 16,
-		TileY:                 12})
+	c.Check(secondEntry.NextObjectIndex, check.Equals, uint16(existingIndex))
 }
