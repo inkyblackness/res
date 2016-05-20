@@ -68,6 +68,8 @@ func (list *CrossReferenceList) resetEntry(entry *data.LevelObjectCrossReference
 
 // AddObjectToMap adds an object to the map, at the specified locations.
 // The returned value is the first cross-reference index to be stored in the specified object.
+// An error is returned should the list be exhausted. In an error case, any intermediate changes
+// to the list are reverted.
 func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileMapReferencer,
 	locations []TileLocation) (entryIndex CrossReferenceListIndex, err error) {
 	affectedIndices := []CrossReferenceListIndex{}
