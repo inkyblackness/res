@@ -26,6 +26,17 @@ func NewCrossReferenceList() *CrossReferenceList {
 	return list
 }
 
+// DecodeCrossReferenceList returns a new instance of a list, decoded from a serialized byte stream.
+func DecodeCrossReferenceList(serialized []byte) *CrossReferenceList {
+	references := make([]data.LevelObjectCrossReference, len(serialized)/data.LevelObjectCrossReferenceSize)
+	list := &CrossReferenceList{references: references[:]}
+	buf := bytes.NewReader(serialized)
+
+	binary.Read(buf, binary.LittleEndian, list.references)
+
+	return list
+}
+
 // Size returns the count of entries in the list.
 func (list *CrossReferenceList) size() int {
 	return len(list.references)

@@ -70,6 +70,16 @@ func (suite *CrossReferenceListSuite) TestEncodeSerializesAccordingToFormat(c *c
 	c.Check(bytes, check.DeepEquals, []byte{0x23, 0x01, 0x67, 0x45, 0xAB, 0x89, 0xEF, 0xCD, 0x11, 0x00})
 }
 
+func (suite *CrossReferenceListSuite) TestDecodeCrossReferenceListSerializesAList(c *check.C) {
+	list := suite.aClearListOfSize(3)
+
+	bytes := list.Encode()
+
+	newList := DecodeCrossReferenceList(bytes)
+
+	c.Check(newList, check.DeepEquals, list)
+}
+
 func (suite *CrossReferenceListSuite) TestClearResetsTheList(c *check.C) {
 	list := suite.aListOfSize(3)
 
