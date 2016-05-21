@@ -56,14 +56,14 @@ func (list *CrossReferenceList) Encode() []byte {
 func (list *CrossReferenceList) Clear() {
 	size := list.size()
 
-	list.resetEntry(list.entry(0))
+	list.resetEntry(list.Entry(0))
 	for index := size - 1; index > 0; index-- {
 		list.addEntryToAvailablePool(CrossReferenceListIndex(index))
 	}
 }
 
 // Entry returns a pointer to the entry of given index.
-func (list *CrossReferenceList) entry(index CrossReferenceListIndex) *data.LevelObjectCrossReference {
+func (list *CrossReferenceList) Entry(index CrossReferenceListIndex) *data.LevelObjectCrossReference {
 	return &list.references[index]
 }
 
@@ -93,7 +93,7 @@ func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileM
 		}
 	}()
 
-	startEntry := list.entry(0)
+	startEntry := list.Entry(0)
 
 	for _, location := range locations {
 		if startEntry.NextObjectIndex == 0 {
@@ -101,7 +101,7 @@ func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileM
 		}
 		oldTileIndex := tileMap.ReferenceIndex(location)
 		newReferenceIndex := CrossReferenceListIndex(startEntry.NextObjectIndex)
-		newEntry := list.entry(newReferenceIndex)
+		newEntry := list.Entry(newReferenceIndex)
 
 		startEntry.NextObjectIndex = newEntry.NextObjectIndex
 
@@ -113,7 +113,7 @@ func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileM
 		entryIndex = newReferenceIndex
 		affectedIndices = append(affectedIndices, newReferenceIndex)
 	}
-	list.entry(affectedIndices[0]).NextTileIndex = uint16(entryIndex)
+	list.Entry(affectedIndices[0]).NextTileIndex = uint16(entryIndex)
 	for locationIndex, location := range locations {
 		tileMap.SetReferenceIndex(location, affectedIndices[locationIndex])
 	}
@@ -125,7 +125,7 @@ func (list *CrossReferenceList) AddObjectToMap(objectIndex uint16, tileMap TileM
 // The index should be one previously returned from AddObjectToMap.
 func (list *CrossReferenceList) RemoveEntriesFromMap(firstIndex CrossReferenceListIndex, tileMap TileMapReferencer) {
 	processEntry := func(index CrossReferenceListIndex) (nextIndex CrossReferenceListIndex) {
-		entry := list.entry(index)
+		entry := list.Entry(index)
 		location := AtTile(entry.TileX, entry.TileY)
 
 		nextIndex = CrossReferenceListIndex(entry.NextTileIndex)
@@ -134,10 +134,10 @@ func (list *CrossReferenceList) RemoveEntriesFromMap(firstIndex CrossReferenceLi
 		if tileIndex == index {
 			tileMap.SetReferenceIndex(location, CrossReferenceListIndex(entry.NextObjectIndex))
 		} else {
-			otherEntry := list.entry(tileIndex)
+			otherEntry := list.Entry(tileIndex)
 
 			for otherEntry.NextObjectIndex != uint16(index) {
-				otherEntry = list.entry(CrossReferenceListIndex(otherEntry.NextObjectIndex))
+				otherEntry = list.Entry(CrossReferenceListIndex(otherEntry.NextObjectIndex))
 			}
 			otherEntry.NextObjectIndex = entry.NextObjectIndex
 		}
@@ -153,8 +153,8 @@ func (list *CrossReferenceList) RemoveEntriesFromMap(firstIndex CrossReferenceLi
 }
 
 func (list *CrossReferenceList) addEntryToAvailablePool(index CrossReferenceListIndex) {
-	startEntry := list.entry(0)
-	entry := list.entry(index)
+	startEntry := list.Entry(0)
+	entry := list.Entry(index)
 
 	list.resetEntry(entry)
 	entry.NextObjectIndex = startEntry.NextObjectIndex

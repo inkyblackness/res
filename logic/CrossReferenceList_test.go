@@ -58,7 +58,7 @@ func (suite *CrossReferenceListSuite) TestEncodeReturnsExpectedAmountOfBytes(c *
 func (suite *CrossReferenceListSuite) TestEncodeSerializesAccordingToFormat(c *check.C) {
 	list := suite.aListOfSize(1)
 
-	entry0 := list.entry(0)
+	entry0 := list.Entry(0)
 	entry0.TileX = 0x0123
 	entry0.TileY = 0x4567
 	entry0.LevelObjectTableIndex = 0x89AB
@@ -121,7 +121,7 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapSetsPropertiesOfSingleEn
 
 	index, _ := list.AddObjectToMap(20, suite.referencer, locations)
 
-	firstEntry := list.entry(index)
+	firstEntry := list.Entry(index)
 	c.Check(firstEntry, check.DeepEquals, &data.LevelObjectCrossReference{
 		LevelObjectTableIndex: 20,
 		NextObjectIndex:       0,
@@ -138,7 +138,7 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapSetsPropertiesOfMultiple
 
 	index, _ := list.AddObjectToMap(10, suite.referencer, locations)
 
-	firstEntry := list.entry(index)
+	firstEntry := list.Entry(index)
 	c.Check(firstEntry, check.DeepEquals, &data.LevelObjectCrossReference{
 		LevelObjectTableIndex: 10,
 		NextObjectIndex:       0,
@@ -146,7 +146,7 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapSetsPropertiesOfMultiple
 		TileX:                 5,
 		TileY:                 6})
 
-	secondEntry := list.entry(index - 1)
+	secondEntry := list.Entry(index - 1)
 	c.Check(secondEntry, check.DeepEquals, &data.LevelObjectCrossReference{
 		LevelObjectTableIndex: 10,
 		NextObjectIndex:       0,
@@ -164,10 +164,10 @@ func (suite *CrossReferenceListSuite) TestAddObjectToMapKeepsReferencesOfObjects
 	existingIndex, _ := list.AddObjectToMap(50, suite.referencer, []TileLocation{location1})
 	index, _ := list.AddObjectToMap(60, suite.referencer, []TileLocation{location1, location2})
 
-	firstEntry := list.entry(index)
+	firstEntry := list.Entry(index)
 	c.Check(firstEntry.NextObjectIndex, check.Equals, uint16(0))
 
-	secondEntry := list.entry(index - 1)
+	secondEntry := list.Entry(index - 1)
 	c.Check(secondEntry.NextObjectIndex, check.Equals, uint16(existingIndex))
 }
 
@@ -247,5 +247,5 @@ func (suite *CrossReferenceListSuite) TestRemoveEntriesFromMapModifiesEntriesOfO
 	latestIndex, _ := list.AddObjectToMap(23, suite.referencer, locations[0:1])
 	list.RemoveEntriesFromMap(firstIndex, suite.referencer)
 
-	c.Check(list.entry(latestIndex).NextObjectIndex, check.Equals, uint16(existingIndex))
+	c.Check(list.Entry(latestIndex).NextObjectIndex, check.Equals, uint16(existingIndex))
 }
