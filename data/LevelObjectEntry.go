@@ -57,3 +57,33 @@ func (entry *LevelObjectEntry) String() (result string) {
 func (entry *LevelObjectEntry) IsInUse() bool {
 	return entry.InUse != 0
 }
+
+// NextIndex returns the index of the next object.
+func (entry *LevelObjectEntry) NextIndex() LevelObjectChainIndex {
+	return LevelObjectChainIndex(entry.Next)
+}
+
+// SetNextIndex sets the index of the next object.
+func (entry *LevelObjectEntry) SetNextIndex(index LevelObjectChainIndex) {
+	entry.Next = uint16(index)
+}
+
+// PreviousIndex returns the index of the previous object.
+func (entry *LevelObjectEntry) PreviousIndex() LevelObjectChainIndex {
+	return LevelObjectChainIndex(entry.Previous)
+}
+
+// SetPreviousIndex sets the index of the previous object.
+func (entry *LevelObjectEntry) SetPreviousIndex(index LevelObjectChainIndex) {
+	entry.Previous = uint16(index)
+}
+
+// ReferenceIndex returns the index of a referenced object.
+func (entry *LevelObjectEntry) ReferenceIndex() LevelObjectChainIndex {
+	return LevelObjectChainIndex(entry.CrossReferenceTableIndex)
+}
+
+// SetReferenceIndex sets the index of a referenced object.
+func (entry *LevelObjectEntry) SetReferenceIndex(index LevelObjectChainIndex) {
+	entry.CrossReferenceTableIndex = uint16(index)
+}
