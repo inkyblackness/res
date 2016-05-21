@@ -46,6 +46,7 @@ func (chain *LevelObjectChain) AcquireLink() (index data.LevelObjectChainIndex, 
 
 		chain.start.SetPreviousIndex(link.PreviousIndex())
 		chain.start.SetReferenceIndex(index)
+		link.SetNextIndex(previous.NextIndex())
 		previous.SetNextIndex(index)
 		link.SetPreviousIndex(previousIndex)
 	} else {
@@ -57,6 +58,15 @@ func (chain *LevelObjectChain) AcquireLink() (index data.LevelObjectChainIndex, 
 
 // ReleaseLink releases a link from the chain.
 func (chain *LevelObjectChain) ReleaseLink(index data.LevelObjectChainIndex) {
+	link := chain.link(index)
+
+	chain.link(link.PreviousIndex()).SetNextIndex(link.NextIndex())
+	if link.NextIndex().IsStart() {
+		chain.start.SetReferenceIndex(link.PreviousIndex())
+	} else {
+		chain.link(link.NextIndex()).SetPreviousIndex(link.PreviousIndex())
+	}
+	chain.addLinkToAvailablePool(index)
 }
 
 func (chain *LevelObjectChain) addLinkToAvailablePool(index data.LevelObjectChainIndex) {

@@ -67,7 +67,7 @@ func (suite *LevelObjectchaInSuite) TestAcquireLinkUpdatesEntries(c *check.C) {
 		Previous: uint16(index1)})
 }
 
-func (suite *LevelObjectchaInSuite) TestAcquireReturnsErrorWhenExhausted(c *check.C) {
+func (suite *LevelObjectchaInSuite) TestAcquireLinkReturnsErrorWhenExhausted(c *check.C) {
 	suite.chain.AcquireLink()
 	suite.chain.AcquireLink()
 	suite.chain.AcquireLink()
@@ -75,4 +75,33 @@ func (suite *LevelObjectchaInSuite) TestAcquireReturnsErrorWhenExhausted(c *chec
 	_, err := suite.chain.AcquireLink()
 
 	c.Check(err, check.NotNil)
+}
+
+func (suite *LevelObjectchaInSuite) TestReleaseLinkPutsEntryBackOnAvailablePool(c *check.C) {
+	index, _ := suite.chain.AcquireLink()
+
+	suite.chain.ReleaseLink(index)
+
+	c.Check(suite.entries[index].Previous, check.Not(check.Equals), uint16(data.LevelObjectChainStartIndex))
+	c.Check(suite.entries[0].Previous, check.Equals, uint16(index))
+}
+
+func (suite *LevelObjectchaInSuite) TestReleaseLinkRestoresUpdatesStartPointer(c *check.C) {
+	prevIndex, _ := suite.chain.AcquireLink()
+	index, _ := suite.chain.AcquireLink()
+
+	suite.chain.ReleaseLink(index)
+
+	c.Check(suite.entries[0].LevelObjectTableIndex, check.Equals, uint16(prevIndex))
+}
+
+func (suite *LevelObjectchaInSuite) TestReleaseLinkRestoresNeighbours(c *check.C) {
+	prevIndex, _ := suite.chain.AcquireLink()
+	index, _ := suite.chain.AcquireLink()
+	nextIndex, _ := suite.chain.AcquireLink()
+
+	suite.chain.ReleaseLink(index)
+
+	c.Check(suite.entries[prevIndex].Next, check.Equals, uint16(nextIndex))
+	c.Check(suite.entries[nextIndex].Previous, check.Equals, uint16(prevIndex))
 }
