@@ -1,6 +1,8 @@
 package logic
 
 import (
+	"fmt"
+
 	"github.com/inkyblackness/res/data"
 )
 
@@ -32,14 +34,29 @@ func (chain *LevelObjectChain) InitializeLevelObjectChain(size int) {
 	}
 }
 
-// AcquireLevelObjectChainLink tries to reserve a new chain link from the chain.
+// AcquireLink tries to reserve a new chain link from the chain.
 // If the chain is exhausted, an error is returned.
-func (chain *LevelObjectChain) AcquireLevelObjectChainLink() (index data.LevelObjectChainIndex, err error) {
+func (chain *LevelObjectChain) AcquireLink() (index data.LevelObjectChainIndex, err error) {
+	index = chain.start.PreviousIndex()
+
+	if !index.IsStart() {
+		link := chain.link(index)
+		previousIndex := chain.start.ReferenceIndex()
+		previous := chain.link(previousIndex)
+
+		chain.start.SetPreviousIndex(link.PreviousIndex())
+		chain.start.SetReferenceIndex(index)
+		previous.SetNextIndex(index)
+		link.SetPreviousIndex(previousIndex)
+	} else {
+		err = fmt.Errorf("Object chain exhausted - Can not add more entries.")
+	}
+
 	return
 }
 
-// ReleaseLevelObjectChainLink releases a link from the chain.
-func (chain *LevelObjectChain) ReleaseLevelObjectChainLink(index data.LevelObjectChainIndex) {
+// ReleaseLink releases a link from the chain.
+func (chain *LevelObjectChain) ReleaseLink(index data.LevelObjectChainIndex) {
 }
 
 func (chain *LevelObjectChain) addLinkToAvailablePool(index data.LevelObjectChainIndex) {
