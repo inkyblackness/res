@@ -6,22 +6,22 @@ import (
 	check "gopkg.in/check.v1"
 )
 
-type LevelObjectchaInSuite struct {
+type LevelObjectChainSuite struct {
 	chain   *LevelObjectChain
 	entries [4]data.LevelObjectPrefix
 }
 
-var _ = check.Suite(&LevelObjectchaInSuite{})
+var _ = check.Suite(&LevelObjectChainSuite{})
 
-func (suite *LevelObjectchaInSuite) SetUpTest(c *check.C) {
+func (suite *LevelObjectChainSuite) SetUpTest(c *check.C) {
 	linkGetter := func(index data.LevelObjectChainIndex) LevelObjectChainLink {
 		return &suite.entries[index]
 	}
 	suite.chain = NewLevelObjectChain(&suite.entries[data.LevelObjectChainStartIndex], linkGetter)
-	suite.chain.InitializeLevelObjectChain(len(suite.entries) - 1)
+	suite.chain.Initialize(len(suite.entries) - 1)
 }
 
-func (suite *LevelObjectchaInSuite) TestInitializeResetsAllFields(c *check.C) {
+func (suite *LevelObjectChainSuite) TestInitializeResetsAllFields(c *check.C) {
 	c.Check(suite.entries[0], check.DeepEquals, data.LevelObjectPrefix{
 		LevelObjectTableIndex: 0,
 		Next:     0,
@@ -32,13 +32,13 @@ func (suite *LevelObjectchaInSuite) TestInitializeResetsAllFields(c *check.C) {
 	c.Check(suite.entries[3].Previous, check.Equals, uint16(0))
 }
 
-func (suite *LevelObjectchaInSuite) TestAcquireLinkReturnsIndexForNewEntry(c *check.C) {
+func (suite *LevelObjectChainSuite) TestAcquireLinkReturnsIndexForNewEntry(c *check.C) {
 	index, _ := suite.chain.AcquireLink()
 
 	c.Check(index, check.Not(check.Equals), data.LevelObjectChainIndex(0))
 }
 
-func (suite *LevelObjectchaInSuite) TestAcquireLinkUpdatesStartWhenEmpty(c *check.C) {
+func (suite *LevelObjectChainSuite) TestAcquireLinkUpdatesStartWhenEmpty(c *check.C) {
 	index, _ := suite.chain.AcquireLink()
 
 	c.Check(suite.entries[0], check.DeepEquals, data.LevelObjectPrefix{
@@ -47,7 +47,7 @@ func (suite *LevelObjectchaInSuite) TestAcquireLinkUpdatesStartWhenEmpty(c *chec
 		Previous: 2})
 }
 
-func (suite *LevelObjectchaInSuite) TestAcquireLinkUpdatesEntries(c *check.C) {
+func (suite *LevelObjectChainSuite) TestAcquireLinkUpdatesEntries(c *check.C) {
 	index1, _ := suite.chain.AcquireLink()
 	index2, _ := suite.chain.AcquireLink()
 
@@ -67,7 +67,7 @@ func (suite *LevelObjectchaInSuite) TestAcquireLinkUpdatesEntries(c *check.C) {
 		Previous: uint16(index1)})
 }
 
-func (suite *LevelObjectchaInSuite) TestAcquireLinkReturnsErrorWhenExhausted(c *check.C) {
+func (suite *LevelObjectChainSuite) TestAcquireLinkReturnsErrorWhenExhausted(c *check.C) {
 	suite.chain.AcquireLink()
 	suite.chain.AcquireLink()
 	suite.chain.AcquireLink()
@@ -77,7 +77,7 @@ func (suite *LevelObjectchaInSuite) TestAcquireLinkReturnsErrorWhenExhausted(c *
 	c.Check(err, check.NotNil)
 }
 
-func (suite *LevelObjectchaInSuite) TestReleaseLinkPutsEntryBackOnAvailablePool(c *check.C) {
+func (suite *LevelObjectChainSuite) TestReleaseLinkPutsEntryBackOnAvailablePool(c *check.C) {
 	index, _ := suite.chain.AcquireLink()
 
 	suite.chain.ReleaseLink(index)
@@ -86,7 +86,7 @@ func (suite *LevelObjectchaInSuite) TestReleaseLinkPutsEntryBackOnAvailablePool(
 	c.Check(suite.entries[0].Previous, check.Equals, uint16(index))
 }
 
-func (suite *LevelObjectchaInSuite) TestReleaseLinkRestoresUpdatesStartPointer(c *check.C) {
+func (suite *LevelObjectChainSuite) TestReleaseLinkRestoresUpdatesStartPointer(c *check.C) {
 	prevIndex, _ := suite.chain.AcquireLink()
 	index, _ := suite.chain.AcquireLink()
 
@@ -95,7 +95,7 @@ func (suite *LevelObjectchaInSuite) TestReleaseLinkRestoresUpdatesStartPointer(c
 	c.Check(suite.entries[0].LevelObjectTableIndex, check.Equals, uint16(prevIndex))
 }
 
-func (suite *LevelObjectchaInSuite) TestReleaseLinkRestoresNeighbours(c *check.C) {
+func (suite *LevelObjectChainSuite) TestReleaseLinkRestoresNeighbours(c *check.C) {
 	prevIndex, _ := suite.chain.AcquireLink()
 	index, _ := suite.chain.AcquireLink()
 	nextIndex, _ := suite.chain.AcquireLink()

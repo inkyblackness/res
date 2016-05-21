@@ -20,10 +20,10 @@ func NewLevelObjectChain(start LevelObjectChainStart, linkGetter LevelObjectChai
 	return &LevelObjectChain{start: start, link: linkGetter}
 }
 
-// InitializeLevelObjectChain initializes a chain of level objects.
+// Initialize resets all entries to an clean state.
 // All links will be added to the pool of available entries.
 // The provided size is the number of possible links - excluding the start entry.
-func (chain *LevelObjectChain) InitializeLevelObjectChain(size int) {
+func (chain *LevelObjectChain) Initialize(size int) {
 	chain.start.SetReferenceIndex(0)
 	chain.start.SetNextIndex(0)
 	chain.start.SetPreviousIndex(0)
