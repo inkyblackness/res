@@ -17,7 +17,8 @@ func (suite *InstanceSuite) SetUpTest(c *check.C) {
 		With("subField1", 1, 2)
 
 	sub2 := New().
-		With("subFieldA", 0, 2)
+		With("subFieldA", 0, 2).
+		With("subFieldB", 2, 1)
 
 	desc := New().
 		With("field0", 0, 1).
@@ -119,4 +120,17 @@ func (suite *InstanceSuite) TestRawAllowsModificationOfOriginalData(c *check.C) 
 	suite.inst.Refined("sub2").Raw()[1] = 0xEF
 
 	c.Check(suite.data[7], check.Equals, byte(0xEF))
+}
+
+func (suite *InstanceSuite) TestUndefinedReturnsUndefinedBits(c *check.C) {
+	data := suite.inst.Undefined()
+
+	c.Check(data, check.DeepEquals, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF})
+}
+
+func (suite *InstanceSuite) TestUndefinedConsidersActiveRefinements(c *check.C) {
+	suite.inst.Set("field0", 0)
+	data := suite.inst.Undefined()
+
+	c.Check(data, check.DeepEquals, []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF})
 }

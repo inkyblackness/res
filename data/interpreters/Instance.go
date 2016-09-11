@@ -1,5 +1,9 @@
 package interpreters
 
+import (
+	"bytes"
+)
+
 // Instance is one instantiated interpreter for a data block,
 // based on a predetermined description.
 type Instance struct {
@@ -10,6 +14,31 @@ type Instance struct {
 // Raw returns the raw array.
 func (inst *Instance) Raw() []byte {
 	return inst.data
+}
+
+// Undefined returns a byte array that specifies which bits were not
+// specified. The array has the same length as the underlying buffer and
+// has all bits set to 1 where no field or active refinement is present.
+func (inst *Instance) Undefined() []byte {
+	mask := bytes.Repeat([]byte{0xFF}, len(inst.data))
+
+	for _, e := range inst.desc.fields {
+		if inst.isValidRange(e) {
+			copy(mask[e.start:e.start+e.count], bytes.Repeat([]byte{0x00}, e.count))
+		}
+	}
+	for key, r := range inst.desc.refinements {
+		if r.predicate(inst) {
+			refined := inst.Refined(key)
+			subMask := refined.Undefined()
+
+			for index, m := range subMask {
+				mask[r.start+index] &= m
+			}
+		}
+	}
+
+	return mask
 }
 
 // Keys returns an array of all registered keys, sorted by start index
