@@ -11,8 +11,6 @@ func init() {
 
 	projectiles := newInterpreterEntry(baseProjectile)
 
-	explosives := newInterpreterEntry(baseExplosive)
-
 	hardware := newInterpreterEntry(baseHardware)
 
 	software := newInterpreterEntry(baseSoftware)
@@ -37,7 +35,7 @@ func init() {
 	realWorldEntries.set(0, initWeapons())
 	realWorldEntries.set(1, newInterpreterEntry(interpreters.New())) // have no data
 	realWorldEntries.set(2, projectiles)
-	realWorldEntries.set(3, explosives)
+	realWorldEntries.set(3, initExplosives())
 	realWorldEntries.set(4, newInterpreterEntry(interpreters.New())) // have no data
 	realWorldEntries.set(5, hardware)
 	realWorldEntries.set(6, software)

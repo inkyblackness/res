@@ -15,8 +15,16 @@ var projectileWeapon = baseWeapon.
 	With("AmmoCount", 1, 1)
 
 func initWeapons() interpreterRetriever {
+	projectileWeapons := newInterpreterLeaf(projectileWeapon)
+	energyWeapons := newInterpreterLeaf(energyWeapon)
+
 	class := newInterpreterEntry(baseWeapon)
-	class.set(1, newInterpreterLeaf(projectileWeapon))
+	class.set(0, projectileWeapons)
+	class.set(1, projectileWeapons)
+	class.set(2, projectileWeapons)
+
+	class.set(4, energyWeapons)
+	class.set(5, energyWeapons)
 
 	return class
 }
