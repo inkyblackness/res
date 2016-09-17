@@ -13,7 +13,7 @@ func init() {
 
 	hardware := newInterpreterEntry(baseHardware)
 
-	software := newInterpreterEntry(baseSoftware)
+	software := initSoftware()
 
 	scenery := newInterpreterEntry(baseScenery)
 
@@ -49,4 +49,6 @@ func init() {
 	realWorldEntries.set(14, critters)
 
 	cyberspaceEntries = newInterpreterEntry(interpreters.New())
+	cyberspaceEntries.set(6, software)
+	cyberspaceEntries.set(7, initCyberspaceScenery())
 }
