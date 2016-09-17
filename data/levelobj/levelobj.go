@@ -11,13 +11,7 @@ func init() {
 
 	projectiles := newInterpreterEntry(baseProjectile)
 
-	hardware := newInterpreterEntry(baseHardware)
-
 	software := initSoftware()
-
-	scenery := newInterpreterEntry(baseScenery)
-
-	items := newInterpreterEntry(baseItem)
 
 	panels := newInterpreterEntry(basePanel)
 
@@ -37,10 +31,10 @@ func init() {
 	realWorldEntries.set(2, projectiles)
 	realWorldEntries.set(3, initExplosives())
 	realWorldEntries.set(4, newInterpreterEntry(interpreters.New())) // have no data
-	realWorldEntries.set(5, hardware)
+	realWorldEntries.set(5, newInterpreterEntry(baseHardware))
 	realWorldEntries.set(6, software)
-	realWorldEntries.set(7, scenery)
-	realWorldEntries.set(8, items)
+	realWorldEntries.set(7, initScenery())
+	realWorldEntries.set(8, initItems())
 	realWorldEntries.set(9, panels)
 	realWorldEntries.set(10, barriers)
 	realWorldEntries.set(11, animations)

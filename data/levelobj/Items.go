@@ -5,3 +5,11 @@ import (
 )
 
 var baseItem = interpreters.New()
+
+func initItems() interpreterRetriever {
+
+	class := newInterpreterEntry(baseItem)
+	//class.set(0, electronics)
+
+	return class
+}
