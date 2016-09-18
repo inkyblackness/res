@@ -45,4 +45,5 @@ func init() {
 	cyberspaceEntries = newInterpreterEntry(interpreters.New())
 	cyberspaceEntries.set(6, software)
 	cyberspaceEntries.set(7, initCyberspaceScenery())
+	cyberspaceEntries.set(8, initCyberspaceItems())
 }
