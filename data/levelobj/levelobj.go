@@ -10,19 +10,11 @@ var cyberspaceEntries *interpreterEntry
 func init() {
 
 	projectiles := newInterpreterEntry(baseProjectile)
-
 	software := initSoftware()
-
-	panels := newInterpreterEntry(basePanel)
-
 	barriers := newInterpreterEntry(baseBarrier)
-
 	animations := newInterpreterEntry(baseAnimation)
-
-	markers := newInterpreterEntry(baseMarker)
-
+	markers := initMarkers()
 	containers := newInterpreterEntry(baseContainer)
-
 	critters := newInterpreterEntry(baseCritter)
 
 	realWorldEntries = newInterpreterEntry(interpreters.New())
@@ -35,7 +27,7 @@ func init() {
 	realWorldEntries.set(6, software)
 	realWorldEntries.set(7, initScenery())
 	realWorldEntries.set(8, initItems())
-	realWorldEntries.set(9, panels)
+	realWorldEntries.set(9, initPanels())
 	realWorldEntries.set(10, barriers)
 	realWorldEntries.set(11, animations)
 	realWorldEntries.set(12, markers)
@@ -46,4 +38,6 @@ func init() {
 	cyberspaceEntries.set(6, software)
 	cyberspaceEntries.set(7, initCyberspaceScenery())
 	cyberspaceEntries.set(8, initCyberspaceItems())
+	cyberspaceEntries.set(9, initCyberspacePanels())
+	cyberspaceEntries.set(12, markers)
 }

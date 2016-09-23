@@ -9,6 +9,11 @@ func Always(inst *Instance) bool {
 	return true
 }
 
+// Never is a predicate that returns false for every call.
+func Never(inst *Instance) bool {
+	return false
+}
+
 // Description is the meta information about a data interpreter. A description
 // is an immutable object that provides new descriptions with any modification.
 type Description struct {
