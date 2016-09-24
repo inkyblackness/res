@@ -11,7 +11,6 @@ func init() {
 
 	projectiles := newInterpreterEntry(baseProjectile)
 	software := initSoftware()
-	barriers := newInterpreterEntry(baseBarrier)
 	animations := newInterpreterEntry(baseAnimation)
 	markers := initMarkers()
 	containers := newInterpreterEntry(baseContainer)
@@ -28,7 +27,7 @@ func init() {
 	realWorldEntries.set(7, initScenery())
 	realWorldEntries.set(8, initItems())
 	realWorldEntries.set(9, initPanels())
-	realWorldEntries.set(10, barriers)
+	realWorldEntries.set(10, initBarriers())
 	realWorldEntries.set(11, animations)
 	realWorldEntries.set(12, markers)
 	realWorldEntries.set(13, containers)
