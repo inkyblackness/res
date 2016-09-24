@@ -146,7 +146,7 @@ var doorControlChange = interpreters.New().
 
 var setConditionChange = interpreters.New().
 	With("ObjectIndex", 0, 4).
-	Refining("Condition", 4, 4, interpreters.New(), interpreters.Always)
+	With("Condition", 4, 4)
 
 var makeItemRadioactiveChange = interpreters.New().
 	With("ObjectIndex", 0, 4).
@@ -158,7 +158,7 @@ var orientedTriggerObjectChange = interpreters.New().
 	With("ObjectIndex", 4, 2)
 
 var closeDataMfdChange = interpreters.New().
-	With("ObjectIndex", 4, 4)
+	With("ObjectIndex", 0, 4)
 
 var changeStateDetails = interpreters.New().
 	With("Type", 0, 4).
