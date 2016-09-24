@@ -69,6 +69,25 @@ var puzzleSpecificData = interpreters.New().
 var puzzlePanel = inputPanel.
 	Refining("Puzzle", 6, 18, puzzleSpecificData, interpreters.Always)
 
+var elevatorPanel = inputPanel.
+	With("DestinationObjectIndex2", 6, 2).
+	With("DestinationObjectIndex1", 8, 2).
+	With("DestinationObjectIndex4", 10, 2).
+	With("DestinationObjectIndex3", 12, 2).
+	With("DestinationObjectIndex6", 14, 2).
+	With("DestinationObjectIndex5", 16, 2).
+	With("AccessibleBitmask", 18, 2).
+	With("ElevatorShaftBitmask", 20, 2)
+
+var numberPad = inputPanel.
+	With("Combination1", 6, 2).
+	With("TriggerObjectIndex1", 8, 2).
+	With("Combination2", 10, 2).
+	With("TriggerObjectIndex2", 12, 2).
+	With("Combination3", 14, 2).
+	With("TriggerObjectIndex3", 16, 2).
+	With("FailObjectIndex", 18, 2)
+
 var inactiveCyberspaceSwitch = gameVariablePanel.
 	Refining("Action", 0, 22, actions.Unconditional(), interpreters.Always)
 
@@ -88,7 +107,21 @@ func initPanels() interpreterRetriever {
 	stations.set(0, newInterpreterLeaf(cyberspaceTerminal))
 	stations.set(1, newInterpreterLeaf(energyChargeStation))
 
+	puzzles := newInterpreterLeaf(puzzlePanel)
+	elevatorPanels := newInterpreterLeaf(elevatorPanel)
+	numberPads := newInterpreterLeaf(numberPad)
 	inputPanels := newInterpreterEntry(inputPanel)
+	inputPanels.set(0, puzzles)
+	inputPanels.set(1, puzzles)
+	inputPanels.set(2, puzzles)
+	inputPanels.set(3, puzzles)
+	inputPanels.set(4, elevatorPanels)
+	inputPanels.set(5, elevatorPanels)
+	inputPanels.set(6, elevatorPanels)
+	inputPanels.set(7, numberPads)
+	inputPanels.set(8, numberPads)
+	inputPanels.set(9, puzzles)
+	inputPanels.set(10, puzzles)
 
 	cyberspaceSwitches := newInterpreterEntry(basePanel)
 	cyberspaceSwitches.set(0, newInterpreterLeaf(inactiveCyberspaceSwitch))
