@@ -13,10 +13,22 @@ var repulsor = baseMarker.
 	With("EndHeight", 14, 4).
 	With("Flags", 18, 4)
 
+var aiHint = baseMarker.
+	With("NextObjectIndex", 6, 2)
+
 var baseTrigger = baseMarker.
 	Refining("Action", 0, 22, actions.Unconditional(), interpreters.Always)
 
 var gameVariableTrigger = baseTrigger.
+	Refining("Condition", 2, 4, conditions.GameVariable(), interpreters.Always)
+
+var puzzleData = interpreters.New().
+	With("Data", 0, 16)
+
+var nullTrigger = baseMarker.
+	Refining("Action", 0, 22, actions.Unconditional().
+		Refining("PuzzleData", 6, 16, puzzleData, func(inst *interpreters.Instance) bool { return inst.Get("Type") == 0 }),
+		interpreters.Always).
 	Refining("Condition", 2, 4, conditions.GameVariable(), interpreters.Always)
 
 var deathWatchTrigger = baseTrigger.
@@ -41,10 +53,11 @@ func initMarkers() interpreterRetriever {
 
 	trigger := newInterpreterEntry(baseMarker)
 	trigger.set(0, gameVariableTriggers) // tile entry trigger
-	trigger.set(1, gameVariableTriggers) // null trigger
+	trigger.set(1, newInterpreterLeaf(nullTrigger))
 	trigger.set(2, gameVariableTriggers) // floor trigger
 	trigger.set(3, gameVariableTriggers) // player death trigger
 	trigger.set(4, newInterpreterLeaf(deathWatchTrigger))
+	trigger.set(7, newInterpreterLeaf(aiHint))
 	trigger.set(8, gameVariableTriggers) // level entry trigger
 	trigger.set(10, newInterpreterLeaf(repulsor))
 	trigger.set(11, newInterpreterLeaf(ecologyTrigger))
