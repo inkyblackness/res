@@ -22,9 +22,9 @@ var standardRecepticle = recepticlePanel.
 	Refining("Condition", 2, 4, conditions.ObjectType(), interpreters.Always)
 
 var antennaRelayPanel = recepticlePanel.
-	With("TriggerObjectIndex1", 6, 2).
-	With("TriggerObjectIndex2", 10, 2).
-	With("DestroyObjectIndex", 14, 2)
+	With("TriggerObjectIndex1", 6, 2).As(interpreters.ObjectIndex()).
+	With("TriggerObjectIndex2", 10, 2).As(interpreters.ObjectIndex()).
+	With("DestroyObjectIndex", 14, 2).As(interpreters.ObjectIndex())
 
 var retinalIDScanner = recepticlePanel.
 	Refining("Action", 0, 22, actions.Unconditional(), interpreters.Always)
@@ -39,13 +39,13 @@ var cyberspaceTerminal = gameVariablePanel.
 var energyChargeStation = gameVariablePanel.
 	With("EnergyDelta", 6, 4).
 	With("RechargeTime", 10, 4).
-	With("TriggerObjectIndex", 14, 4).
+	With("TriggerObjectIndex", 14, 4).As(interpreters.ObjectIndex()).
 	With("RechargedTimestamp", 18, 4)
 
 var inputPanel = gameVariablePanel
 
 var wirePuzzleData = interpreters.New().
-	With("TargetObjectIndex", 0, 4).
+	With("TargetObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("Layout", 4, 1).
 	With("TargetPowerLevel", 5, 1).
 	With("CurrentPowerLevel", 6, 1).
@@ -53,8 +53,8 @@ var wirePuzzleData = interpreters.New().
 	With("CurrentState", 12, 4)
 
 var blockPuzzleData = interpreters.New().
-	With("TargetObjectIndex", 0, 4).
-	With("StateStoreObjectIndex", 4, 2).
+	With("TargetObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
+	With("StateStoreObjectIndex", 4, 2).As(interpreters.ObjectIndex()).
 	With("Layout", 8, 4)
 
 var puzzleSpecificData = interpreters.New().
@@ -81,11 +81,11 @@ var elevatorPanel = inputPanel.
 
 var numberPad = inputPanel.
 	With("Combination1", 6, 2).
-	With("TriggerObjectIndex1", 8, 2).
+	With("TriggerObjectIndex1", 8, 2).As(interpreters.ObjectIndex()).
 	With("Combination2", 10, 2).
-	With("TriggerObjectIndex2", 12, 2).
+	With("TriggerObjectIndex2", 12, 2).As(interpreters.ObjectIndex()).
 	With("Combination3", 14, 2).
-	With("TriggerObjectIndex3", 16, 2).
+	With("TriggerObjectIndex3", 16, 2).As(interpreters.ObjectIndex()).
 	With("FailObjectIndex", 18, 2)
 
 var inactiveCyberspaceSwitch = gameVariablePanel.

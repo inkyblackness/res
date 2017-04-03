@@ -15,14 +15,14 @@ var displayScenery = baseScenery.
 
 var displayControlPedestal = baseScenery.
 	With("FrameCount", 0, 2).
-	With("TriggerObjectIndex", 2, 2).
+	With("TriggerObjectIndex", 2, 2).As(interpreters.ObjectIndex()).
 	With("AlternationType", 4, 2).
 	With("PictureSource", 6, 2).
 	With("AlternateSource", 8, 2)
 
 var cabinetFurniture = baseScenery.
-	With("Object1Index", 2, 2).
-	With("Object2Index", 4, 2)
+	With("Object1Index", 2, 2).As(interpreters.ObjectIndex()).
+	With("Object2Index", 4, 2).As(interpreters.ObjectIndex())
 
 var texturableFurniture = baseScenery.
 	With("TextureIndex", 6, 2)
@@ -36,7 +36,7 @@ var textureMapScenery = baseScenery.
 	With("TextureIndex", 6, 2)
 
 var buttonControlPedestal = baseScenery.
-	With("TriggerObjectIndex", 2, 2)
+	With("TriggerObjectIndex", 2, 2).As(interpreters.ObjectIndex())
 
 var surgicalMachine = baseScenery.
 	With("BrokenState", 2, 1).

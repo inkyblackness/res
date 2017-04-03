@@ -21,7 +21,7 @@ var changeHealthDetails = interpreters.New().
 	With("PowerChangeFlag", 10, 2)
 
 var cloneMoveObjectDetails = interpreters.New().
-	With("ObjectIndex", 0, 2).
+	With("ObjectIndex", 0, 2).As(interpreters.ObjectIndex()).
 	With("MoveFlag", 2, 2).
 	With("TargetX", 4, 4).
 	With("TargetY", 8, 4).
@@ -39,17 +39,17 @@ var showCutsceneDetails = interpreters.New().
 	With("EndGameFlag", 4, 4)
 
 var triggerOtherObjectsDetails = interpreters.New().
-	With("Object1Index", 0, 2).
+	With("Object1Index", 0, 2).As(interpreters.ObjectIndex()).
 	With("Object1Delay", 2, 2).
-	With("Object2Index", 4, 2).
+	With("Object2Index", 4, 2).As(interpreters.ObjectIndex()).
 	With("Object2Delay", 6, 2).
-	With("Object3Index", 8, 2).
+	With("Object3Index", 8, 2).As(interpreters.ObjectIndex()).
 	With("Object3Delay", 10, 2).
-	With("Object4Index", 12, 2).
+	With("Object4Index", 12, 2).As(interpreters.ObjectIndex()).
 	With("Object4Delay", 14, 2)
 
 var changeLightingDetails = interpreters.New().
-	With("ReferenceObjectIndex", 2, 2).
+	With("ReferenceObjectIndex", 2, 2).As(interpreters.ObjectIndex()).
 	With("TransitionType", 4, 2).
 	With("LightSurface", 10, 2)
 
@@ -66,20 +66,20 @@ var changeTileHeightsDetails = interpreters.New().
 	With("TargetCeilingHeight", 10, 2)
 
 var randomTimerDetails = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("TimeLimit", 4, 4).
 	With("ActivationValue", 8, 4)
 
 var cycleObjectsDetails = interpreters.New().
-	With("ObjectIndex1", 0, 4).
-	With("ObjectIndex2", 4, 4).
-	With("ObjectIndex3", 8, 4).
+	With("ObjectIndex1", 0, 4).As(interpreters.ObjectIndex()).
+	With("ObjectIndex2", 4, 4).As(interpreters.ObjectIndex()).
+	With("ObjectIndex3", 8, 4).As(interpreters.ObjectIndex()).
 	With("NextObject", 12, 4)
 
 var deleteObjectsDetails = interpreters.New().
-	With("ObjectIndex1", 0, 2).
-	With("ObjectIndex2", 4, 2).
-	With("ObjectIndex3", 8, 2).
+	With("ObjectIndex1", 0, 2).As(interpreters.ObjectIndex()).
+	With("ObjectIndex2", 4, 2).As(interpreters.ObjectIndex()).
+	With("ObjectIndex3", 8, 2).As(interpreters.ObjectIndex()).
 	With("MessageIndex", 12, 2)
 
 var receiveEmailDetails = interpreters.New().
@@ -91,14 +91,14 @@ var changeEffectDetails = interpreters.New().
 	With("EffectType", 4, 4)
 
 var setObjectParameterDetails = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("Value1", 4, 4).
 	With("Value2", 8, 4).
 	With("Value3", 12, 4)
 
 var setScreenPictureDetails = interpreters.New().
-	With("ScreenObjectIndex1", 0, 2).
-	With("ScreenObjectIndex2", 2, 2).
+	With("ScreenObjectIndex1", 0, 2).As(interpreters.ObjectIndex()).
+	With("ScreenObjectIndex2", 2, 2).As(interpreters.ObjectIndex()).
 	With("SingleSequenceSource", 4, 4).
 	With("LoopSequenceSource", 8, 4)
 
@@ -112,53 +112,53 @@ var spawnObjectsDetails = interpreters.New().
 	With("ObjectClass", 2, 1).
 	With("ObjectSubclass", 1, 1).
 	With("ObjectType", 0, 1).
-	With("ReferenceObject1Index", 4, 2).
-	With("ReferenceObject2Index", 6, 2).
+	With("ReferenceObject1Index", 4, 2).As(interpreters.ObjectIndex()).
+	With("ReferenceObject2Index", 6, 2).As(interpreters.ObjectIndex()).
 	With("NumberOfObjects", 8, 4)
 
 var changeObjectTypeDetails = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("NewType", 4, 2)
 
 // Change state block
 
 var toggleRepulsorChange = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("OffTextureIndex", 4, 1).
 	With("OnTextureIndex", 5, 1)
 
 var showGameCodeDigitChange = interpreters.New().
-	With("ScreenObjectIndex", 0, 4).
+	With("ScreenObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("DigitNumber", 4, 4)
 
 var setParameterFromVariableChange = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("ParameterNumber", 4, 4).
 	With("VariableIndex", 8, 4)
 
 var setButtonStateChange = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("NewState", 4, 4)
 
 var doorControlChange = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("ControlValue", 4, 4)
 
 var setConditionChange = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("Condition", 4, 4)
 
 var makeItemRadioactiveChange = interpreters.New().
-	With("ObjectIndex", 0, 4).
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("WatchedObjectIndex", 4, 2).
 	With("WatchedObjectTriggerState", 6, 2)
 
 var orientedTriggerObjectChange = interpreters.New().
 	With("HorizontalDirection", 0, 2).
-	With("ObjectIndex", 4, 2)
+	With("ObjectIndex", 4, 2).As(interpreters.ObjectIndex())
 
 var closeDataMfdChange = interpreters.New().
-	With("ObjectIndex", 0, 4)
+	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex())
 
 var changeStateDetails = interpreters.New().
 	With("Type", 0, 4).
