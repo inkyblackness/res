@@ -58,7 +58,7 @@ var blockPuzzleData = interpreters.New().
 	With("Layout", 8, 4)
 
 var puzzleSpecificData = interpreters.New().
-	With("Type", 7, 1).
+	With("Type", 7, 1).As(interpreters.EnumValue(map[uint32]string{0: "WirePuzzle", 0x10: "BlockPuzzle"})).
 	Refining("Wire", 0, 18, wirePuzzleData, func(inst *interpreters.Instance) bool {
 		return inst.Get("Type") == 0
 	}).
