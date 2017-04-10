@@ -13,6 +13,13 @@ type EnumValueHandler func(values map[uint32]string)
 // ObjectIndexHandler is for object indices.
 type ObjectIndexHandler func()
 
+// RangedValue creates a field range for specific minimum and maximum values.
+func RangedValue(minValue, maxValue int64) FieldRange {
+	return func(simpl *Simplifier) bool {
+		return simpl.rangedValue(minValue, maxValue)
+	}
+}
+
 // EnumValue creates a field range describing enumerated values.
 func EnumValue(values map[uint32]string) FieldRange {
 	return func(simpl *Simplifier) bool {
@@ -42,8 +49,17 @@ func NewSimplifier(rawValueHandler RawValueHandler) *Simplifier {
 
 func (simpl *Simplifier) rawValue(e *entry) {
 	max := int64(math.Pow(2, float64(e.count*8)))
-	half := max / 2
-	simpl.rawValueHandler(-half, half-1)
+	if max == 256 {
+		simpl.rawValueHandler(0, 255)
+	} else {
+		half := max / 2
+		simpl.rawValueHandler(-1, half-1)
+	}
+}
+
+func (simpl *Simplifier) rangedValue(minValue, maxValue int64) bool {
+	simpl.rawValueHandler(minValue, maxValue)
+	return true
 }
 
 // SetEnumValueHandler registers the handler for enumerations.
