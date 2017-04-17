@@ -73,8 +73,8 @@ var effectDetails = interpreters.New().
 var changeTileHeightsDetails = interpreters.New().
 	With("TileX", 0, 4).As(interpreters.RangedValue(1, 63)).
 	With("TileY", 4, 4).As(interpreters.RangedValue(1, 63)).
-	With("TargetFloorHeight", 8, 2).
-	With("TargetCeilingHeight", 10, 2)
+	With("TargetFloorHeight", 8, 2).As(interpreters.RangedValue(0, 0x0FFF)).
+	With("TargetCeilingHeight", 10, 2).As(interpreters.RangedValue(0, 0x0FFF))
 
 var randomTimerDetails = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
@@ -99,7 +99,7 @@ var receiveEmailDetails = interpreters.New().
 var changeEffectDetails = interpreters.New().
 	With("DeltaValue", 0, 2).
 	With("EffectChangeFlag", 2, 2).As(interpreters.EnumValue(map[uint32]string{0: "Add Delta", 1: "Remove Delta"})).
-	With("EffectType", 4, 4).As(interpreters.EnumValue(map[uint32]string{0: "Radiation poisioning", 1: "Bio contamination"}))
+	With("EffectType", 4, 4).As(interpreters.EnumValue(map[uint32]string{0: "Radiation poisoning", 1: "Bio contamination"}))
 
 var setObjectParameterDetails = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
@@ -161,7 +161,7 @@ var setConditionChange = interpreters.New().
 
 var makeItemRadioactiveChange = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
-	With("WatchedObjectIndex", 4, 2).
+	With("WatchedObjectIndex", 4, 2).As(interpreters.ObjectIndex()).
 	With("WatchedObjectTriggerState", 6, 2)
 
 var orientedTriggerObjectChange = interpreters.New().

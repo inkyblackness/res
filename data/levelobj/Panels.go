@@ -86,7 +86,7 @@ var numberPad = inputPanel.
 	With("TriggerObjectIndex2", 12, 2).As(interpreters.ObjectIndex()).
 	With("Combination3", 14, 2).As(interpreters.SpecialValue("BinaryCodedDecimal")).
 	With("TriggerObjectIndex3", 16, 2).As(interpreters.ObjectIndex()).
-	With("FailObjectIndex", 18, 2)
+	With("FailObjectIndex", 18, 2).As(interpreters.ObjectIndex())
 
 var inactiveCyberspaceSwitch = gameVariablePanel.
 	Refining("Action", 0, 22, actions.Unconditional(), interpreters.Always)
