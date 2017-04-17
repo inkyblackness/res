@@ -13,6 +13,9 @@ type EnumValueHandler func(values map[uint32]string)
 // ObjectIndexHandler is for object indices.
 type ObjectIndexHandler func()
 
+// SpecialHandler is for rare occasions.
+type SpecialHandler func()
+
 // RangedValue creates a field range for specific minimum and maximum values.
 func RangedValue(minValue, maxValue int64) FieldRange {
 	return func(simpl *Simplifier) bool {
@@ -34,17 +37,27 @@ func ObjectIndex() FieldRange {
 	}
 }
 
+// SpecialValue creates a field range for special fields.
+func SpecialValue(specialType string) FieldRange {
+	return func(simpl *Simplifier) bool {
+		return simpl.specialValue(specialType)
+	}
+}
+
 // Simplifier forwards descriptions in a way the requester can use.
 type Simplifier struct {
 	rawValueHandler    RawValueHandler
 	enumValueHandler   EnumValueHandler
 	objectIndexHandler ObjectIndexHandler
+	specialHandler     map[string]SpecialHandler
 }
 
 // NewSimplifier returns a new instance of a simplifier, with the minimal
 // handler set.
 func NewSimplifier(rawValueHandler RawValueHandler) *Simplifier {
-	return &Simplifier{rawValueHandler: rawValueHandler}
+	return &Simplifier{
+		rawValueHandler: rawValueHandler,
+		specialHandler:  make(map[string]SpecialHandler)}
 }
 
 func (simpl *Simplifier) rawValue(e *entry) {
@@ -75,7 +88,7 @@ func (simpl *Simplifier) enumValue(values map[uint32]string) (result bool) {
 	return
 }
 
-// SetObjectIndexHandler registers the handler for enumerations.
+// SetObjectIndexHandler registers the handler for object indices.
 func (simpl *Simplifier) SetObjectIndexHandler(handler ObjectIndexHandler) {
 	simpl.objectIndexHandler = handler
 }
@@ -83,6 +96,20 @@ func (simpl *Simplifier) SetObjectIndexHandler(handler ObjectIndexHandler) {
 func (simpl *Simplifier) objectIndex() (result bool) {
 	if simpl.objectIndexHandler != nil {
 		simpl.objectIndexHandler()
+		result = true
+	}
+	return
+}
+
+// SetSpecialHandler registers the handler for special values.
+func (simpl *Simplifier) SetSpecialHandler(specialType string, handler SpecialHandler) {
+	simpl.specialHandler[specialType] = handler
+}
+
+func (simpl *Simplifier) specialValue(specialType string) (result bool) {
+	handler, existing := simpl.specialHandler[specialType]
+	if existing && (handler != nil) {
+		handler()
 		result = true
 	}
 	return

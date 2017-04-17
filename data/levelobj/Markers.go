@@ -32,7 +32,7 @@ var nullTrigger = baseMarker.
 	Refining("Condition", 2, 4, conditions.GameVariable(), interpreters.Always)
 
 var deathWatchTrigger = baseTrigger.
-	With("ConditionType", 5, 1).
+	With("ConditionType", 5, 1).As(interpreters.EnumValue(map[uint32]string{0: "Object Type", 1: "Object Index"})).
 	Refining("TypeCondition", 2, 4, conditions.ObjectType(), func(inst *interpreters.Instance) bool {
 		return inst.Get("ConditionType") == 0
 	}).

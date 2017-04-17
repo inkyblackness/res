@@ -28,11 +28,11 @@ var cloneMoveObjectDetails = interpreters.New().
 	With("TargetHeight", 12, 4).As(interpreters.RangedValue(0, 255))
 
 var setGameVariableDetails = interpreters.New().
-	With("VariableKey", 0, 4).
+	With("VariableKey", 0, 4).As(interpreters.SpecialValue("VariableKey")).
 	With("Value", 4, 2).
-	With("Operation", 6, 2).As(interpreters.EnumValue(map[uint32]string{0: "Set", 1: "Add (bool: set)", 2: "Subtract (bool: toggle)", 3: "Multiply", 4: "Divide"})).
-	With("Message1", 8, 4).
-	With("Message2", 12, 4)
+	With("Operation", 6, 2).As(interpreters.EnumValue(map[uint32]string{0: "Set", 1: "Add", 2: "Subtract", 3: "Multiply", 4: "Divide"})).
+	With("Message1", 8, 4).As(interpreters.RangedValue(0, 1000)).
+	With("Message2", 12, 4).As(interpreters.RangedValue(0, 1000))
 
 var showCutsceneDetails = interpreters.New().
 	With("CutsceneIndex", 0, 4).As(interpreters.EnumValue(map[uint32]string{0: "Death", 1: "Intro", 2: "Ending"})).
@@ -145,7 +145,7 @@ var showGameCodeDigitChange = interpreters.New().
 var setParameterFromVariableChange = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("ParameterNumber", 4, 4).As(interpreters.RangedValue(0, 16)).
-	With("VariableIndex", 8, 4)
+	With("VariableIndex", 8, 4).As(interpreters.SpecialValue("VariableKey"))
 
 var setButtonStateChange = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).

@@ -19,7 +19,7 @@ var recepticlePanel = basePanel
 
 var standardRecepticle = recepticlePanel.
 	Refining("Action", 0, 22, actions.Unconditional(), interpreters.Always).
-	Refining("Condition", 2, 4, conditions.ObjectType(), interpreters.Always)
+	Refining("TypeCondition", 2, 4, conditions.ObjectType(), interpreters.Always)
 
 var antennaRelayPanel = recepticlePanel.
 	With("TriggerObjectIndex1", 6, 2).As(interpreters.ObjectIndex()).
@@ -80,11 +80,11 @@ var elevatorPanel = inputPanel.
 	With("ElevatorShaftBitmask", 20, 2)
 
 var numberPad = inputPanel.
-	With("Combination1", 6, 2).
+	With("Combination1", 6, 2).As(interpreters.SpecialValue("BinaryCodedDecimal")).
 	With("TriggerObjectIndex1", 8, 2).As(interpreters.ObjectIndex()).
-	With("Combination2", 10, 2).
+	With("Combination2", 10, 2).As(interpreters.SpecialValue("BinaryCodedDecimal")).
 	With("TriggerObjectIndex2", 12, 2).As(interpreters.ObjectIndex()).
-	With("Combination3", 14, 2).
+	With("Combination3", 14, 2).As(interpreters.SpecialValue("BinaryCodedDecimal")).
 	With("TriggerObjectIndex3", 16, 2).As(interpreters.ObjectIndex()).
 	With("FailObjectIndex", 18, 2)
 
