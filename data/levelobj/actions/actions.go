@@ -54,9 +54,33 @@ var triggerOtherObjectsDetails = interpreters.New().
 	With("Object4Delay", 14, 2).As(interpreters.RangedValue(0, 6000))
 
 var changeLightingDetails = interpreters.New().
+	Refining("ObjectExtent", 0, 2, interpreters.New().With("Index", 0, 2).As(interpreters.ObjectIndex()), func(inst *interpreters.Instance) bool {
+		var lightType = inst.Get("LightType")
+
+		return (lightType == 0x00) || (lightType == 0x01)
+	}).
+	Refining("RadiusExtent", 0, 2, interpreters.New().With("Tiles", 0, 2).As(interpreters.RangedValue(0, 31)), func(inst *interpreters.Instance) bool {
+		return inst.Get("LightType") == 0x03
+	}).
 	With("ReferenceObjectIndex", 2, 2).As(interpreters.ObjectIndex()).
 	With("TransitionType", 4, 2).As(interpreters.EnumValue(map[uint32]string{0x0000: "immediate", 0x0001: "fade", 0x0100: "flicker"})).
-	With("LightSurface", 10, 2).As(interpreters.EnumValue(map[uint32]string{0: "floor", 1: "ceiling", 2: "floor and ceiling"}))
+	With("LightModification", 7, 1).As(interpreters.EnumValue(map[uint32]string{0x00: "add light", 0x10: "remove light"})).
+	With("LightType", 8, 1).As(interpreters.EnumValue(map[uint32]string{0x00: "rectangular", 0x01: "linear gradient", 0x03: "circular gradient"})).
+	With("LightSurface", 10, 2).As(interpreters.EnumValue(map[uint32]string{0: "floor", 1: "ceiling", 2: "floor and ceiling"})).
+	Refining("Rectangular", 12, 2, interpreters.New().
+		With("Remove light value", 0, 1).As(interpreters.RangedValue(0, 15)).
+		With("Add light value", 1, 1).As(interpreters.RangedValue(0, 15)), func(inst *interpreters.Instance) bool {
+		return inst.Get("LightType") == 0x00
+	}).
+	Refining("Gradient", 12, 4, interpreters.New().
+		With("Remove light begin intensity", 0, 1).As(interpreters.RangedValue(0, 127)).
+		With("Remove light end intensity", 1, 1).As(interpreters.RangedValue(0, 127)).
+		With("Add light begin intensity", 2, 1).As(interpreters.RangedValue(0, 127)).
+		With("Add light end intensity", 3, 1).As(interpreters.RangedValue(0, 127)), func(inst *interpreters.Instance) bool {
+		var lightType = inst.Get("LightType")
+
+		return (lightType == 0x01) || (lightType == 0x03)
+	})
 
 var effectDetails = interpreters.New().
 	With("SoundIndex", 0, 2).
