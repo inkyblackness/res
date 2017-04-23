@@ -125,7 +125,8 @@ var deleteObjectsDetails = interpreters.New().
 	With("MessageIndex", 12, 2)
 
 var receiveEmailDetails = interpreters.New().
-	With("EmailIndex", 0, 2)
+	With("EmailIndex", 0, 2).As(interpreters.RangedValue(0, 1000)).
+	With("DelaySec", 4, 2).As(interpreters.RangedValue(0, 600))
 
 var changeEffectDetails = interpreters.New().
 	With("DeltaValue", 0, 2).
