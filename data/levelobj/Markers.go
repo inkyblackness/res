@@ -47,6 +47,9 @@ var ecologyTrigger = baseTrigger.
 var mapNote = baseMarker.
 	With("EntryOffset", 18, 4)
 
+var musicVoodoo = baseMarker.
+	With("MusicFlavour", 6, 1).As(interpreters.RangedValue(0, 4))
+
 func initMarkers() interpreterRetriever {
 
 	gameVariableTriggers := newInterpreterLeaf(gameVariableTrigger)
@@ -65,6 +68,7 @@ func initMarkers() interpreterRetriever {
 
 	mapMarker := newInterpreterEntry(baseMarker)
 	mapMarker.set(3, newInterpreterLeaf(mapNote))
+	mapMarker.set(4, newInterpreterLeaf(musicVoodoo))
 
 	class := newInterpreterEntry(baseMarker)
 	class.set(0, trigger)
