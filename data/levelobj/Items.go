@@ -16,6 +16,7 @@ var briefcaseItem = baseItem.
 	With("ObjectIndex4", 8, 2).As(interpreters.ObjectIndex())
 
 var corpseItem = baseItem.
+	With("Unknown0000", 0, 2).As(interpreters.SpecialValue("Unknown")).
 	With("ObjectIndex1", 2, 2).As(interpreters.ObjectIndex()).
 	With("ObjectIndex2", 4, 2).As(interpreters.ObjectIndex()).
 	With("ObjectIndex3", 6, 2).As(interpreters.ObjectIndex()).
@@ -25,10 +26,11 @@ var severedHeadItem = baseItem.
 	With("ImageIndex", 2, 1)
 
 var accessCardItem = baseItem.
-	With("AccessMask", 2, 4)
+	With("Ignored0000", 0, 2).As(interpreters.SpecialValue("Ignored")).
+	With("AccessMask", 2, 4).As(interpreters.SpecialValue("AccessMask"))
 
 var securityIDModuleItem = baseItem.
-	With("AccessMask", 2, 4)
+	With("AccessMask", 2, 4).As(interpreters.SpecialValue("AccessMask"))
 
 var cyberInfoNodeItem = baseItem.
 	With("TextIndex", 2, 1)

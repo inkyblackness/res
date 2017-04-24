@@ -103,7 +103,8 @@ var changeTileHeightsDetails = interpreters.New().
 	With("TileX", 0, 4).As(interpreters.RangedValue(1, 63)).
 	With("TileY", 4, 4).As(interpreters.RangedValue(1, 63)).
 	With("TargetFloorHeight", 8, 2).As(interpreters.RangedValue(0, 0x0FFF)).
-	With("TargetCeilingHeight", 10, 2).As(interpreters.RangedValue(0, 0x0FFF))
+	With("TargetCeilingHeight", 10, 2).As(interpreters.RangedValue(0, 0x0FFF)).
+	With("Ignored000C", 12, 4).As(interpreters.SpecialValue("Ignored"))
 
 var randomTimerDetails = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
@@ -170,7 +171,8 @@ var spawnObjectsDetails = interpreters.New().
 	With("ObjectType", 0, 1).As(interpreters.RangedValue(0, 16)).
 	With("ReferenceObject1Index", 4, 2).As(interpreters.ObjectIndex()).
 	With("ReferenceObject2Index", 6, 2).As(interpreters.ObjectIndex()).
-	With("NumberOfObjects", 8, 4).As(interpreters.RangedValue(0, 100))
+	With("NumberOfObjects", 8, 4).As(interpreters.RangedValue(0, 100)).
+	With("Unknown000C", 12, 1).As(interpreters.SpecialValue("Unknown"))
 
 var changeObjectTypeDetails = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
@@ -181,8 +183,9 @@ var changeObjectTypeDetails = interpreters.New().
 
 var toggleRepulsorChange = interpreters.New().
 	With("ObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
-	With("OffTextureIndex", 4, 1).
-	With("OnTextureIndex", 5, 1)
+	With("OffTextureIndex", 4, 1).As(interpreters.SpecialValue("LevelTexture")).
+	With("OnTextureIndex", 5, 1).As(interpreters.SpecialValue("LevelTexture")).
+	With("ToggleType", 8, 1).As(interpreters.EnumValue(map[uint32]string{0: "Toggle On/Off", 1: "Toggle On, Stay On", 2: "Toggle Off, Stay Off"}))
 
 var showGameCodeDigitChange = interpreters.New().
 	With("ScreenObjectIndex", 0, 4).As(interpreters.ObjectIndex()).

@@ -25,15 +25,15 @@ var cabinetFurniture = baseScenery.
 	With("Object2Index", 4, 2).As(interpreters.ObjectIndex())
 
 var texturableFurniture = baseScenery.
-	With("TextureIndex", 6, 2)
+	With("TextureIndex", 6, 2).As(interpreters.RangedValue(0, 500))
 
 var wordScenery = baseScenery.
-	With("TextIndex", 0, 2).
+	With("TextIndex", 0, 2).As(interpreters.RangedValue(0, 500)).
 	With("FontAndSize", 2, 1).
 	With("Color", 4, 1).As(interpreters.RangedValue(0, 255))
 
 var textureMapScenery = baseScenery.
-	With("TextureIndex", 6, 2)
+	With("TextureIndex", 6, 2).As(interpreters.SpecialValue("LevelTexture"))
 
 var buttonControlPedestal = baseScenery.
 	With("TriggerObjectIndex", 2, 2).As(interpreters.ObjectIndex())

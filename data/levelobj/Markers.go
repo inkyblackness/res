@@ -9,6 +9,7 @@ import (
 var baseMarker = interpreters.New()
 
 var repulsor = baseMarker.
+	With("Ignored0000", 0, 1).As(interpreters.SpecialValue("Ignored")).
 	With("StartHeight", 10, 4).
 	With("EndHeight", 14, 4).
 	With("Flags", 18, 4)
