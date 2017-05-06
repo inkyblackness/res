@@ -1,0 +1,50 @@
+package gameobj
+
+import (
+	"github.com/inkyblackness/res"
+	"github.com/inkyblackness/res/data/interpreters"
+)
+
+var basicWeapon = interpreters.New().
+	With("Damage", 0, 2).As(interpreters.RangedValue(0, 0x7FFF)).
+	With("DamageType", 3, 1).
+	With("SpecialDamageType", 4, 1).
+	With("ArmorPenetration", 7, 1)
+
+var weaponGenerics = interpreters.New().
+	With("TriggerTime", 0, 1).
+	With("ClipInfo", 1, 1).As(interpreters.SpecialValue("ClipInfo"))
+
+var projectileWeapons = interpreters.New().
+	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
+	With("ProjectileTravelSpeed", 8, 1).
+	With("ProjectileType", 9, 4)
+
+var meleeWeapons = interpreters.New().
+	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
+	With("PowerUsage", 8, 1).
+	With("ImpactForce", 9, 1).
+	With("Range", 10, 1)
+
+var energyBeamWeapons = interpreters.New().
+	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
+	With("PowerUsage", 8, 1).
+	With("ImpactForce", 9, 1).
+	With("Range", 10, 1)
+
+var energyProjectileWeapons = interpreters.New().
+	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
+	With("PowerUsage", 8, 1).
+	With("ProjectileTravelSpeed", 12, 1).
+	With("ProjectileType", 13, 4)
+
+func initWeapons() {
+	objClass := res.ObjectClass(0)
+
+	genericDescriptions[objClass] = weaponGenerics
+
+	setSpecific(objClass, 2, projectileWeapons)
+	setSpecific(objClass, 3, meleeWeapons)
+	setSpecific(objClass, 4, energyBeamWeapons)
+	setSpecific(objClass, 5, energyProjectileWeapons)
+}
