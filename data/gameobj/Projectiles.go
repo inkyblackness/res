@@ -5,11 +5,16 @@ import (
 	"github.com/inkyblackness/res/data/interpreters"
 )
 
+var projectileGenerics = interpreters.New().
+	With("Flags", 0, 1)
+
 var cyberProjectiles = interpreters.New().
 	Refining("ColorScheme", 0, 6, cyberColorScheme, interpreters.Always)
 
 func initProjectiles() {
 	objClass := res.ObjectClass(2)
+
+	genericDescriptions[objClass] = projectileGenerics
 
 	setSpecificByType(objClass, 1, 9, cyberProjectiles)
 	setSpecificByType(objClass, 1, 10, cyberProjectiles)
