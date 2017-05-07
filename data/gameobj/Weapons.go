@@ -7,6 +7,7 @@ import (
 
 var basicWeapon = interpreters.New().
 	With("Damage", 0, 2).As(interpreters.RangedValue(0, 0x7FFF)).
+	With("OffenceValue", 2, 1).
 	With("DamageType", 3, 1).
 	With("SpecialDamageType", 4, 1).
 	With("ArmorPenetration", 7, 1)
@@ -18,23 +19,27 @@ var weaponGenerics = interpreters.New().
 var projectileWeapons = interpreters.New().
 	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
 	With("ProjectileTravelSpeed", 8, 1).
-	With("ProjectileType", 9, 4)
+	With("ProjectileType", 9, 4).
+	With("Kickback", 14, 2).As(interpreters.RangedValue(-10000, +10000))
 
 var meleeWeapons = interpreters.New().
 	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
 	With("PowerUsage", 8, 1).
 	With("ImpactForce", 9, 1).
-	With("Range", 10, 1)
+	With("Range", 10, 1).
+	With("Kickback", 11, 2).As(interpreters.RangedValue(-10000, +10000))
 
 var energyBeamWeapons = interpreters.New().
 	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
 	With("PowerUsage", 8, 1).
 	With("ImpactForce", 9, 1).
-	With("Range", 10, 1)
+	With("Range", 10, 1).
+	With("Kickback", 11, 2).As(interpreters.RangedValue(-10000, +10000))
 
 var energyProjectileWeapons = interpreters.New().
 	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
 	With("PowerUsage", 8, 1).
+	With("Kickback", 10, 2).As(interpreters.RangedValue(-10000, +10000)).
 	With("ProjectileTravelSpeed", 12, 1).
 	With("ProjectileType", 13, 4)
 
