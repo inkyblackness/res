@@ -44,6 +44,7 @@ func ObjectIndex() FieldRange {
 // * LevelTexture - index value into level texture list
 // * VariableKey - for actions
 // * VariableCondition - for action conditions
+// * ObjectType - for 0x00CCSSTT selection
 // * Unknown - It is unclear whether this field would have any effect, none identified so far
 // * Ignored - Although values have been found in this field, they don't appear to have any effect
 // * Mistake - It is assumed that these values should have been placed somewhere else. Typical example: Container content

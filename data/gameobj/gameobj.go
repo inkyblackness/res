@@ -18,6 +18,8 @@ func init() {
 	initProjectiles()
 	initExplosives()
 	initItems()
+	initAnimations()
+	initCritters()
 }
 
 func setSpecific(objClass res.ObjectClass, objSubclass int, desc *interpreters.Description) {

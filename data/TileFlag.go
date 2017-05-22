@@ -13,7 +13,36 @@ const (
 
 	// MusicIndexTileFlagMask is the mask for the music identifier.
 	MusicIndexTileFlagMask = 0x0000F000
+
+	// FloorShadowTileFlagMask is the mask for the floor shadow.
+	FloorShadowTileFlagMask = 0x000F0000
+	// CeilingShadowTileFlagMask is the mask for the ceiling shadow.
+	CeilingShadowTileFlagMask = 0x0F000000
 )
+
+// CeilingShadow returns the shadow value for the ceiling.
+func (flag TileFlag) CeilingShadow() int {
+	return int((flag & CeilingShadowTileFlagMask) >> 24)
+}
+
+// WithCeilingShadow returns a new flag combination having given shadow value.
+func (flag TileFlag) WithCeilingShadow(value int) TileFlag {
+	cleared := uint32(flag) & ^uint32(CeilingShadowTileFlagMask)
+	newValue := (uint32(value) << 24) & CeilingShadowTileFlagMask
+	return TileFlag(cleared | newValue)
+}
+
+// FloorShadow returns the shadow value for the floor.
+func (flag TileFlag) FloorShadow() int {
+	return int((flag & FloorShadowTileFlagMask) >> 16)
+}
+
+// WithFloorShadow returns a new flag combination having given shadow value.
+func (flag TileFlag) WithFloorShadow(value int) TileFlag {
+	cleared := uint32(flag) & ^uint32(FloorShadowTileFlagMask)
+	newValue := (uint32(value) << 16) & FloorShadowTileFlagMask
+	return TileFlag(cleared | newValue)
+}
 
 // MusicIndex returns the music identifier for the tile.
 func (flag TileFlag) MusicIndex() int {
