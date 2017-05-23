@@ -6,7 +6,11 @@ import (
 )
 
 var projectileGenerics = interpreters.New().
-	With("Flags", 0, 1)
+	With("Flags", 0, 1).As(interpreters.Bitfield(map[uint32]string{
+	0x01: "EmitLight",
+	0x02: "BounceOffWalls",
+	0x04: "BouncePassObjects",
+	0x08: "Unknown08"}))
 
 var cyberProjectiles = interpreters.New().
 	Refining("ColorScheme", 0, 6, cyberColorScheme, interpreters.Always)

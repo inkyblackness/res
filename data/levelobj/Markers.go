@@ -10,9 +10,11 @@ var baseMarker = interpreters.New()
 
 var repulsor = baseMarker.
 	With("Ignored0000", 0, 1).As(interpreters.SpecialValue("Ignored")).
-	With("StartHeight", 10, 4).
-	With("EndHeight", 14, 4).
-	With("Flags", 18, 4)
+	With("StartHeightFraction", 10, 2).As(interpreters.RangedValue(0, 65536)).
+	With("StartHeight", 12, 2).As(interpreters.RangedValue(0, 63)).
+	With("EndHeightFraction", 14, 2).As(interpreters.RangedValue(0, 65536)).
+	With("EndHeight", 16, 2).As(interpreters.RangedValue(0, 63)).
+	With("Flags", 18, 4).As(interpreters.Bitfield(map[uint32]string{0x00000001: "Disabled", 0x00000008: "Strong"}))
 
 var aiHint = baseMarker.
 	With("Ignored0000", 0, 1).As(interpreters.SpecialValue("Ignored")).

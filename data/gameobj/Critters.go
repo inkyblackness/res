@@ -6,7 +6,7 @@ import (
 )
 
 var critterAttackInfo = interpreters.New().
-	With("DamageType", 0x0000, 1).
+	With("DamageType", 0x0000, 1).As(damageType).
 	With("Damage", 0x0004, 2).As(interpreters.RangedValue(0, 500)).
 	With("OffenceValue", 0x0006, 1).
 	With("Unknown0007", 0x0007, 1).As(interpreters.SpecialValue("Unknown")).
@@ -22,7 +22,9 @@ var critterGenerics = interpreters.New().
 	Refining("SecondaryAttack", 0x0015, 21, critterAttackInfo, interpreters.Always).
 	With("Unknown002A", 0x002A, 1).As(interpreters.SpecialValue("Unknown")).
 	With("ProjectileSourceHeightOffset", 0x002C, 1).As(interpreters.RangedValue(-128, 127)).
-	With("Flags", 0x002D, 1).
+	With("Flags", 0x002D, 1).As(interpreters.Bitfield(map[uint32]string{
+	0x01: "Hover",
+	0x04: "Unknown04"})).
 	With("Unknown0031", 0x031, 1).As(interpreters.SpecialValue("Unknown")).
 	With("FrameTime", 0x003A, 1).
 	With("AttackSoundIndex", 0x003B, 1).

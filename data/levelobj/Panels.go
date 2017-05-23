@@ -46,16 +46,24 @@ var inputPanel = gameVariablePanel
 
 var wirePuzzleData = interpreters.New().
 	With("TargetObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
-	With("Layout", 4, 1).
+	With("Layout", 4, 1).As(interpreters.Bitfield(map[uint32]string{0x0F: "Wires", 0xF0: "Connectors"})).
 	With("TargetPowerLevel", 5, 1).
 	With("CurrentPowerLevel", 6, 1).
-	With("TargetState", 8, 4).
-	With("CurrentState", 12, 4)
+	With("TargetState", 8, 4).As(interpreters.SpecialValue("WirePuzzleState")).
+	With("CurrentState", 12, 4).As(interpreters.SpecialValue("WirePuzzleState"))
 
 var blockPuzzleData = interpreters.New().
 	With("TargetObjectIndex", 0, 4).As(interpreters.ObjectIndex()).
 	With("StateStoreObjectIndex", 4, 2).As(interpreters.ObjectIndex()).
-	With("Layout", 8, 4)
+	With("Layout", 8, 4).As(interpreters.Bitfield(map[uint32]string{
+	0x00000001: "PuzzleSolved",
+	0x00000070: "SourceCoordinate",
+	0x00000180: "SourceLocation",
+	0x00007000: "DestCoordinate",
+	0x00018000: "DestLocation",
+	0x00700000: "Width",
+	0x07000000: "Height",
+	0x70000000: "SideEffectType"}))
 
 var puzzleSpecificData = interpreters.New().
 	With("Type", 7, 1).As(interpreters.EnumValue(map[uint32]string{0: "WirePuzzle", 0x10: "BlockPuzzle"})).
@@ -76,8 +84,8 @@ var elevatorPanel = inputPanel.
 	With("DestinationObjectIndex3", 12, 2).As(interpreters.RangedValue(0, 871)).
 	With("DestinationObjectIndex6", 14, 2).As(interpreters.RangedValue(0, 871)).
 	With("DestinationObjectIndex5", 16, 2).As(interpreters.RangedValue(0, 871)).
-	With("AccessibleBitmask", 18, 2).
-	With("ElevatorShaftBitmask", 20, 2)
+	With("AccessibleBitmask", 18, 2).As(interpreters.SpecialValue("ElevatorShaftMask")).
+	With("ElevatorShaftBitmask", 20, 2).As(interpreters.SpecialValue("ElevatorShaftMask"))
 
 var numberPad = inputPanel.
 	With("Combination1", 6, 2).As(interpreters.SpecialValue("BinaryCodedDecimal")).

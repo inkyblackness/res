@@ -123,14 +123,14 @@ var deleteObjectsDetails = interpreters.New().
 	With("ObjectIndex1", 0, 2).As(interpreters.ObjectIndex()).
 	With("ObjectIndex2", 4, 2).As(interpreters.ObjectIndex()).
 	With("ObjectIndex3", 8, 2).As(interpreters.ObjectIndex()).
-	With("MessageIndex", 12, 2)
+	With("MessageIndex", 12, 2).As(interpreters.RangedValue(0, 500))
 
 var receiveEmailDetails = interpreters.New().
 	With("EmailIndex", 0, 2).As(interpreters.RangedValue(0, 1000)).
 	With("DelaySec", 4, 2).As(interpreters.RangedValue(0, 600))
 
 var changeEffectDetails = interpreters.New().
-	With("DeltaValue", 0, 2).
+	With("DeltaValue", 0, 2).As(interpreters.RangedValue(0, 1000)).
 	With("EffectChangeFlag", 2, 2).As(interpreters.EnumValue(map[uint32]string{0: "Add Delta", 1: "Remove Delta"})).
 	With("EffectType", 4, 4).As(interpreters.EnumValue(map[uint32]string{0: "Radiation poisoning", 1: "Bio contamination"}))
 
@@ -160,8 +160,8 @@ var setCritterStateDetails = interpreters.New().
 	7: "confused"}))
 
 var trapMessageDetails = interpreters.New().
-	With("BackgroundImageIndex", 0, 4).
-	With("MessageIndex", 4, 4).
+	With("BackgroundImageIndex", 0, 4).As(interpreters.RangedValue(-2, 500)).
+	With("MessageIndex", 4, 4).As(interpreters.RangedValue(0, 500)).
 	With("TextColor", 8, 4).As(interpreters.RangedValue(0, 255)).
 	With("MfdSuppressionFlag", 12, 4).As(interpreters.EnumValue(map[uint32]string{0: "Show in MFD", 1: "Show only in HUD"}))
 

@@ -8,7 +8,7 @@ import (
 var basicWeapon = interpreters.New().
 	With("Damage", 0, 2).As(interpreters.RangedValue(0, 0x7FFF)).
 	With("OffenceValue", 2, 1).
-	With("DamageType", 3, 1).
+	With("DamageType", 3, 1).As(damageType).
 	With("SpecialDamageType", 4, 1).
 	With("ArmorPenetration", 7, 1)
 

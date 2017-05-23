@@ -10,6 +10,9 @@ type RawValueHandler func(minValue, maxValue int64)
 // EnumValueHandler is for enumerated (mapped) values.
 type EnumValueHandler func(values map[uint32]string)
 
+// BitfieldHandler is for bitfields.
+type BitfieldHandler func(values map[uint32]string)
+
 // ObjectIndexHandler is for object indices.
 type ObjectIndexHandler func()
 
@@ -30,6 +33,13 @@ func EnumValue(values map[uint32]string) FieldRange {
 	}
 }
 
+// Bitfield creates a field range describing bitfield values.
+func Bitfield(values map[uint32]string) FieldRange {
+	return func(simpl *Simplifier) bool {
+		return simpl.bitfield(values)
+	}
+}
+
 // ObjectIndex creates a field range describing object indices.
 func ObjectIndex() FieldRange {
 	return func(simpl *Simplifier) bool {
@@ -40,6 +50,8 @@ func ObjectIndex() FieldRange {
 // SpecialValue creates a field range for special fields.
 // Currently known special values:
 // * AccessMask - for access cards
+// * WirePuzzleState - for the bitmask of wire puzzles
+// * ElevatorShaftMask - 16 bits of connecting floors
 // * BinaryCodedDecimal - for keypads storing their number as BCD
 // * LevelTexture - index value into level texture list
 // * VariableKey - for actions
@@ -58,6 +70,7 @@ func SpecialValue(specialType string) FieldRange {
 type Simplifier struct {
 	rawValueHandler    RawValueHandler
 	enumValueHandler   EnumValueHandler
+	bitfieldHandler    BitfieldHandler
 	objectIndexHandler ObjectIndexHandler
 	specialHandler     map[string]SpecialHandler
 }
@@ -93,6 +106,19 @@ func (simpl *Simplifier) SetEnumValueHandler(handler EnumValueHandler) {
 func (simpl *Simplifier) enumValue(values map[uint32]string) (result bool) {
 	if simpl.enumValueHandler != nil {
 		simpl.enumValueHandler(values)
+		result = true
+	}
+	return
+}
+
+// SetBitfieldHandler registers the handler for bitfields.
+func (simpl *Simplifier) SetBitfieldHandler(handler BitfieldHandler) {
+	simpl.bitfieldHandler = handler
+}
+
+func (simpl *Simplifier) bitfield(values map[uint32]string) (result bool) {
+	if simpl.bitfieldHandler != nil {
+		simpl.bitfieldHandler(values)
 		result = true
 	}
 	return
