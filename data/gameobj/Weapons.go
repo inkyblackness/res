@@ -14,7 +14,12 @@ var basicWeapon = interpreters.New().
 
 var weaponGenerics = interpreters.New().
 	With("TriggerTime", 0, 1).
-	With("ClipInfo", 1, 1).As(interpreters.SpecialValue("ClipInfo"))
+	With("ClipInfo", 1, 1).As(interpreters.Bitfield(map[uint32]string{
+	0x01: "AmmoType0",
+	0x02: "AmmoType1",
+	0x04: "AmmoType2",
+	0x08: "AmmoType3",
+	0xF0: "AmmoSubclass"}))
 
 var projectileWeapons = interpreters.New().
 	Refining("BasicWeapon", 0, 8, basicWeapon, interpreters.Always).
