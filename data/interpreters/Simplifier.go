@@ -49,9 +49,6 @@ func ObjectIndex() FieldRange {
 
 // SpecialValue creates a field range for special fields.
 // Currently known special values:
-// * AccessMask - for access cards
-// * WirePuzzleState - for the bitmask of wire puzzles
-// * ElevatorShaftMask - 16 bits of connecting floors
 // * BinaryCodedDecimal - for keypads storing their number as BCD
 // * LevelTexture - index value into level texture list
 // * VariableKey - for actions
