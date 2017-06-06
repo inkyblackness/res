@@ -83,7 +83,7 @@ func (suite *ElectronicMessageSuite) TestEncodeMeta_C(c *check.C) {
 	c.Check(holder.BlockData(0), check.DeepEquals, suite.cp.Encode("t"))
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeFillsEmptyTextLinesWithABlank(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeCreatesNewBlocksPerNewLine(c *check.C) {
 	message := NewElectronicMessage()
 
 	message.SetVerboseText("line1\n\n\nline2")
@@ -94,12 +94,12 @@ func (suite *ElectronicMessageSuite) TestEncodeFillsEmptyTextLinesWithABlank(c *
 	c.Assert(holder, check.NotNil)
 	c.Assert(holder.BlockCount() > 0, check.Equals, true)
 	c.Check(holder.BlockData(4), check.DeepEquals, suite.cp.Encode("line1\n"))
-	c.Check(holder.BlockData(5), check.DeepEquals, suite.cp.Encode(" \n"))
-	c.Check(holder.BlockData(6), check.DeepEquals, suite.cp.Encode(" \n"))
+	c.Check(holder.BlockData(5), check.DeepEquals, suite.cp.Encode("\n"))
+	c.Check(holder.BlockData(6), check.DeepEquals, suite.cp.Encode("\n"))
 	c.Check(holder.BlockData(7), check.DeepEquals, suite.cp.Encode("line2"))
 	c.Check(holder.BlockData(9), check.DeepEquals, suite.cp.Encode("terse1\n"))
-	c.Check(holder.BlockData(10), check.DeepEquals, suite.cp.Encode(" \n"))
-	c.Check(holder.BlockData(11), check.DeepEquals, suite.cp.Encode(" \n"))
+	c.Check(holder.BlockData(10), check.DeepEquals, suite.cp.Encode("\n"))
+	c.Check(holder.BlockData(11), check.DeepEquals, suite.cp.Encode("\n"))
 	c.Check(holder.BlockData(12), check.DeepEquals, suite.cp.Encode("terse2"))
 }
 
@@ -116,4 +116,59 @@ func (suite *ElectronicMessageSuite) TestEncodeBreaksUpLinesAfterLimitCharacters
 		suite.cp.Encode("aaaaaaaaa bbbbbbbbb ccccccccc ddddddddd eeeeeeeee fffffffff ggggggggg hhhhhhhhh iiiiiiiii jjjjjjjjj "))
 	c.Check(holder.BlockData(5), check.DeepEquals,
 		suite.cp.Encode("kkkkk"))
+}
+
+func (suite *ElectronicMessageSuite) holderWithMeta(meta string) chunk.BlockHolder {
+	blocks := [][]byte{
+		suite.cp.Encode(meta),
+		suite.cp.Encode("title"),
+		suite.cp.Encode("sender"),
+		suite.cp.Encode("subject"),
+		suite.cp.Encode("verbose"),
+		suite.cp.Encode(""),
+		suite.cp.Encode("terse"),
+		suite.cp.Encode("")}
+
+	return chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Text, blocks)
+}
+
+func (suite *ElectronicMessageSuite) TestDecodeMeta_A(c *check.C) {
+	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("i20 c13 30,40"))
+
+	c.Assert(err, check.IsNil)
+	c.Assert(message, check.NotNil)
+	c.Check(message.NextMessage(), check.Equals, 0x20)
+	c.Check(message.ColorIndex(), check.Equals, 0x13)
+	c.Check(message.LeftDisplay(), check.Equals, 30)
+	c.Check(message.RightDisplay(), check.Equals, 40)
+}
+
+func (suite *ElectronicMessageSuite) TestDecodeMessage(c *check.C) {
+	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("10"))
+
+	c.Assert(err, check.IsNil)
+	c.Assert(message, check.NotNil)
+	c.Check(message.Title(), check.Equals, "title")
+	c.Check(message.Sender(), check.Equals, "sender")
+	c.Check(message.Subject(), check.Equals, "subject")
+	c.Check(message.VerboseText(), check.Equals, "verbose")
+	c.Check(message.TerseText(), check.Equals, "terse")
+}
+
+func (suite *ElectronicMessageSuite) TestRecodeMessage(c *check.C) {
+	inMessage := NewElectronicMessage()
+	inMessage.SetInterrupt(true)
+	inMessage.SetNextMessage(0x10)
+	inMessage.SetColorIndex(0x20)
+	inMessage.SetLeftDisplay(40)
+	inMessage.SetRightDisplay(50)
+	inMessage.SetVerboseText("abcd\nefgh\nsome")
+	inMessage.SetTerseText("\n")
+
+	holder := inMessage.Encode(suite.cp)
+	outMessage, err := DecodeElectronicMessage(suite.cp, holder)
+
+	c.Assert(err, check.IsNil)
+	c.Assert(outMessage, check.NotNil)
+	c.Check(outMessage, check.DeepEquals, inMessage)
 }

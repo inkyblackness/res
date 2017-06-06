@@ -2,6 +2,8 @@ package data
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/inkyblackness/res"
@@ -12,7 +14,22 @@ import (
 const (
 	// textLineLimit was determined through a search of the maximum line length found in the resources.
 	textLineLimit = 104
+
+	//re := regexp.MustCompile("^((?:(?:i[0-9a-fA-F]{2})|(?:t))(?:[ ]*))?(c[0-9a-fA-F]{2}(?:[ ]*))?$")
+
+	metaExpressionInterrupt    = "(t)"
+	metaExpressionNextMessage  = "(?:i([0-9a-fA-F]{2}))"
+	metaExpressionColorIndex   = "(?:c([0-9a-fA-F]{2}))"
+	metaExpressionLeftDisplay  = "([0-9]+)"
+	metaExpressionRightDisplay = "(?:,[ ]*([0-9]+))"
 )
+
+var metaExpression = regexp.MustCompile("[ ]*(?:(?:" +
+	metaExpressionInterrupt + "|" +
+	metaExpressionNextMessage + "|" +
+	metaExpressionColorIndex + "|" +
+	metaExpressionLeftDisplay + "|" +
+	metaExpressionRightDisplay + ")[ ]*)*")
 
 // ElectronicMessage describes one message.
 type ElectronicMessage struct {
@@ -42,6 +59,53 @@ func NewElectronicMessage() *ElectronicMessage {
 
 // DecodeElectronicMessage tries to decode a message from given block holder.
 func DecodeElectronicMessage(cp text.Codepage, holder chunk.BlockHolder) (message *ElectronicMessage, err error) {
+	blockIndex := uint16(0)
+	nextBlockString := func() (line string) {
+		if err == nil {
+			if blockIndex < holder.BlockCount() {
+				line = cp.Decode(holder.BlockData(blockIndex))
+				blockIndex++
+			} else {
+				err = fmt.Errorf("Not enough blocks")
+			}
+		}
+		return
+	}
+	joinBlocks := func() (text string) {
+		for line := nextBlockString(); len(line) > 0; line = nextBlockString() {
+			text += line
+		}
+		return
+	}
+
+	metaString := nextBlockString()
+	metaData := metaExpression.FindStringSubmatch(metaString)
+	parseInt := func(metaIndex int, base, bits int) (result int) {
+		var value int64
+		result = -1
+		if (err == nil) && (len(metaData[metaIndex]) > 0) {
+			value, err = strconv.ParseInt(metaData[metaIndex], base, bits)
+			if err == nil {
+				result = int(value)
+			}
+		}
+		return
+	}
+
+	message = NewElectronicMessage()
+	if len(metaData[1]) > 0 {
+		message.isInterrupt = true
+	}
+	message.nextMessage = parseInt(2, 16, 16)
+	message.colorIndex = parseInt(3, 16, 8)
+	message.leftDisplay = parseInt(4, 10, 16)
+	message.rightDisplay = parseInt(5, 10, 16)
+	message.title = nextBlockString()
+	message.sender = nextBlockString()
+	message.subject = nextBlockString()
+	message.verboseText = joinBlocks()
+	message.terseText = joinBlocks()
+
 	return
 }
 
@@ -50,14 +114,14 @@ func (message *ElectronicMessage) Encode(cp text.Codepage) chunk.BlockHolder {
 	blocks := [][]byte{}
 
 	blocks = append(blocks, cp.Encode(message.metaString()))
-	blocks = append(blocks, cp.Encode(message.encodeText(message.title)))
-	blocks = append(blocks, cp.Encode(message.encodeText(message.sender)))
-	blocks = append(blocks, cp.Encode(message.encodeText(message.subject)))
-	for _, line := range message.splitText(message.encodeText(message.verboseText)) {
+	blocks = append(blocks, cp.Encode(message.title))
+	blocks = append(blocks, cp.Encode(message.sender))
+	blocks = append(blocks, cp.Encode(message.subject))
+	for _, line := range message.splitText(message.verboseText) {
 		blocks = append(blocks, cp.Encode(line))
 	}
 	blocks = append(blocks, []byte{0x00})
-	for _, line := range message.splitText(message.encodeText(message.terseText)) {
+	for _, line := range message.splitText(message.terseText) {
 		blocks = append(blocks, cp.Encode(line))
 	}
 	blocks = append(blocks, []byte{0x00})
@@ -93,19 +157,15 @@ func (message *ElectronicMessage) metaString() string {
 	return result
 }
 
-func (message *ElectronicMessage) encodeText(input string) string {
-	temp := strings.Replace(input, "\n\n", "\n \n", -1)
-	temp = strings.Replace(temp, "\n\n", "\n \n", -1)
-	return temp
-}
-
 func (message *ElectronicMessage) splitText(input string) []string {
 	result := []string{}
 	textLines := strings.Split(input, "\n")
 	resultLine := ""
 	newLine := func() {
-		result = append(result, resultLine)
-		resultLine = ""
+		if len(resultLine) > 0 {
+			result = append(result, resultLine)
+			resultLine = ""
+		}
 	}
 
 	for textLineIndex, textLine := range textLines {
@@ -119,12 +179,10 @@ func (message *ElectronicMessage) splitText(input string) []string {
 			}
 			resultLine += word
 		}
-		if len(resultLine) > 0 {
-			if textLineIndex < (len(textLines) - 1) {
-				resultLine += "\n"
-			}
-			newLine()
+		if textLineIndex < (len(textLines) - 1) {
+			resultLine += "\n"
 		}
+		newLine()
 	}
 
 	return result
