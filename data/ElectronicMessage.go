@@ -15,8 +15,6 @@ const (
 	// textLineLimit was determined through a search of the maximum line length found in the resources.
 	textLineLimit = 104
 
-	//re := regexp.MustCompile("^((?:(?:i[0-9a-fA-F]{2})|(?:t))(?:[ ]*))?(c[0-9a-fA-F]{2}(?:[ ]*))?$")
-
 	metaExpressionInterrupt    = "(t)"
 	metaExpressionNextMessage  = "(?:i([0-9a-fA-F]{2}))"
 	metaExpressionColorIndex   = "(?:c([0-9a-fA-F]{2}))"
@@ -81,10 +79,10 @@ func DecodeElectronicMessage(cp text.Codepage, holder chunk.BlockHolder) (messag
 	metaString := nextBlockString()
 	metaData := metaExpression.FindStringSubmatch(metaString)
 	parseInt := func(metaIndex int, base, bits int) (result int) {
-		var value int64
+		var value uint64
 		result = -1
 		if (err == nil) && (len(metaData[metaIndex]) > 0) {
-			value, err = strconv.ParseInt(metaData[metaIndex], base, bits)
+			value, err = strconv.ParseUint(metaData[metaIndex], base, bits)
 			if err == nil {
 				result = int(value)
 			}

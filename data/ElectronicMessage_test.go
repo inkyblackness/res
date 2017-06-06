@@ -143,6 +143,14 @@ func (suite *ElectronicMessageSuite) TestDecodeMeta_A(c *check.C) {
 	c.Check(message.RightDisplay(), check.Equals, 40)
 }
 
+func (suite *ElectronicMessageSuite) TestDecodeMetaColorIs8BitUnsigned(c *check.C) {
+	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("cD1"))
+
+	c.Assert(err, check.IsNil)
+	c.Assert(message, check.NotNil)
+	c.Check(message.ColorIndex(), check.Equals, 0xD1)
+}
+
 func (suite *ElectronicMessageSuite) TestDecodeMessage(c *check.C) {
 	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("10"))
 
