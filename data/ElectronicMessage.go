@@ -1,9 +1,17 @@
 package data
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/chunk"
 	"github.com/inkyblackness/res/text"
+)
+
+const (
+	// textLineLimit was determined through a search of the maximum line length found in the resources.
+	textLineLimit = 104
 )
 
 // ElectronicMessage describes one message.
@@ -40,18 +48,86 @@ func DecodeElectronicMessage(cp text.Codepage, holder chunk.BlockHolder) (messag
 // Encode serializes the message into a block holder.
 func (message *ElectronicMessage) Encode(cp text.Codepage) chunk.BlockHolder {
 	blocks := [][]byte{}
-	meta := ""
 
-	blocks = append(blocks, cp.Encode(meta))
-	blocks = append(blocks, cp.Encode(message.title))
-	blocks = append(blocks, cp.Encode(message.sender))
-	blocks = append(blocks, cp.Encode(message.subject))
-	blocks = append(blocks, cp.Encode(message.verboseText))
+	blocks = append(blocks, cp.Encode(message.metaString()))
+	blocks = append(blocks, cp.Encode(message.encodeText(message.title)))
+	blocks = append(blocks, cp.Encode(message.encodeText(message.sender)))
+	blocks = append(blocks, cp.Encode(message.encodeText(message.subject)))
+	for _, line := range message.splitText(message.encodeText(message.verboseText)) {
+		blocks = append(blocks, cp.Encode(line))
+	}
 	blocks = append(blocks, []byte{0x00})
-	blocks = append(blocks, cp.Encode(message.terseText))
+	for _, line := range message.splitText(message.encodeText(message.terseText)) {
+		blocks = append(blocks, cp.Encode(line))
+	}
 	blocks = append(blocks, []byte{0x00})
 
 	return chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Text, blocks)
+}
+
+func (message *ElectronicMessage) metaString() string {
+	result := ""
+	append := func(sep, part string) {
+		if len(result) > 0 {
+			result += sep
+		}
+		result += part
+	}
+
+	if message.isInterrupt {
+		append("", "t")
+	}
+	if message.nextMessage >= 0 {
+		append(" ", fmt.Sprintf("i%02X", message.nextMessage))
+	}
+	if message.colorIndex >= 0 {
+		append(" ", fmt.Sprintf("c%02X", message.colorIndex))
+	}
+	if message.leftDisplay >= 0 {
+		append(" ", fmt.Sprintf("%d", message.leftDisplay))
+	}
+	if message.rightDisplay >= 0 {
+		append("", fmt.Sprintf(",%d", message.rightDisplay))
+	}
+
+	return result
+}
+
+func (message *ElectronicMessage) encodeText(input string) string {
+	temp := strings.Replace(input, "\n\n", "\n \n", -1)
+	temp = strings.Replace(temp, "\n\n", "\n \n", -1)
+	return temp
+}
+
+func (message *ElectronicMessage) splitText(input string) []string {
+	result := []string{}
+	textLines := strings.Split(input, "\n")
+	resultLine := ""
+	newLine := func() {
+		result = append(result, resultLine)
+		resultLine = ""
+	}
+
+	for textLineIndex, textLine := range textLines {
+		words := strings.Split(textLine, " ")
+		for wordIndex, word := range words {
+			if wordIndex > 0 {
+				resultLine += " "
+			}
+			if (len(resultLine) + len(word)) > textLineLimit {
+				newLine()
+			}
+			resultLine += word
+		}
+		if len(resultLine) > 0 {
+			if textLineIndex < (len(textLines) - 1) {
+				resultLine += "\n"
+			}
+			newLine()
+		}
+	}
+
+	return result
 }
 
 // NextMessage returns the identifier of an interrupting message. Or -1 if no interrupt.
