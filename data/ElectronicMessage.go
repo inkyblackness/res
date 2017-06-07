@@ -22,12 +22,12 @@ const (
 	metaExpressionRightDisplay = "(?:,[ ]*([0-9]+))"
 )
 
-var metaExpression = regexp.MustCompile("[ ]*(?:(?:" +
+var metaExpression = regexp.MustCompile("^[ ]*(?:(?:" +
 	metaExpressionInterrupt + "|" +
 	metaExpressionNextMessage + "|" +
 	metaExpressionColorIndex + "|" +
 	metaExpressionLeftDisplay + "|" +
-	metaExpressionRightDisplay + ")[ ]*)*")
+	metaExpressionRightDisplay + ")[ ]*)*$")
 
 // ElectronicMessage describes one message.
 type ElectronicMessage struct {
@@ -63,13 +63,11 @@ func DecodeElectronicMessage(cp text.Codepage, holder chunk.BlockHolder) (messag
 			if blockIndex < holder.BlockCount() {
 				line = cp.Decode(holder.BlockData(blockIndex))
 				blockIndex++
-			} else {
-				err = fmt.Errorf("Not enough blocks")
 			}
 		}
 		return
 	}
-	joinBlocks := func() (text string) {
+	nextText := func() (text string) {
 		for line := nextBlockString(); len(line) > 0; line = nextBlockString() {
 			text += line
 		}
@@ -91,7 +89,10 @@ func DecodeElectronicMessage(cp text.Codepage, holder chunk.BlockHolder) (messag
 	}
 
 	message = NewElectronicMessage()
-	if len(metaData[1]) > 0 {
+	if (metaData == nil) || (len(metaData[0]) != len(metaString)) {
+		err = fmt.Errorf("Failed to parse meta string: <%v>", metaString)
+	}
+	if (err == nil) && (len(metaData[1]) > 0) {
 		message.isInterrupt = true
 	}
 	message.nextMessage = parseInt(2, 16, 16)
@@ -101,8 +102,8 @@ func DecodeElectronicMessage(cp text.Codepage, holder chunk.BlockHolder) (messag
 	message.title = nextBlockString()
 	message.sender = nextBlockString()
 	message.subject = nextBlockString()
-	message.verboseText = joinBlocks()
-	message.terseText = joinBlocks()
+	message.verboseText = nextText()
+	message.terseText = nextText()
 
 	return
 }
