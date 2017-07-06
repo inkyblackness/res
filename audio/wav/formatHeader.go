@@ -11,16 +11,16 @@ const (
 )
 
 type waveFormat struct {
-	formatType     waveFormatType
-	channels       uint16
-	samplesPerSec  uint32
-	avgBytesPerSec uint32
-	blockAlign     uint16
+	FormatType     waveFormatType
+	Channels       uint16
+	SamplesPerSec  uint32
+	AvgBytesPerSec uint32
+	BlockAlign     uint16
 }
 
 type waveFormatExtension struct {
-	bitsPerSample uint16
-	extensionSize uint16
+	BitsPerSample uint16
+	ExtensionSize uint16
 }
 
 type formatHeader struct {

@@ -15,12 +15,12 @@ func Save(writer io.Writer, sampleRate float32, samples []byte) {
 	tagSize := uint32(8)
 	tagSizes := uint32(tagSize * 2)
 
-	fmt.base.formatType = waveFormatTypePcm
-	fmt.base.channels = 1
-	fmt.base.samplesPerSec = uint32(sampleRate)
-	fmt.base.avgBytesPerSec = fmt.base.samplesPerSec
-	fmt.base.blockAlign = 1
-	fmt.extension.bitsPerSample = 8
+	fmt.base.FormatType = waveFormatTypePcm
+	fmt.base.Channels = 1
+	fmt.base.SamplesPerSec = uint32(sampleRate)
+	fmt.base.AvgBytesPerSec = fmt.base.SamplesPerSec
+	fmt.base.BlockAlign = 1
+	fmt.extension.BitsPerSample = 8
 
 	riffTag := riffChunkTag{riffChunkTypeRiff, tagSizes + contentTypeSize + fmtSize + dataSize}
 

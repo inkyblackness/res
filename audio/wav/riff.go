@@ -14,6 +14,6 @@ const (
 )
 
 type riffChunkTag struct {
-	chunkType riffChunkType
-	size      uint32
+	ChunkType riffChunkType
+	Size      uint32
 }
