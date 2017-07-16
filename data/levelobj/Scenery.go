@@ -52,8 +52,8 @@ var securityCamera = baseScenery.
 var solidBridge = baseScenery.
 	With("Size", 2, 1).As(interpreters.Bitfield(map[uint32]string{0x0F: "X", 0xF0: "Y"})).
 	With("Height", 3, 1).As(interpreters.SpecialValue("ObjectHeight")).
-	With("TopBottomTexture", 4, 1).As(interpreters.SpecialValue("LevelTexture")).
-	With("SideTexture", 5, 1).As(interpreters.SpecialValue("LevelTexture"))
+	With("TopBottomTexture", 4, 1).As(interpreters.SpecialValue("MaterialOrLevelTexture")).
+	With("SideTexture", 5, 1).As(interpreters.SpecialValue("MaterialOrLevelTexture"))
 
 var forceBridge = baseScenery.
 	With("Size", 2, 1).As(interpreters.Bitfield(map[uint32]string{0x0F: "X", 0xF0: "Y"})).

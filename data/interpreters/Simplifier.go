@@ -64,6 +64,7 @@ func ObjectIndex() FieldRange {
 // Currently known special values:
 // * BinaryCodedDecimal - for keypads storing their number as BCD
 // * LevelTexture - index value into level texture list
+// * MaterialOrLevelTexture - index value into level texture list, or material (bit 7 toggles)
 // * VariableKey - for actions
 // * VariableCondition - for action conditions
 // * ObjectType - for 0x00CCSSTT selection
