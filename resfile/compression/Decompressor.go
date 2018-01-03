@@ -11,6 +11,7 @@ type decompressor struct {
 	reader *wordReader
 
 	isEndOfStream  bool
+	dictBuffer     [1 << bitsPerWord]dictEntry
 	dictionary     *dictEntry
 	dictionarySize int
 	lastEntry      *dictEntry
@@ -36,7 +37,7 @@ func (obj *decompressor) resetDictionary() {
 	obj.lookup = make(map[word]*dictEntry)
 	obj.dictionary = rootDictEntry()
 	for i := 0; i < 0x100; i++ {
-		entry := obj.dictionary.Add(byte(i), word(i))
+		entry := obj.dictionary.Add(byte(i), word(i), &obj.dictBuffer[i])
 		obj.lookup[word(i)] = entry
 	}
 	obj.lastEntry = obj.dictionary
@@ -102,7 +103,13 @@ func (obj *decompressor) readNextWord() {
 
 func (obj *decompressor) addToDictionary(value byte) {
 	key := word(int(literalLimit) + obj.dictionarySize)
-	nextEntry := obj.lastEntry.Add(value, key)
+	var newEntry *dictEntry
+	if int(key) < len(obj.dictBuffer) {
+		newEntry = &obj.dictBuffer[int(key)]
+	} else {
+		newEntry = new(dictEntry)
+	}
+	nextEntry := obj.lastEntry.Add(value, key, newEntry)
 	obj.lookup[key] = nextEntry
 	obj.dictionarySize++
 }

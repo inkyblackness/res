@@ -10,6 +10,7 @@ type compressor struct {
 	coder  serial.Coder
 	writer *wordWriter
 
+	dictBuffer     [1 << bitsPerWord]dictEntry
 	overtime       int
 	dictionary     *dictEntry
 	dictionarySize int
@@ -34,7 +35,7 @@ func NewCompressor(target io.Writer) io.WriteCloser {
 func (obj *compressor) resetDictionary() {
 	obj.dictionarySize = 0
 	for i := 0; i < 0x100; i++ {
-		obj.dictionary.Add(byte(i), word(i))
+		obj.dictionary.Add(byte(i), word(i), &obj.dictBuffer[i])
 	}
 	obj.curEntry = obj.dictionary
 }
@@ -63,7 +64,7 @@ func (obj *compressor) addByte(value byte) {
 
 		key := word(int(literalLimit) + obj.dictionarySize)
 		if key < reset {
-			obj.curEntry.Add(value, key)
+			obj.curEntry.Add(value, key, &obj.dictBuffer[int(key)])
 			obj.dictionarySize++
 		} else {
 			obj.onKeySaturation()
