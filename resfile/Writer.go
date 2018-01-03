@@ -55,7 +55,6 @@ func (writer *Writer) CreateChunk(id Identifier, contentType ContentType, compre
 		return nil, writer.encoder.FirstError()
 	}
 
-	writer.currentChunkStartOffset = writer.encoder.CurPos()
 	var targetWriter io.Writer = serial.NewEncoder(writer.encoder)
 	targetFinisher := func() {}
 	chunkType := byte(0x00)
@@ -65,12 +64,8 @@ func (writer *Writer) CreateChunk(id Identifier, contentType ContentType, compre
 		targetWriter = compressor
 		targetFinisher = func() { compressor.Close() } // nolint: errcheck
 	}
-	entry := &chunkDirectoryEntry{id: id.Value()}
-	entry.setContentType(byte(contentType))
-	entry.setChunkType(chunkType)
-	writer.directory = append(writer.directory, entry)
 	blockWriter := &BlockWriter{target: targetWriter, finisher: targetFinisher}
-	writer.currentChunk = blockWriter
+	writer.addNewChunk(id, contentType, chunkType, blockWriter)
 
 	return blockWriter, nil
 }
@@ -87,19 +82,23 @@ func (writer *Writer) CreateFragmentedChunk(id Identifier, contentType ContentTy
 		return nil, writer.encoder.FirstError()
 	}
 
-	writer.currentChunkStartOffset = writer.encoder.CurPos()
 	chunkType := chunkTypeFlagFragmented
 	if compressed {
 		chunkType |= chunkTypeFlagCompressed
 	}
+	chunkWriter := &FragmentedChunkWriter{target: serial.NewPositioningEncoder(writer.encoder), compressed: compressed}
+	writer.addNewChunk(id, contentType, chunkType, chunkWriter)
+
+	return chunkWriter, nil
+}
+
+func (writer *Writer) addNewChunk(id Identifier, contentType ContentType, chunkType byte, newChunk chunkWriter) {
 	entry := &chunkDirectoryEntry{id: id.Value()}
 	entry.setContentType(byte(contentType))
 	entry.setChunkType(chunkType)
 	writer.directory = append(writer.directory, entry)
-	chunkWriter := &FragmentedChunkWriter{target: serial.NewPositioningEncoder(writer.encoder), compressed: compressed}
-	writer.currentChunk = chunkWriter
-
-	return chunkWriter, nil
+	writer.currentChunk = newChunk
+	writer.currentChunkStartOffset = writer.encoder.CurPos()
 }
 
 // Finish finalizes the resource file. After calling this function, the
