@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 
+	"github.com/inkyblackness/res/resfile/compression"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -55,15 +56,20 @@ func (writer *Writer) CreateChunk(id Identifier, contentType ContentType, compre
 	}
 
 	writer.currentChunkStartOffset = writer.encoder.CurPos()
+	var targetWriter io.Writer = serial.NewEncoder(writer.encoder)
+	targetFinisher := func() {}
 	chunkType := byte(0x00)
 	if compressed {
+		compressor := compression.NewCompressor(targetWriter)
 		chunkType |= chunkTypeFlagCompressed
+		targetWriter = compressor
+		targetFinisher = func() { compressor.Close() } // nolint: errcheck
 	}
 	entry := &chunkDirectoryEntry{id: id.Value()}
 	entry.setContentType(byte(contentType))
 	entry.setChunkType(chunkType)
 	writer.directory = append(writer.directory, entry)
-	blockWriter := &BlockWriter{serial.NewPositioningEncoder(writer.encoder)}
+	blockWriter := &BlockWriter{target: targetWriter, finisher: targetFinisher}
 	writer.currentChunk = blockWriter
 
 	return blockWriter, nil
@@ -90,7 +96,7 @@ func (writer *Writer) CreateFragmentedChunk(id Identifier, contentType ContentTy
 	entry.setContentType(byte(contentType))
 	entry.setChunkType(chunkType)
 	writer.directory = append(writer.directory, entry)
-	chunkWriter := &FragmentedChunkWriter{target: serial.NewPositioningEncoder(writer.encoder)}
+	chunkWriter := &FragmentedChunkWriter{target: serial.NewPositioningEncoder(writer.encoder), compressed: compressed}
 	writer.currentChunk = chunkWriter
 
 	return chunkWriter, nil
@@ -134,8 +140,8 @@ func (writer *Writer) writeHeader() {
 func (writer *Writer) finishLastChunk() {
 	if writer.currentChunk != nil {
 		currentEntry := writer.directory[len(writer.directory)-1]
-		currentEntry.setPackedLength(writer.currentChunk.finish())
-		currentEntry.setUnpackedLength(writer.encoder.CurPos() - writer.currentChunkStartOffset)
+		currentEntry.setUnpackedLength(writer.currentChunk.finish())
+		currentEntry.setPackedLength(writer.encoder.CurPos() - writer.currentChunkStartOffset)
 
 		writer.currentChunkStartOffset = 0
 		writer.currentChunk = nil
