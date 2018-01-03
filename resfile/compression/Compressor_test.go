@@ -23,8 +23,7 @@ func TestCompressorSuite(t *testing.T) {
 
 func (suite *CompressorSuite) SetupTest() {
 	suite.store = serial.NewByteStore()
-	coder := serial.NewEncoder(suite.store)
-	suite.compressor = NewCompressor(coder)
+	suite.compressor = NewCompressor(suite.store)
 }
 
 func (suite *CompressorSuite) TestWriteCompressesFirstReocurrence() {

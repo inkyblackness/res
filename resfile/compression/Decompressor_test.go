@@ -102,7 +102,7 @@ func (suite *DecompressorSuite) verify(input []byte) {
 func (suite *DecompressorSuite) verifyOutput(expected []byte) {
 	output := suite.buffer(len(expected))
 	source := bytes.NewReader(suite.store.Data())
-	decompressor := NewDecompressor(serial.NewDecoder(source))
+	decompressor := NewDecompressor(source)
 	decompressor.Read(output)
 
 	assert.Equal(suite.T(), expected, output)

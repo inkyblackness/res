@@ -7,6 +7,7 @@ import (
 )
 
 type decompressor struct {
+	coder  serial.Coder
 	reader *wordReader
 
 	isEndOfStream  bool
@@ -18,10 +19,13 @@ type decompressor struct {
 	leftover []byte
 }
 
-// NewDecompressor creates a new decompressor instance over a decoder.
-func NewDecompressor(coder serial.Coder) io.Reader {
+// NewDecompressor creates a new decompressor instance over a reader.
+func NewDecompressor(source io.Reader) io.Reader {
+	coder := serial.NewDecoder(source)
 	obj := &decompressor{
-		reader: newWordReader(coder), dictionary: rootDictEntry()}
+		coder:      coder,
+		reader:     newWordReader(coder),
+		dictionary: rootDictEntry()}
 	obj.resetDictionary()
 
 	return obj
@@ -49,7 +53,7 @@ func (obj *decompressor) Read(p []byte) (n int, err error) {
 		}
 	}
 
-	return
+	return n, obj.coder.FirstError()
 }
 
 func (obj *decompressor) takeFromLeftover(dest []byte, destOffset int) (provided int) {

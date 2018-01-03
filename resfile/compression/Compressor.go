@@ -7,6 +7,7 @@ import (
 )
 
 type compressor struct {
+	coder  serial.Coder
 	writer *wordWriter
 
 	overtime       int
@@ -15,9 +16,11 @@ type compressor struct {
 	curEntry       *dictEntry
 }
 
-// NewCompressor creates a new compressor instance over an encoder.
-func NewCompressor(coder serial.Coder) io.WriteCloser {
+// NewCompressor creates a new compressor instance over a writer.
+func NewCompressor(target io.Writer) io.WriteCloser {
+	coder := serial.NewEncoder(target)
 	obj := &compressor{
+		coder:          coder,
 		writer:         newWordWriter(coder),
 		dictionary:     rootDictEntry(),
 		dictionarySize: 0,
@@ -40,17 +43,15 @@ func (obj *compressor) Close() error {
 	obj.writer.write(obj.curEntry.key)
 	obj.writer.close()
 
-	return nil
+	return obj.coder.FirstError()
 }
 
 func (obj *compressor) Write(p []byte) (n int, err error) {
-	n = len(p)
-
 	for _, input := range p {
 		obj.addByte(input)
 	}
 
-	return
+	return len(p), obj.coder.FirstError()
 }
 
 func (obj *compressor) addByte(value byte) {
