@@ -45,19 +45,19 @@ func (obj *decompressor) resetDictionary() {
 func (obj *decompressor) Read(p []byte) (n int, err error) {
 	requested := len(p)
 
-	for n < requested && !obj.isEndOfStream {
-		n += obj.takeFromLeftover(p, n)
+	for n < requested && !obj.isEndOfStream && obj.coder.FirstError() == nil {
+		n += obj.takeFromLeftover(p[n:])
 		if n < requested {
 			obj.readNextWord()
-			n += obj.takeFromLeftover(p, n)
+			n += obj.takeFromLeftover(p[n:])
 		}
 	}
 
 	return n, obj.coder.FirstError()
 }
 
-func (obj *decompressor) takeFromLeftover(dest []byte, destOffset int) (provided int) {
-	requested := len(dest) - destOffset
+func (obj *decompressor) takeFromLeftover(target []byte) (provided int) {
+	requested := len(target)
 	available := len(obj.leftover)
 
 	if available > 0 && requested > 0 {
@@ -65,7 +65,7 @@ func (obj *decompressor) takeFromLeftover(dest []byte, destOffset int) (provided
 		if provided > requested {
 			provided = requested
 		}
-		copy(dest[destOffset:destOffset+provided], obj.leftover)
+		copy(target[0:provided], obj.leftover)
 		obj.leftover = obj.leftover[provided:]
 	}
 
