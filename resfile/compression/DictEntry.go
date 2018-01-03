@@ -1,4 +1,4 @@
-package base
+package compression
 
 type dictEntry struct {
 	prev  *dictEntry
