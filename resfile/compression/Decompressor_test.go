@@ -4,54 +4,57 @@ import (
 	"bytes"
 	"io"
 	"math/rand"
+	"testing"
 	"time"
 
 	"github.com/inkyblackness/res/serial"
 
-	check "gopkg.in/check.v1"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type DecompressorSuite struct {
+	suite.Suite
 	store      *serial.ByteStore
 	compressor io.WriteCloser
 }
 
-var _ = check.Suite(&DecompressorSuite{})
-
-func (suite *DecompressorSuite) SetUpTest(c *check.C) {
+func TestDecompressorSuite(t *testing.T) {
+	suite.Run(t, new(DecompressorSuite))
 }
 
-func (suite *DecompressorSuite) TestDecompressTest1(c *check.C) {
+func (suite *DecompressorSuite) SetupTest() {
+}
+
+func (suite *DecompressorSuite) TestDecompressTest1() {
 	input := []byte{0x00, 0x01, 0x00, 0x01}
 
-	suite.verify(c, input)
+	suite.verify(input)
 }
 
-func (suite *DecompressorSuite) TestDecompressTest2(c *check.C) {
+func (suite *DecompressorSuite) TestDecompressTest2() {
 	input := []byte{0x00, 0x01, 0x00, 0x01, 0x00, 0x01}
 
-	suite.verify(c, input)
+	suite.verify(input)
 }
 
-func (suite *DecompressorSuite) TestDecompressTest3(c *check.C) {
-	input := []byte{}
-
-	suite.verify(c, input)
+func (suite *DecompressorSuite) TestDecompressTest3() {
+	suite.verify([]byte{})
 }
 
-func (suite *DecompressorSuite) TestDecompressTest4(c *check.C) {
+func (suite *DecompressorSuite) TestDecompressTest4() {
 	input := []byte{0x00, 0x01, 0x00, 0x02, 0x01, 0x00, 0x01}
 
-	suite.verify(c, input)
+	suite.verify(input)
 }
 
-func (suite *DecompressorSuite) TestDecompressTest5(c *check.C) {
+func (suite *DecompressorSuite) TestDecompressTest5() {
 	input := []byte{0x00, 0x01, 0x00, 0x02, 0x01, 0x00, 0x01, 0x02, 0x01, 0x02, 0x01, 0x00, 0x01, 0x02}
 
-	suite.verify(c, input)
+	suite.verify(input)
 }
 
-func (suite *DecompressorSuite) TestDecompressTestRandom(c *check.C) {
+func (suite *DecompressorSuite) TestDecompressTestRandom() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	for testCase := 0; testCase < 100; testCase++ {
@@ -59,20 +62,20 @@ func (suite *DecompressorSuite) TestDecompressTestRandom(c *check.C) {
 		for i := 0; i < len(input); i++ {
 			input[i] = byte(r.Intn(256))
 		}
-		suite.verify(c, input)
+		suite.verify(input)
 	}
 }
 
-func (suite *DecompressorSuite) TestDecompressHandlesDictionaryResets(c *check.C) {
+func (suite *DecompressorSuite) TestDecompressHandlesDictionaryResets() {
 	suite.writeWords(0x0001, 0x0002, 0x0100, reset, 0x0003, 0x0004, 0x0100, endOfStream)
 
-	suite.verifyOutput(c, []byte{0x01, 0x02, 0x01, 0x02, 0x03, 0x04, 0x03, 0x04})
+	suite.verifyOutput([]byte{0x01, 0x02, 0x01, 0x02, 0x03, 0x04, 0x03, 0x04})
 }
 
-func (suite *DecompressorSuite) TestDecompressHandlesSelfReferencingWords(c *check.C) {
+func (suite *DecompressorSuite) TestDecompressHandlesSelfReferencingWords() {
 	suite.writeWords(0x0001, 0x0002, 0x0101, endOfStream)
 
-	suite.verifyOutput(c, []byte{0x01, 0x02, 0x02, 0x02})
+	suite.verifyOutput([]byte{0x01, 0x02, 0x02, 0x02})
 }
 
 func (suite *DecompressorSuite) writeWords(values ...word) {
@@ -86,23 +89,23 @@ func (suite *DecompressorSuite) writeWords(values ...word) {
 	writer.close()
 }
 
-func (suite *DecompressorSuite) verify(c *check.C, input []byte) {
+func (suite *DecompressorSuite) verify(input []byte) {
 	suite.store = serial.NewByteStore()
 	suite.compressor = NewCompressor(serial.NewEncoder(suite.store))
 
 	suite.compressor.Write(input)
 	suite.compressor.Close()
 
-	suite.verifyOutput(c, input)
+	suite.verifyOutput(input)
 }
 
-func (suite *DecompressorSuite) verifyOutput(c *check.C, expected []byte) {
+func (suite *DecompressorSuite) verifyOutput(expected []byte) {
 	output := suite.buffer(len(expected))
 	source := bytes.NewReader(suite.store.Data())
 	decompressor := NewDecompressor(serial.NewDecoder(source))
 	decompressor.Read(output)
 
-	c.Check(output, check.DeepEquals, expected)
+	assert.Equal(suite.T(), expected, output)
 }
 
 func (suite *DecompressorSuite) buffer(byteCount int) []byte {

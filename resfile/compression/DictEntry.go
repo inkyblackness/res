@@ -4,11 +4,10 @@ type dictEntry struct {
 	prev  *dictEntry
 	depth int
 
-	value byte
-	key   word
-
 	next [256]*dictEntry
 
+	key   word
+	value byte
 	first byte
 }
 
@@ -32,7 +31,7 @@ func (entry *dictEntry) Add(value byte, key word) *dictEntry {
 }
 
 func (entry *dictEntry) Data() []byte {
-	bytes := make([]byte, entry.depth, entry.depth)
+	bytes := make([]byte, entry.depth)
 	cur := entry
 	for i := entry.depth - 1; i >= 0; i-- {
 		bytes[i] = cur.value

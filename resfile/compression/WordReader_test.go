@@ -2,17 +2,40 @@ package base
 
 import (
 	"bytes"
+	"testing"
 
 	"github.com/inkyblackness/res/serial"
 
-	check "gopkg.in/check.v1"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type WordReaderSuite struct {
+	suite.Suite
 	reader *wordReader
 }
 
-var _ = check.Suite(&WordReaderSuite{})
+func TestWordReaderSuite(t *testing.T) {
+	suite.Run(t, new(WordReaderSuite))
+}
+
+func (suite *WordReaderSuite) TestReadCanReadFirstWord() {
+	suite.givenReaderFrom()
+
+	assert.Equal(suite.T(), endOfStream, suite.reader.read())
+}
+
+func (suite *WordReaderSuite) TestReadCanReadSeveralWords() {
+	input := []word{word(0x3FFF), word(0x0000), word(0x3FFF), word(0x0000), word(0x2001), word(0x1234)}
+	suite.givenReaderFrom(input...)
+
+	output := make([]word, len(input)+1)
+	for i := 0; i < len(output); i++ {
+		output[i] = suite.reader.read()
+	}
+
+	assert.Equal(suite.T(), append(input, endOfStream), output)
+}
 
 func (suite *WordReaderSuite) givenReaderFrom(words ...word) {
 	store := serial.NewByteStore()
@@ -26,22 +49,4 @@ func (suite *WordReaderSuite) givenReaderFrom(words ...word) {
 
 	source := bytes.NewReader(store.Data())
 	suite.reader = newWordReader(serial.NewDecoder(source))
-}
-
-func (suite *WordReaderSuite) TestReadCanReadFirstWord(c *check.C) {
-	suite.givenReaderFrom()
-
-	c.Assert(suite.reader.read(), check.Equals, endOfStream)
-}
-
-func (suite *WordReaderSuite) TestReadCanReadSeveralWords(c *check.C) {
-	input := []word{word(0x3FFF), word(0x0000), word(0x3FFF), word(0x0000), word(0x2001), word(0x1234)}
-	suite.givenReaderFrom(input...)
-
-	output := make([]word, len(input)+1)
-	for i := 0; i < len(output); i++ {
-		output[i] = suite.reader.read()
-	}
-
-	c.Assert(output, check.DeepEquals, append(input, endOfStream))
 }
