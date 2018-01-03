@@ -37,15 +37,12 @@ func (entry *dictEntry) Add(value byte, key word, newEntry *dictEntry) *dictEntr
 	return newEntry
 }
 
-func (entry *dictEntry) Data() []byte {
-	bytes := make([]byte, entry.depth)
+func (entry *dictEntry) Data(bytes []byte) {
 	cur := entry
 	for i := entry.depth - 1; i >= 0; i-- {
 		bytes[i] = cur.value
 		cur = cur.prev
 	}
-
-	return bytes
 }
 
 func (entry *dictEntry) FirstByte() byte {

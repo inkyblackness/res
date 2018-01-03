@@ -15,8 +15,9 @@ type decompressor struct {
 	dictionary     *dictEntry
 	dictionarySize int
 	lastEntry      *dictEntry
-	lookup         map[word]*dictEntry
+	lookup         []*dictEntry
 
+	scratch  []byte
 	leftover []byte
 }
 
@@ -26,7 +27,8 @@ func NewDecompressor(source io.Reader) io.Reader {
 	obj := &decompressor{
 		coder:      coder,
 		reader:     newWordReader(coder),
-		dictionary: rootDictEntry()}
+		dictionary: rootDictEntry(),
+		scratch:    make([]byte, 1024)}
 	obj.resetDictionary()
 
 	return obj
@@ -34,7 +36,7 @@ func NewDecompressor(source io.Reader) io.Reader {
 
 func (obj *decompressor) resetDictionary() {
 	obj.dictionarySize = 0
-	obj.lookup = make(map[word]*dictEntry)
+	obj.lookup = make([]*dictEntry, 1024)
 	obj.dictionary = rootDictEntry()
 	for i := 0; i < 0x100; i++ {
 		entry := obj.dictionary.Add(byte(i), word(i), &obj.dictBuffer[i])
@@ -76,15 +78,22 @@ func (obj *decompressor) takeFromLeftover(target []byte) (provided int) {
 func (obj *decompressor) readNextWord() {
 	nextWord := obj.reader.read()
 
-	obj.leftover = obj.lastEntry.Data()
+	if obj.lastEntry.depth > len(obj.scratch) {
+		obj.scratch = make([]byte, len(obj.scratch)+1024)
+	}
+	obj.leftover = obj.scratch[:obj.lastEntry.depth]
+	obj.lastEntry.Data(obj.leftover)
 	if nextWord == endOfStream {
 		obj.isEndOfStream = true
 	} else if nextWord == reset {
 		obj.resetDictionary()
 	} else {
-		nextEntry, nextExisting := obj.lookup[nextWord]
+		var nextEntry *dictEntry
+		if int(nextWord) < len(obj.lookup) {
+			nextEntry = obj.lookup[int(nextWord)]
+		}
 
-		if nextExisting {
+		if nextEntry != nil {
 			if obj.lastEntry.depth > 0 {
 				obj.addToDictionary(nextEntry.FirstByte())
 			}
@@ -110,6 +119,11 @@ func (obj *decompressor) addToDictionary(value byte) {
 		newEntry = new(dictEntry)
 	}
 	nextEntry := obj.lastEntry.Add(value, key, newEntry)
+	if int(key) >= len(obj.lookup) {
+		newLookup := make([]*dictEntry, len(obj.lookup)+1024)
+		copy(newLookup, obj.lookup)
+		obj.lookup = newLookup
+	}
 	obj.lookup[key] = nextEntry
 	obj.dictionarySize++
 }

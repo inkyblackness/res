@@ -80,7 +80,7 @@ func BenchmarkCompression1024KB(b *testing.B) {
 func benchmarkCompressionDecompression(b *testing.B, size int, nameSuffix string) {
 	profileStop := initProfiling(b, "")
 	defer profileStop()
-	data := rawData(1024 * 1024)
+	data := rawData(size)
 	output := make([]byte, len(data))
 	b.ResetTimer()
 	for run := 0; run < b.N; run++ {
