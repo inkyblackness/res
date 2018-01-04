@@ -103,6 +103,14 @@ func TestReaderChunkWithUncompressedSingleBlockContent(t *testing.T) {
 	verifyBlockContent(t, chunkReader.Block(0), []byte{0x01, 0x01, 0x01})
 }
 
+func TestReaderChunkWithCompressedSingleBlockContent(t *testing.T) {
+	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
+	chunkReader := reader.Chunk(exampleChunkIDSingleBlockChunkCompressed)
+
+	assert.Equal(t, 1, chunkReader.BlockCount())
+	verifyBlockContent(t, chunkReader.Block(0), []byte{0x02, 0x02})
+}
+
 func verifyBlockContent(t *testing.T, reader io.Reader, expected []byte) {
 	require.NotNil(t, reader, "reader is nil")
 	data, err := ioutil.ReadAll(reader)

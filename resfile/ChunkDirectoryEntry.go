@@ -23,11 +23,9 @@ func (entry *chunkDirectoryEntry) setUnpackedLength(value uint32) {
 	entry.UnpackedLengthAndChunkType = setBits(entry.UnpackedLengthAndChunkType, 0, 24, value)
 }
 
-/*
 func (entry *chunkDirectoryEntry) unpackedLength() uint32 {
 	return maskBits(entry.UnpackedLengthAndChunkType, 0, 24)
 }
-*/
 
 func (entry *chunkDirectoryEntry) setChunkType(value byte) {
 	entry.UnpackedLengthAndChunkType = setBits(entry.UnpackedLengthAndChunkType, 24, 8, uint32(value))

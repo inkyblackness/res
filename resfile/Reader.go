@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/inkyblackness/res/resfile/compression"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -95,7 +96,7 @@ func (reader *Reader) IDs() []ChunkID {
 // Chunk returns a reader for the specified chunk.
 // If the ID is not known, nil is returned.
 func (reader *Reader) Chunk(id Identifier) ChunkReader {
-	startOffset, entry := reader.findEntry(id.Value())
+	chunkStartOffset, entry := reader.findEntry(id.Value())
 	if entry == nil {
 		return nil
 	}
@@ -110,11 +111,17 @@ func (reader *Reader) Chunk(id Identifier) ChunkReader {
 			contentType: contentType,
 			compressed:  compressed}
 	} else {
-		reader.decoder.SetCurPos(startOffset)
+		reader.decoder.SetCurPos(chunkStartOffset)
+		var chunkSource io.Reader = reader.decoder
+		chunkSize := entry.packedLength()
+		if compressed {
+			chunkSource = compression.NewDecompressor(chunkSource)
+			chunkSize = entry.unpackedLength()
+		}
 		chunkReader = &singleBlockChunkReader{
 			contentType: contentType,
 			compressed:  compressed,
-			source:      io.LimitReader(reader.decoder, int64(entry.packedLength()))}
+			source:      io.LimitReader(chunkSource, int64(chunkSize))}
 	}
 
 	return chunkReader
@@ -128,6 +135,7 @@ func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDire
 			entry = cur
 		} else {
 			startOffset += cur.packedLength()
+			startOffset += boundarySize - (startOffset % boundarySize)
 		}
 	}
 	return
