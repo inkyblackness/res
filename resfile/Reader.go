@@ -133,7 +133,7 @@ func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDire
 			entry = cur
 		} else {
 			startOffset += cur.packedLength()
-			startOffset += boundarySize - (startOffset % boundarySize)
+			startOffset += (boundarySize - (startOffset % boundarySize)) % boundarySize
 		}
 	}
 	return
@@ -150,6 +150,7 @@ func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
 
 	firstBlockOffset, blockList, err := reader.readBlockList(chunkDataReader)
 	if err != nil {
+		fmt.Printf("Fail with size: %v at start offset 0x%08X\n", chunkDataReader.Size(), chunkStartOffset)
 		return nil, err
 	}
 	blockCount := len(blockList)
@@ -201,6 +202,11 @@ func (reader *Reader) readBlockList(source io.Reader) (uint32, []blockListEntry,
 		blockList[blockIndex].start = lastBlockEndOffset
 		blockList[blockIndex].size = endOffset - lastBlockEndOffset
 		lastBlockEndOffset = endOffset
+	}
+
+	if listDecoder.FirstError() != nil {
+		fmt.Printf("reading of block list failed. count: %v, first offset: %v\n",
+			blockCount, firstBlockOffset)
 	}
 
 	return firstBlockOffset, blockList, listDecoder.FirstError()
