@@ -55,6 +55,34 @@ func ReaderFrom(source io.ReaderAt) (reader *Reader, err error) {
 	return
 }
 
+// IDs returns the chunk identifier available via this reader.
+// The order in the slice is the same as in the underlying serialized form.
+func (reader *Reader) IDs() []ChunkID {
+	ids := make([]ChunkID, len(reader.directory))
+	for index, entry := range reader.directory {
+		ids[index] = ChunkID(entry.ID)
+	}
+	return ids
+}
+
+// Chunk returns a reader for the specified chunk.
+// If the ID is not known, nil is returned.
+func (reader *Reader) Chunk(id Identifier) *ChunkReader {
+	chunkStartOffset, entry := reader.findEntry(id.Value())
+	if entry == nil {
+		return nil
+	}
+	chunkType := entry.chunkType()
+	compressed := (chunkType & chunkTypeFlagCompressed) != 0
+	fragmented := (chunkType & chunkTypeFlagFragmented) != 0
+	contentType := ContentType(entry.contentType())
+
+	if fragmented {
+		return reader.newFragmentedChunkReader(entry, contentType, compressed, chunkStartOffset)
+	}
+	return reader.newSingleBlockChunkReader(entry, contentType, compressed, chunkStartOffset)
+}
+
 func readAndVerifyHeader(source io.ReadSeeker) (dirOffset uint32, err error) {
 	coder := serial.NewPositioningDecoder(source)
 	data := make([]byte, chunkDirectoryFileOffsetPos)
@@ -94,32 +122,18 @@ func readDirectoryAt(dirOffset uint32, source io.ReaderAt) (firstChunkOffset uin
 	return
 }
 
-// IDs returns the chunk identifier available via this reader.
-// The order in the slice is the same as in the underlying serialized form.
-func (reader *Reader) IDs() []ChunkID {
-	ids := make([]ChunkID, len(reader.directory))
-	for index, entry := range reader.directory {
-		ids[index] = ChunkID(entry.ID)
+func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDirectoryEntry) {
+	startOffset = reader.firstChunkOffset
+	for index := 0; (index < len(reader.directory)) && (entry == nil); index++ {
+		cur := &reader.directory[index]
+		if cur.ID == id {
+			entry = cur
+		} else {
+			startOffset += cur.packedLength()
+			startOffset += boundarySize - (startOffset % boundarySize)
+		}
 	}
-	return ids
-}
-
-// Chunk returns a reader for the specified chunk.
-// If the ID is not known, nil is returned.
-func (reader *Reader) Chunk(id Identifier) *ChunkReader {
-	chunkStartOffset, entry := reader.findEntry(id.Value())
-	if entry == nil {
-		return nil
-	}
-	chunkType := entry.chunkType()
-	compressed := (chunkType & chunkTypeFlagCompressed) != 0
-	fragmented := (chunkType & chunkTypeFlagFragmented) != 0
-	contentType := ContentType(entry.contentType())
-
-	if fragmented {
-		return reader.newFragmentedChunkReader(entry, contentType, compressed, chunkStartOffset)
-	}
-	return reader.newSingleBlockChunkReader(entry, contentType, compressed, chunkStartOffset)
+	return
 }
 
 func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
@@ -174,18 +188,4 @@ func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry,
 		contentType: contentType,
 		compressed:  compressed,
 		blockReader: blockReader}
-}
-
-func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDirectoryEntry) {
-	startOffset = reader.firstChunkOffset
-	for index := 0; (index < len(reader.directory)) && (entry == nil); index++ {
-		cur := &reader.directory[index]
-		if cur.ID == id {
-			entry = cur
-		} else {
-			startOffset += cur.packedLength()
-			startOffset += boundarySize - (startOffset % boundarySize)
-		}
-	}
-	return
 }
