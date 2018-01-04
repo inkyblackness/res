@@ -136,35 +136,58 @@ func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDire
 	return
 }
 
+type blockListEntry struct {
+	start uint32
+	size  uint32
+}
+
 func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
 	contentType ContentType, compressed bool, chunkStartOffset uint32) *ChunkReader {
-	baseDecoder := serial.NewDecoder(io.NewSectionReader(reader.source, int64(chunkStartOffset), int64(entry.packedLength())))
-	var blockCount uint16
-	type blockInfo struct {
-		start uint32
-		size  uint32
+	chunkDataReader := io.NewSectionReader(reader.source, int64(chunkStartOffset), int64(entry.packedLength()))
+
+	var blockList []blockListEntry
+	var err error
+	blockList, err = reader.readBlockList(chunkDataReader)
+	if err != nil {
+		return nil
 	}
+	blockCount := len(blockList)
 
-	// TODO: unfinished
-
-	baseDecoder.Code(&blockCount)
-	var firstBlockOffset uint32
-	baseDecoder.Code(&firstBlockOffset)
-	lastBlockEndOffset := firstBlockOffset
-	blocks := make([]blockInfo, blockCount)
-	for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
-		var endOffset uint32
-		baseDecoder.Code(&endOffset)
-		blocks[blockIndex].start = lastBlockEndOffset
-		blocks[blockIndex].size = endOffset - lastBlockEndOffset
-		lastBlockEndOffset = endOffset
+	blockReader := func(index int) (io.Reader, error) {
+		if (index < 0) || (index >= blockCount) {
+			return nil, fmt.Errorf("block index wrong: %v/%v", index, blockCount)
+		}
+		var reader io.Reader
+		entry := blockList[index]
+		reader = io.NewSectionReader(chunkDataReader, int64(entry.start), int64(entry.size))
+		return reader, nil
 	}
 
 	return &ChunkReader{
 		fragmented:  true,
-		blockCount:  int(blockCount),
+		blockCount:  len(blockList),
 		contentType: contentType,
-		compressed:  compressed}
+		compressed:  compressed,
+		blockReader: blockReader}
+}
+
+func (reader *Reader) readBlockList(source io.Reader) ([]blockListEntry, error) {
+	listDecoder := serial.NewDecoder(source)
+	var blockCount uint16
+	listDecoder.Code(&blockCount)
+	var firstBlockOffset uint32
+	listDecoder.Code(&firstBlockOffset)
+	lastBlockEndOffset := firstBlockOffset
+	blockList := make([]blockListEntry, blockCount)
+	for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
+		var endOffset uint32
+		listDecoder.Code(&endOffset)
+		blockList[blockIndex].start = lastBlockEndOffset
+		blockList[blockIndex].size = endOffset - lastBlockEndOffset
+		lastBlockEndOffset = endOffset
+	}
+
+	return blockList, listDecoder.FirstError()
 }
 
 func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry,

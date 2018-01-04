@@ -110,17 +110,14 @@ func TestReaderChunkWithCompressedSingleBlockContent(t *testing.T) {
 	verifyBlockContent(t, chunkReader, 0, []byte{0x02, 0x02})
 }
 
-/*
-TODO: unfinished
 func TestReaderChunkWithUncompressedFragmentedContent(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
 	chunkReader := reader.Chunk(exampleChunkIDFragmentedChunk)
 
 	assert.Equal(t, 2, chunkReader.BlockCount())
-	verifyBlockContent(t, chunkReader.Block(0), []byte{0x30, 0x30, 0x30, 0x30})
-	verifyBlockContent(t, chunkReader.Block(1), []byte{0x31, 0x31, 0x31})
+	verifyBlockContent(t, chunkReader, 0, []byte{0x30, 0x30, 0x30, 0x30})
+	verifyBlockContent(t, chunkReader, 1, []byte{0x31, 0x31, 0x31})
 }
-*/
 
 func verifyBlockContent(t *testing.T, chunkReader *ChunkReader, blockIndex int, expected []byte) {
 	blockReader, readerErr := chunkReader.Block(blockIndex)

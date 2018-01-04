@@ -39,6 +39,7 @@ func (reader *ChunkReader) BlockCount() int {
 }
 
 // Block returns the reader for the identified block.
+// Each call returns a new reader instance.
 func (reader *ChunkReader) Block(index int) (io.Reader, error) {
 	return reader.blockReader(index)
 }
