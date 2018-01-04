@@ -65,15 +65,17 @@ func TestReaderIDsReturnsTheStoredChunkIDsInOrderFromFile(t *testing.T) {
 		exampleChunkIDFragmentedChunk, exampleChunkIDFragmentedChunkCompressed}, reader.IDs())
 }
 
-func TestReaderChunkReturnsNilForUnknownID(t *testing.T) {
+func TestReaderChunkReturnsErrorForUnknownID(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(emptyResourceFile()))
-	chunkReader := reader.Chunk(ChunkID(0x1111))
-	assert.Nil(t, chunkReader)
+	chunkReader, err := reader.Chunk(ChunkID(0x1111))
+	assert.Nil(t, chunkReader, "no reader expected")
+	assert.NotNil(t, err)
 }
 
 func TestReaderChunkReturnsAChunkReaderForKnownID(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
-	chunkReader := reader.Chunk(exampleChunkIDSingleBlockChunk)
+	chunkReader, err := reader.Chunk(exampleChunkIDSingleBlockChunk)
+	assert.Nil(t, err, "no error expected")
 	assert.NotNil(t, chunkReader)
 }
 
@@ -83,7 +85,7 @@ func TestReaderChunkReturnsChunkWithMetaInformation(t *testing.T) {
 		return fmt.Sprintf("Chunk 0x%04X should have %v = %v", chunkID.Value(), name, expected)
 	}
 	verifyChunk := func(chunkID ChunkID, fragmented bool, contentType ContentType, compressed bool) {
-		chunkReader := reader.Chunk(chunkID)
+		chunkReader, _ := reader.Chunk(chunkID)
 		assert.Equal(t, fragmented, chunkReader.Fragmented(), info(chunkID, "fragmented", fragmented))
 		assert.Equal(t, contentType, chunkReader.ContentType(), info(chunkID, "contentType", contentType))
 		assert.Equal(t, compressed, chunkReader.Compressed(), info(chunkID, "compressed", compressed))
@@ -96,7 +98,7 @@ func TestReaderChunkReturnsChunkWithMetaInformation(t *testing.T) {
 
 func TestReaderChunkWithUncompressedSingleBlockContent(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
-	chunkReader := reader.Chunk(exampleChunkIDSingleBlockChunk)
+	chunkReader, _ := reader.Chunk(exampleChunkIDSingleBlockChunk)
 
 	assert.Equal(t, 1, chunkReader.BlockCount())
 	verifyBlockContent(t, chunkReader, 0, []byte{0x01, 0x01, 0x01})
@@ -104,7 +106,7 @@ func TestReaderChunkWithUncompressedSingleBlockContent(t *testing.T) {
 
 func TestReaderChunkWithCompressedSingleBlockContent(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
-	chunkReader := reader.Chunk(exampleChunkIDSingleBlockChunkCompressed)
+	chunkReader, _ := reader.Chunk(exampleChunkIDSingleBlockChunkCompressed)
 
 	assert.Equal(t, 1, chunkReader.BlockCount())
 	verifyBlockContent(t, chunkReader, 0, []byte{0x02, 0x02})
@@ -112,7 +114,7 @@ func TestReaderChunkWithCompressedSingleBlockContent(t *testing.T) {
 
 func TestReaderChunkWithUncompressedFragmentedContent(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
-	chunkReader := reader.Chunk(exampleChunkIDFragmentedChunk)
+	chunkReader, _ := reader.Chunk(exampleChunkIDFragmentedChunk)
 
 	assert.Equal(t, 2, chunkReader.BlockCount())
 	verifyBlockContent(t, chunkReader, 0, []byte{0x30, 0x30, 0x30, 0x30})
@@ -121,7 +123,7 @@ func TestReaderChunkWithUncompressedFragmentedContent(t *testing.T) {
 
 func TestReaderChunkWithCompressedFragmentedContent(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
-	chunkReader := reader.Chunk(exampleChunkIDFragmentedChunkCompressed)
+	chunkReader, _ := reader.Chunk(exampleChunkIDFragmentedChunkCompressed)
 
 	assert.Equal(t, 3, chunkReader.BlockCount())
 	verifyBlockContent(t, chunkReader, 0, []byte{0x40, 0x40})

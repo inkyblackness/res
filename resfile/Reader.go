@@ -66,12 +66,14 @@ func (reader *Reader) IDs() []ChunkID {
 	return ids
 }
 
+var errInvalidIdentifier = errors.New("chunk: invalid identifier")
+
 // Chunk returns a reader for the specified chunk.
-// If the ID is not known, nil is returned.
-func (reader *Reader) Chunk(id Identifier) *ChunkReader {
+// An error is returned if either the ID is not known, or the chunk could not be prepared.
+func (reader *Reader) Chunk(id Identifier) (*ChunkReader, error) {
 	chunkStartOffset, entry := reader.findEntry(id.Value())
 	if entry == nil {
-		return nil
+		return nil, errInvalidIdentifier
 	}
 	chunkType := entry.chunkType()
 	compressed := (chunkType & chunkTypeFlagCompressed) != 0
@@ -143,15 +145,12 @@ type blockListEntry struct {
 }
 
 func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
-	contentType ContentType, compressed bool, chunkStartOffset uint32) *ChunkReader {
+	contentType ContentType, compressed bool, chunkStartOffset uint32) (*ChunkReader, error) {
 	chunkDataReader := io.NewSectionReader(reader.source, int64(chunkStartOffset), int64(entry.packedLength()))
 
-	var firstBlockOffset uint32
-	var blockList []blockListEntry
-	var err error
-	firstBlockOffset, blockList, err = reader.readBlockList(chunkDataReader)
+	firstBlockOffset, blockList, err := reader.readBlockList(chunkDataReader)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	blockCount := len(blockList)
 
@@ -185,7 +184,7 @@ func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
 		blockCount:  len(blockList),
 		contentType: contentType,
 		compressed:  compressed,
-		blockReader: blockReader}
+		blockReader: blockReader}, nil
 }
 
 func (reader *Reader) readBlockList(source io.Reader) (uint32, []blockListEntry, error) {
@@ -208,7 +207,7 @@ func (reader *Reader) readBlockList(source io.Reader) (uint32, []blockListEntry,
 }
 
 func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry,
-	contentType ContentType, compressed bool, chunkStartOffset uint32) *ChunkReader {
+	contentType ContentType, compressed bool, chunkStartOffset uint32) (*ChunkReader, error) {
 	blockReader := func(index int) (io.Reader, error) {
 		if index != 0 {
 			return nil, fmt.Errorf("block index wrong: %v/%v", index, 1)
@@ -227,5 +226,5 @@ func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry,
 		blockCount:  1,
 		contentType: contentType,
 		compressed:  compressed,
-		blockReader: blockReader}
+		blockReader: blockReader}, nil
 }

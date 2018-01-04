@@ -16,7 +16,7 @@ type ChunkReader struct {
 }
 
 // Fragmented describes how many blocks can be expected.
-// Unfragmented chunks have exactly one block, fragmented chunks zero, one, or more.
+// Unfragmented chunks have exactly one block, fragmented chunks have zero, one, or more blocks.
 func (reader *ChunkReader) Fragmented() bool {
 	return reader.fragmented
 }
@@ -27,7 +27,7 @@ func (reader *ChunkReader) ContentType() ContentType {
 }
 
 // Compressed returns true if the data is to be serialized in compressed form
-// in the resource file. Data provided by this reader is already uncompressed.
+// in the resource file.
 func (reader *ChunkReader) Compressed() bool {
 	return reader.compressed
 }
@@ -40,6 +40,7 @@ func (reader *ChunkReader) BlockCount() int {
 
 // Block returns the reader for the identified block.
 // Each call returns a new reader instance.
+// Data provided by this reader is always uncompressed.
 func (reader *ChunkReader) Block(index int) (io.Reader, error) {
 	return reader.blockReader(index)
 }
