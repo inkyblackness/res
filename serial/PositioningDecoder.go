@@ -2,22 +2,25 @@ package serial
 
 import "io"
 
-type positioningDecoder struct {
+// PositioningDecoder is a Decoder with positioning capabilities.
+type PositioningDecoder struct {
 	Decoder
 
 	seeker io.Seeker
 }
 
-// NewPositioningDecoder creates a new Decoder from given reader.
-func NewPositioningDecoder(source io.ReadSeeker) PositioningCoder {
-	return &positioningDecoder{Decoder: Decoder{source: source, offset: 0}, seeker: source}
+// NewPositioningDecoder creates a new PositiongingDecoder from given reader.
+func NewPositioningDecoder(source io.ReadSeeker) *PositioningDecoder {
+	return &PositioningDecoder{Decoder: Decoder{source: source, offset: 0}, seeker: source}
 }
 
-func (coder *positioningDecoder) CurPos() uint32 {
+// CurPos returns the current decoding position, in bytes.
+func (coder *PositioningDecoder) CurPos() uint32 {
 	return coder.offset
 }
 
-func (coder *positioningDecoder) SetCurPos(offset uint32) {
+// SetCurPos changes the encoding position to the specified absolute offset.
+func (coder *PositioningDecoder) SetCurPos(offset uint32) {
 	if coder.firstError != nil {
 		return
 	}

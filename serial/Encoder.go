@@ -25,6 +25,9 @@ func (coder *Encoder) FirstError() error {
 
 // Code serializes the given value in little endian format using binary.Write().
 func (coder *Encoder) Code(value interface{}) {
+	if coder.firstError != nil {
+		return
+	}
 	coder.firstError = binary.Write(coder, binary.LittleEndian, value)
 }
 

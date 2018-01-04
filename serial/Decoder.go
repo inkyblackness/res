@@ -24,6 +24,9 @@ func (coder *Decoder) FirstError() error {
 
 // Code serializes the given value in little endian format using binary.Read().
 func (coder *Decoder) Code(value interface{}) {
+	if coder.firstError != nil {
+		return
+	}
 	coder.firstError = binary.Read(coder, binary.LittleEndian, value)
 }
 
