@@ -46,6 +46,7 @@ func exampleResourceFile() []byte {
 	chunk4, _ := writer.CreateFragmentedChunk(exampleChunkIDFragmentedChunkCompressed, ContentType(0x04), true)
 	chunk4.CreateBlock().Write([]byte{0x40, 0x40})
 	chunk4.CreateBlock().Write([]byte{0x41, 0x41, 0x41, 0x41})
+	chunk4.CreateBlock().Write([]byte{0x42})
 	writer.Finish()
 
 	return store.Data()

@@ -105,26 +105,54 @@ func (reader *Reader) Chunk(id Identifier) ChunkReader {
 	fragmented := (chunkType & chunkTypeFlagFragmented) != 0
 	contentType := ContentType(entry.contentType())
 
-	var chunkReader ChunkReader
+	reader.decoder.SetCurPos(chunkStartOffset)
 	if fragmented {
-		chunkReader = &fragmentedBlockChunkReader{
-			contentType: contentType,
-			compressed:  compressed}
-	} else {
-		reader.decoder.SetCurPos(chunkStartOffset)
-		var chunkSource io.Reader = reader.decoder
-		chunkSize := entry.packedLength()
-		if compressed {
-			chunkSource = compression.NewDecompressor(chunkSource)
-			chunkSize = entry.unpackedLength()
-		}
-		chunkReader = &singleBlockChunkReader{
-			contentType: contentType,
-			compressed:  compressed,
-			source:      io.LimitReader(chunkSource, int64(chunkSize))}
+		return reader.newFragmentedChunkReader(entry, contentType, compressed)
+	}
+	return reader.newSingleBlockChunkReader(entry, contentType, compressed)
+}
+
+func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry, contentType ContentType, compressed bool) ChunkReader {
+	baseDecoder := serial.NewDecoder(io.LimitReader(reader.decoder, int64(entry.packedLength())))
+	var blockCount uint16
+	type blockInfo struct {
+		start uint32
+		size  uint32
 	}
 
-	return chunkReader
+	// TODO: unfinished
+
+	baseDecoder.Code(&blockCount)
+	var firstBlockOffset uint32
+	baseDecoder.Code(&firstBlockOffset)
+	lastBlockEndOffset := firstBlockOffset
+	blocks := make([]blockInfo, blockCount)
+	for blockIndex := uint16(0); blockIndex < blockCount; blockIndex++ {
+		var endOffset uint32
+		baseDecoder.Code(&endOffset)
+		blocks[blockIndex].start = lastBlockEndOffset
+		blocks[blockIndex].size = endOffset - lastBlockEndOffset
+		lastBlockEndOffset = endOffset
+	}
+
+	return &fragmentedChunkReader{
+		contentType: contentType,
+		compressed:  compressed}
+}
+
+func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry, contentType ContentType, compressed bool) ChunkReader {
+	var chunkSource io.Reader = reader.decoder
+	chunkSize := entry.packedLength()
+
+	if compressed {
+		chunkSource = compression.NewDecompressor(chunkSource)
+		chunkSize = entry.unpackedLength()
+	}
+
+	return &singleBlockChunkReader{
+		contentType: contentType,
+		compressed:  compressed,
+		source:      io.LimitReader(chunkSource, int64(chunkSize))}
 }
 
 func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDirectoryEntry) {
