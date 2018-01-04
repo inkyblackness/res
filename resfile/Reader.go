@@ -12,36 +12,38 @@ import (
 // Chunks may be accessed only one at a time. The reader does not support
 // reading from multiple chunks concurrently.
 type Reader struct {
+	decoder          *serial.PositioningDecoder
 	firstChunkOffset uint32
 	directory        []chunkDirectoryEntry
 	keyedDirectory   map[uint16]*chunkDirectoryEntry
 }
 
-var errSourceNil = errors.New("source is nil")
+var errSourceNil = errors.New("decoder is nil")
 var errFormatMismatch = errors.New("format mismatch")
 
-// ReaderFrom accesses the provided source and creates a new Reader instance
+// ReaderFrom accesses the provided decoder and creates a new Reader instance
 // from it.
-// Should the provided source not follow the resource file format, an error
+// Should the provided decoder not follow the resource file format, an error
 // is returned.
 func ReaderFrom(source io.ReadSeeker) (reader *Reader, err error) {
 	if source == nil {
 		return nil, errSourceNil
 	}
 
-	coder := serial.NewPositioningDecoder(source)
+	decoder := serial.NewPositioningDecoder(source)
 
 	var dirOffset uint32
-	dirOffset, err = readAndVerifyHeader(coder)
+	dirOffset, err = readAndVerifyHeader(decoder)
 	if err != nil {
 		return nil, err
 	}
-	firstChunkOffset, directory := readDirectoryAt(dirOffset, coder)
-	if coder.FirstError() != nil {
-		return nil, coder.FirstError()
+	firstChunkOffset, directory := readDirectoryAt(dirOffset, decoder)
+	if decoder.FirstError() != nil {
+		return nil, decoder.FirstError()
 	}
 
 	reader = &Reader{
+		decoder:          decoder,
 		firstChunkOffset: firstChunkOffset,
 		directory:        directory,
 		keyedDirectory:   make(map[uint16]*chunkDirectoryEntry)}
@@ -93,10 +95,40 @@ func (reader *Reader) IDs() []ChunkID {
 // Chunk returns a reader for the specified chunk.
 // If the ID is not known, nil is returned.
 func (reader *Reader) Chunk(id Identifier) ChunkReader {
-	_, existing := reader.keyedDirectory[id.Value()]
-	if !existing {
+	startOffset, entry := reader.findEntry(id.Value())
+	if entry == nil {
 		return nil
 	}
+	chunkType := entry.chunkType()
+	compressed := (chunkType & chunkTypeFlagCompressed) != 0
+	fragmented := (chunkType & chunkTypeFlagFragmented) != 0
+	contentType := ContentType(entry.contentType())
 
-	return &singleBlockChunkReader{}
+	var chunkReader ChunkReader
+	if fragmented {
+		chunkReader = &fragmentedBlockChunkReader{
+			contentType: contentType,
+			compressed:  compressed}
+	} else {
+		reader.decoder.SetCurPos(startOffset)
+		chunkReader = &singleBlockChunkReader{
+			contentType: contentType,
+			compressed:  compressed,
+			source:      io.LimitReader(reader.decoder, int64(entry.packedLength()))}
+	}
+
+	return chunkReader
+}
+
+func (reader *Reader) findEntry(id uint16) (startOffset uint32, entry *chunkDirectoryEntry) {
+	startOffset = reader.firstChunkOffset
+	for index := 0; (index < len(reader.directory)) && (entry == nil); index++ {
+		cur := &reader.directory[index]
+		if cur.ID == id {
+			entry = cur
+		} else {
+			startOffset += cur.packedLength()
+		}
+	}
+	return
 }

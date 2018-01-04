@@ -3,6 +3,9 @@ package resfile
 import "io"
 
 type singleBlockChunkReader struct {
+	contentType ContentType
+	compressed  bool
+	source      io.Reader
 }
 
 func (reader *singleBlockChunkReader) Fragmented() bool {
@@ -10,11 +13,11 @@ func (reader *singleBlockChunkReader) Fragmented() bool {
 }
 
 func (reader *singleBlockChunkReader) ContentType() ContentType {
-	return ContentType(0xFF)
+	return reader.contentType
 }
 
 func (reader *singleBlockChunkReader) Compressed() bool {
-	return false
+	return reader.compressed
 }
 
 func (reader *singleBlockChunkReader) BlockCount() int {
@@ -22,5 +25,5 @@ func (reader *singleBlockChunkReader) BlockCount() int {
 }
 
 func (reader *singleBlockChunkReader) Block(index int) io.Reader {
-	return nil
+	return reader.source
 }

@@ -43,7 +43,7 @@ func exampleResourceFile() []byte {
 	chunk3, _ := writer.CreateFragmentedChunk(exampleChunkIDFragmentedChunk, ContentType(0x03), false)
 	chunk3.CreateBlock().Write([]byte{0x30, 0x30, 0x30, 0x30})
 	chunk3.CreateBlock().Write([]byte{0x31, 0x31, 0x31})
-	chunk4, _ := writer.CreateFragmentedChunk(exampleChunkIDFragmentedChunkCompressed, ContentType(0x03), true)
+	chunk4, _ := writer.CreateFragmentedChunk(exampleChunkIDFragmentedChunkCompressed, ContentType(0x04), true)
 	chunk4.CreateBlock().Write([]byte{0x40, 0x40})
 	chunk4.CreateBlock().Write([]byte{0x41, 0x41, 0x41, 0x41})
 	writer.Finish()
