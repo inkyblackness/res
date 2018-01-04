@@ -3,7 +3,6 @@ package resfile
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"testing"
 
@@ -100,7 +99,7 @@ func TestReaderChunkWithUncompressedSingleBlockContent(t *testing.T) {
 	chunkReader := reader.Chunk(exampleChunkIDSingleBlockChunk)
 
 	assert.Equal(t, 1, chunkReader.BlockCount())
-	verifyBlockContent(t, chunkReader.Block(0), []byte{0x01, 0x01, 0x01})
+	verifyBlockContent(t, chunkReader, 0, []byte{0x01, 0x01, 0x01})
 }
 
 func TestReaderChunkWithCompressedSingleBlockContent(t *testing.T) {
@@ -108,7 +107,7 @@ func TestReaderChunkWithCompressedSingleBlockContent(t *testing.T) {
 	chunkReader := reader.Chunk(exampleChunkIDSingleBlockChunkCompressed)
 
 	assert.Equal(t, 1, chunkReader.BlockCount())
-	verifyBlockContent(t, chunkReader.Block(0), []byte{0x02, 0x02})
+	verifyBlockContent(t, chunkReader, 0, []byte{0x02, 0x02})
 }
 
 /*
@@ -123,9 +122,11 @@ func TestReaderChunkWithUncompressedFragmentedContent(t *testing.T) {
 }
 */
 
-func verifyBlockContent(t *testing.T, reader io.Reader, expected []byte) {
-	require.NotNil(t, reader, "reader is nil")
-	data, err := ioutil.ReadAll(reader)
-	assert.Nil(t, err, "no error expected")
+func verifyBlockContent(t *testing.T, chunkReader *ChunkReader, blockIndex int, expected []byte) {
+	blockReader, readerErr := chunkReader.Block(blockIndex)
+	assert.Nil(t, readerErr, "error retrieving reader")
+	require.NotNil(t, blockReader, "reader is nil")
+	data, dataErr := ioutil.ReadAll(blockReader)
+	assert.Nil(t, dataErr, "no error expected reading data")
 	assert.Equal(t, expected, data)
 }
