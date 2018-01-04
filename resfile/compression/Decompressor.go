@@ -55,8 +55,12 @@ func (obj *decompressor) Read(p []byte) (n int, err error) {
 			n += obj.takeFromLeftover(p[n:])
 		}
 	}
+	err = obj.coder.FirstError()
+	if err == nil && obj.isEndOfStream {
+		err = io.EOF
+	}
 
-	return n, obj.coder.FirstError()
+	return
 }
 
 func (obj *decompressor) takeFromLeftover(target []byte) (provided int) {
