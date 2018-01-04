@@ -2,11 +2,12 @@ package resfile
 
 import (
 	"bytes"
-	"errors"
-	"io"
-
 	"encoding/binary"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+
 	"github.com/inkyblackness/res/resfile/compression"
 	"github.com/inkyblackness/res/serial"
 )
@@ -145,21 +146,37 @@ func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
 	contentType ContentType, compressed bool, chunkStartOffset uint32) *ChunkReader {
 	chunkDataReader := io.NewSectionReader(reader.source, int64(chunkStartOffset), int64(entry.packedLength()))
 
+	var firstBlockOffset uint32
 	var blockList []blockListEntry
 	var err error
-	blockList, err = reader.readBlockList(chunkDataReader)
+	firstBlockOffset, blockList, err = reader.readBlockList(chunkDataReader)
 	if err != nil {
 		return nil
 	}
 	blockCount := len(blockList)
 
+	rawBlockDataReader := io.NewSectionReader(chunkDataReader, int64(firstBlockOffset), chunkDataReader.Size()-int64(firstBlockOffset))
+	var uncompressedReader io.ReaderAt
+	if !compressed {
+		uncompressedReader = rawBlockDataReader
+	}
+
 	blockReader := func(index int) (io.Reader, error) {
 		if (index < 0) || (index >= blockCount) {
 			return nil, fmt.Errorf("block index wrong: %v/%v", index, blockCount)
 		}
-		var reader io.Reader
+
+		if compressed && (uncompressedReader == nil) {
+			decompressor := compression.NewDecompressor(rawBlockDataReader)
+			decompressedData, err := ioutil.ReadAll(decompressor)
+			if err != nil {
+				return nil, err
+			}
+			uncompressedReader = bytes.NewReader(decompressedData)
+		}
+
 		entry := blockList[index]
-		reader = io.NewSectionReader(chunkDataReader, int64(entry.start), int64(entry.size))
+		reader := io.NewSectionReader(uncompressedReader, int64(entry.start)-int64(firstBlockOffset), int64(entry.size))
 		return reader, nil
 	}
 
@@ -171,7 +188,7 @@ func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
 		blockReader: blockReader}
 }
 
-func (reader *Reader) readBlockList(source io.Reader) ([]blockListEntry, error) {
+func (reader *Reader) readBlockList(source io.Reader) (uint32, []blockListEntry, error) {
 	listDecoder := serial.NewDecoder(source)
 	var blockCount uint16
 	listDecoder.Code(&blockCount)
@@ -187,7 +204,7 @@ func (reader *Reader) readBlockList(source io.Reader) ([]blockListEntry, error) 
 		lastBlockEndOffset = endOffset
 	}
 
-	return blockList, listDecoder.FirstError()
+	return firstBlockOffset, blockList, listDecoder.FirstError()
 }
 
 func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry,
