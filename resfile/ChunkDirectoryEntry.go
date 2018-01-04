@@ -5,9 +5,9 @@ import (
 )
 
 type chunkDirectoryEntry struct {
-	id                         uint16
-	unpackedLengthAndChunkType uint32
-	packedLengthAndContentType uint32
+	ID                         uint16
+	UnpackedLengthAndChunkType uint32
+	PackedLengthAndContentType uint32
 }
 
 /*
@@ -22,41 +22,41 @@ func setBits(field uint32, bitOffset uint, bitCount int, value uint32) uint32 {
 }
 
 func (entry *chunkDirectoryEntry) setUnpackedLength(value uint32) {
-	entry.unpackedLengthAndChunkType = setBits(entry.unpackedLengthAndChunkType, 0, 24, value)
+	entry.UnpackedLengthAndChunkType = setBits(entry.UnpackedLengthAndChunkType, 0, 24, value)
 }
 
 /*
 func (entry *chunkDirectoryEntry) unpackedLength() uint32 {
-	return maskBits(entry.unpackedLengthAndChunkType, 0, 24)
+	return maskBits(entry.UnpackedLengthAndChunkType, 0, 24)
 }
 */
 
 func (entry *chunkDirectoryEntry) setChunkType(value byte) {
-	entry.unpackedLengthAndChunkType = setBits(entry.unpackedLengthAndChunkType, 24, 8, uint32(value))
+	entry.UnpackedLengthAndChunkType = setBits(entry.UnpackedLengthAndChunkType, 24, 8, uint32(value))
 }
 
 /*
 func (entry *chunkDirectoryEntry) chunkType() byte {
-	return byte(maskBits(entry.unpackedLengthAndChunkType, 24, 8))
+	return byte(maskBits(entry.UnpackedLengthAndChunkType, 24, 8))
 }
 */
 
 func (entry *chunkDirectoryEntry) setPackedLength(value uint32) {
-	entry.packedLengthAndContentType = setBits(entry.packedLengthAndContentType, 0, 24, value)
+	entry.PackedLengthAndContentType = setBits(entry.PackedLengthAndContentType, 0, 24, value)
 }
 
 /*
 func (entry *chunkDirectoryEntry) packedLength() uint32 {
-	return maskBits(entry.packedLengthAndContentType, 0, 24)
+	return maskBits(entry.PackedLengthAndContentType, 0, 24)
 }
 */
 
 func (entry *chunkDirectoryEntry) setContentType(value byte) {
-	entry.packedLengthAndContentType = setBits(entry.packedLengthAndContentType, 24, 8, uint32(value))
+	entry.PackedLengthAndContentType = setBits(entry.PackedLengthAndContentType, 24, 8, uint32(value))
 }
 
 /*
 func (entry *chunkDirectoryEntry) contentType() byte {
-	return byte(maskBits(entry.packedLengthAndContentType, 24, 8))
+	return byte(maskBits(entry.PackedLengthAndContentType, 24, 8))
 }
 */

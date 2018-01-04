@@ -93,7 +93,7 @@ func (writer *Writer) CreateFragmentedChunk(id Identifier, contentType ContentTy
 }
 
 func (writer *Writer) addNewChunk(id Identifier, contentType ContentType, chunkType byte, newChunk chunkWriter) {
-	entry := &chunkDirectoryEntry{id: id.Value()}
+	entry := &chunkDirectoryEntry{ID: id.Value()}
 	entry.setContentType(byte(contentType))
 	entry.setChunkType(chunkType)
 	writer.directory = append(writer.directory, entry)
