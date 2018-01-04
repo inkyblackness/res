@@ -8,12 +8,23 @@ import (
 )
 
 // FragmentedChunkWriter writes a chunk with zero, one, or more blocks.
+// Multiple blocks can be created and then written concurrently. Only when the
+// chunk is finished, the blocks are finalized.
 type FragmentedChunkWriter struct {
 	target *serial.PositioningEncoder
 
 	compressed  bool
 	blockStores []*serial.ByteStore
 	blockWriter []*BlockWriter
+}
+
+// CreateBlock provides a new, dedicated writer for a new block.
+func (writer *FragmentedChunkWriter) CreateBlock() *BlockWriter {
+	store := serial.NewByteStore()
+	blockWriter := &BlockWriter{target: serial.NewEncoder(store), finisher: func() {}}
+	writer.blockStores = append(writer.blockStores, store)
+	writer.blockWriter = append(writer.blockWriter, blockWriter)
+	return blockWriter
 }
 
 func (writer *FragmentedChunkWriter) finish() (length uint32) {
@@ -46,15 +57,4 @@ func (writer *FragmentedChunkWriter) writeBlocks() {
 		targetWriter.Write(store.Data()) // nolint: errcheck
 	}
 	targetFinisher()
-}
-
-// CreateBlock provides a new, dedicated writer for a new block.
-// Multiple blocks can be created and then written in parallel. Only when the
-// chunk is finished, the blocks are finalized.
-func (writer *FragmentedChunkWriter) CreateBlock() *BlockWriter {
-	store := serial.NewByteStore()
-	blockWriter := &BlockWriter{target: serial.NewEncoder(store), finisher: func() {}}
-	writer.blockStores = append(writer.blockStores, store)
-	writer.blockWriter = append(writer.blockWriter, blockWriter)
-	return blockWriter
 }

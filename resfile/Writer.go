@@ -10,6 +10,8 @@ import (
 )
 
 // Writer provides methods to write a new resource file from scratch.
+// Chunks have to be created sequentially. The writer does not support
+// concurrent creation and modification of chunks.
 type Writer struct {
 	encoder *serial.PositioningEncoder
 
@@ -92,15 +94,6 @@ func (writer *Writer) CreateFragmentedChunk(id Identifier, contentType ContentTy
 	return chunkWriter, nil
 }
 
-func (writer *Writer) addNewChunk(id Identifier, contentType ContentType, chunkType byte, newChunk chunkWriter) {
-	entry := &chunkDirectoryEntry{ID: id.Value()}
-	entry.setContentType(byte(contentType))
-	entry.setChunkType(chunkType)
-	writer.directory = append(writer.directory, entry)
-	writer.currentChunk = newChunk
-	writer.currentChunkStartOffset = writer.encoder.CurPos()
-}
-
 // Finish finalizes the resource file. After calling this function, the
 // writer becomes unusable.
 func (writer *Writer) Finish() (err error) {
@@ -134,6 +127,15 @@ func (writer *Writer) writeHeader() {
 	header[len(headerString)] = commentTerminator
 	writer.encoder.Code(header)
 	writer.encoder.Code(uint32(math.MaxUint32))
+}
+
+func (writer *Writer) addNewChunk(id Identifier, contentType ContentType, chunkType byte, newChunk chunkWriter) {
+	entry := &chunkDirectoryEntry{ID: id.Value()}
+	entry.setContentType(byte(contentType))
+	entry.setChunkType(chunkType)
+	writer.directory = append(writer.directory, entry)
+	writer.currentChunk = newChunk
+	writer.currentChunkStartOffset = writer.encoder.CurPos()
 }
 
 func (writer *Writer) finishLastChunk() {

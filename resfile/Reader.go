@@ -9,6 +9,8 @@ import (
 )
 
 // Reader provides methods to extract resource data from a serialized form.
+// Chunks may be accessed only one at a time. The reader does not support
+// reading from multiple chunks concurrently.
 type Reader struct {
 	firstChunkOffset uint32
 	directory        []chunkDirectoryEntry
@@ -90,11 +92,11 @@ func (reader *Reader) IDs() []ChunkID {
 
 // Chunk returns a reader for the specified chunk.
 // If the ID is not known, nil is returned.
-func (reader *Reader) Chunk(id Identifier) *ChunkReader {
+func (reader *Reader) Chunk(id Identifier) ChunkReader {
 	_, existing := reader.keyedDirectory[id.Value()]
 	if !existing {
 		return nil
 	}
 
-	return &ChunkReader{}
+	return &singleBlockChunkReader{}
 }
