@@ -37,7 +37,11 @@ func (coder *Decoder) Read(data []byte) (read int, err error) {
 	}
 	read, err = coder.source.Read(data)
 	coder.offset += uint32(read)
-	if coder.firstError == nil {
+
+	isErrEOF := err == io.EOF
+	expectedAmountReturned := read == len(data)
+	errorCanBeIgnored := isErrEOF && expectedAmountReturned
+	if (coder.firstError == nil) && !errorCanBeIgnored {
 		coder.firstError = err
 	}
 	return
