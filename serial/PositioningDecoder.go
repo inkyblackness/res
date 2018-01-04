@@ -3,14 +3,14 @@ package serial
 import "io"
 
 type positioningDecoder struct {
-	decoder
+	Decoder
 
 	seeker io.Seeker
 }
 
-// NewPositioningDecoder creates a new decoder from given reader.
+// NewPositioningDecoder creates a new Decoder from given reader.
 func NewPositioningDecoder(source io.ReadSeeker) PositioningCoder {
-	return &positioningDecoder{decoder: decoder{source: source, offset: 0}, seeker: source}
+	return &positioningDecoder{Decoder: Decoder{source: source, offset: 0}, seeker: source}
 }
 
 func (coder *positioningDecoder) CurPos() uint32 {

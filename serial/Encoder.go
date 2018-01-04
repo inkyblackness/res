@@ -37,7 +37,7 @@ func (coder *Encoder) Write(data []byte) (written int, err error) {
 	}
 	written, err = coder.target.Write(data)
 	coder.offset += uint32(written)
-	if err != nil {
+	if coder.firstError == nil {
 		coder.firstError = err
 	}
 	return

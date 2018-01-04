@@ -1,6 +1,6 @@
 package serial
 
-// Coder represents an Encoder/decoder for binary data.
+// Coder represents an Encoder/Decoder for binary data.
 type Coder interface {
 	// FirstError returns the first error this coder encountered.
 	FirstError() error

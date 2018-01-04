@@ -2,6 +2,7 @@ package serial
 
 import (
 	"bytes"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,12 +11,23 @@ import (
 
 type DecoderSuite struct {
 	suite.Suite
-	errorBuf errorBuffer
-	coder    Coder
+	errorBuf *errorBuffer
+	coder    *Decoder
 }
 
 func TestDecoderSuite(t *testing.T) {
 	suite.Run(t, new(DecoderSuite))
+}
+
+func (suite *DecoderSuite) SetupTest() {
+	suite.errorBuf = nil
+	suite.coder = nil
+}
+
+func (suite *DecoderSuite) TestImplementsCoderInterface() {
+	instance := (interface{})(suite.coder)
+	_, ok := instance.(Coder)
+	assert.True(suite.T(), ok)
 }
 
 func (suite *DecoderSuite) TestCodeUint32() {
@@ -76,11 +88,43 @@ func (suite *DecoderSuite) TestFirstErrorIgnoresFurtherErrors() {
 	assert.EqualError(suite.T(), suite.coder.FirstError(), "errorBuffer on call number 1")
 }
 
+func (suite *DecoderSuite) TestImplementsReaderInterface() {
+	instance := (interface{})(suite.coder)
+	_, ok := instance.(io.Reader)
+	assert.True(suite.T(), ok)
+}
+
+func (suite *DecoderSuite) TestReadFromReader() {
+	suite.whenDecodingFrom([]byte{0x78, 0x12, 0x34})
+
+	value := make([]byte, 3)
+	suite.coder.Read(value)
+
+	assert.Equal(suite.T(), []byte{0x78, 0x12, 0x34}, value)
+}
+
+func (suite *DecoderSuite) TestReadReturnsReadAmount() {
+	suite.whenDecodingFrom([]byte{0x78, 0x12, 0x34})
+	n, _ := suite.coder.Read(make([]byte, 3))
+	assert.Equal(suite.T(), 3, n)
+}
+
+func (suite *DecoderSuite) TestReadHandlesErrors() {
+	suite.whenDecodingWithErrors()
+
+	suite.errorBuf.errorOnNextCall = true
+	suite.coder.Read(make([]byte, 3))
+	suite.coder.Read(make([]byte, 5))
+	assert.Equal(suite.T(), 1, suite.errorBuf.callCounter)
+	assert.NotNil(suite.T(), suite.coder.FirstError())
+}
+
 func (suite *DecoderSuite) whenDecodingFrom(data []byte) {
 	source := bytes.NewReader(data)
 	suite.coder = NewDecoder(source)
 }
 
 func (suite *DecoderSuite) whenDecodingWithErrors() {
-	suite.coder = NewDecoder(&suite.errorBuf)
+	suite.errorBuf = new(errorBuffer)
+	suite.coder = NewDecoder(suite.errorBuf)
 }

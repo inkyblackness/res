@@ -5,29 +5,37 @@ import (
 	"io"
 )
 
-// decoder is for decoding from a reader.
-type decoder struct {
+// Decoder is for decoding from a reader.
+type Decoder struct {
 	source     io.Reader
 	firstError error
 	offset     uint32
 }
 
-// NewDecoder creates a new decoder from given source.
-func NewDecoder(source io.Reader) Coder {
-	return &decoder{source: source}
+// NewDecoder creates a new Decoder from given source.
+func NewDecoder(source io.Reader) *Decoder {
+	return &Decoder{source: source}
 }
 
-func (coder *decoder) FirstError() error {
+// FirstError returns the error this Decoder encountered the first time.
+func (coder *Decoder) FirstError() error {
 	return coder.firstError
 }
 
-func (coder *decoder) Code(value interface{}) {
+// Code serializes the given value in little endian format using binary.Read().
+func (coder *Decoder) Code(value interface{}) {
+	coder.firstError = binary.Read(coder, binary.LittleEndian, value)
+}
+
+// Read reads the next bytes from the underlying source.
+func (coder *Decoder) Read(data []byte) (read int, err error) {
 	if coder.firstError != nil {
-		return
+		return 0, coder.firstError
 	}
-	coder.firstError = binary.Read(coder.source, binary.LittleEndian, value)
-	if coder.firstError != nil {
-		return
+	read, err = coder.source.Read(data)
+	coder.offset += uint32(read)
+	if coder.firstError == nil {
+		coder.firstError = err
 	}
-	coder.offset += uint32(binary.Size(value))
+	return
 }
