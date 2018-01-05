@@ -18,7 +18,6 @@ type Reader struct {
 	source           io.ReaderAt
 	firstChunkOffset uint32
 	directory        []chunkDirectoryEntry
-	keyedDirectory   map[uint16]*chunkDirectoryEntry
 }
 
 var errSourceNil = errors.New("source is nil")
@@ -46,12 +45,7 @@ func ReaderFrom(source io.ReaderAt) (reader *Reader, err error) {
 	reader = &Reader{
 		source:           source,
 		firstChunkOffset: firstChunkOffset,
-		directory:        directory,
-		keyedDirectory:   make(map[uint16]*chunkDirectoryEntry)}
-	for index := 0; index < len(directory); index++ {
-		entry := &reader.directory[index]
-		reader.keyedDirectory[entry.ID] = entry
-	}
+		directory:        directory}
 
 	return
 }
