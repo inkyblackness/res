@@ -21,7 +21,7 @@ type Reader struct {
 	keyedDirectory   map[uint16]*chunkDirectoryEntry
 }
 
-var errSourceNil = errors.New("decoder is nil")
+var errSourceNil = errors.New("source is nil")
 var errFormatMismatch = errors.New("format mismatch")
 
 // ReaderFrom accesses the provided source and creates a new Reader instance
