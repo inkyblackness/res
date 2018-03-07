@@ -1,4 +1,4 @@
-package base
+package compression
 
 import "github.com/inkyblackness/res/serial"
 
@@ -7,6 +7,9 @@ type wordWriter struct {
 
 	bufferedBits uint
 	scratch      uint32
+
+	outBuffer [1024]byte
+	outUsed   int
 }
 
 func newWordWriter(coder serial.Coder) *wordWriter {
@@ -21,6 +24,7 @@ func (writer *wordWriter) close() {
 		writer.writeByte(byte(writer.scratch >> 16))
 	}
 	writer.writeByte(byte(0x00))
+	writer.flushBuffer()
 }
 
 func (writer *wordWriter) write(value word) {
@@ -38,5 +42,14 @@ func (writer *wordWriter) write(value word) {
 }
 
 func (writer *wordWriter) writeByte(value byte) {
-	writer.coder.Code(&value)
+	writer.outBuffer[writer.outUsed] = value
+	writer.outUsed++
+	if writer.outUsed >= len(writer.outBuffer) {
+		writer.flushBuffer()
+	}
+}
+
+func (writer *wordWriter) flushBuffer() {
+	writer.coder.Code(writer.outBuffer[:writer.outUsed])
+	writer.outUsed = 0
 }

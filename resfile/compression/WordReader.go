@@ -1,4 +1,4 @@
-package base
+package compression
 
 import "github.com/inkyblackness/res/serial"
 
