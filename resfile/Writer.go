@@ -88,7 +88,10 @@ func (writer *Writer) CreateFragmentedChunk(id Identifier, contentType ContentTy
 	if compressed {
 		chunkType |= chunkTypeFlagCompressed
 	}
-	chunkWriter := &FragmentedChunkWriter{target: serial.NewPositioningEncoder(writer.encoder), compressed: compressed}
+	chunkWriter := &FragmentedChunkWriter{
+		target:          serial.NewPositioningEncoder(writer.encoder),
+		compressed:      compressed,
+		dataPaddingSize: writer.dataPaddingSizeForFragmentedChunk(id)}
 	writer.addNewChunk(id, contentType, chunkType, chunkWriter)
 
 	return chunkWriter, nil
@@ -156,4 +159,13 @@ func (writer *Writer) alignToBoundary() {
 		padding := make([]byte, boundarySize-extraBytes)
 		writer.encoder.Code(padding)
 	}
+}
+
+func (writer *Writer) dataPaddingSizeForFragmentedChunk(id Identifier) (padding int) {
+	// Some directories have a 2byte padding before the actual data
+	idValue := id.Value()
+	if (idValue >= 0x08FC) && (idValue <= 0x094B) { // all chunks in obj3d.res
+		padding = 2
+	}
+	return
 }
