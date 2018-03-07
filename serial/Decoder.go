@@ -27,7 +27,11 @@ func (coder *Decoder) Code(value interface{}) {
 	if coder.firstError != nil {
 		return
 	}
-	coder.firstError = binary.Read(coder, binary.LittleEndian, value)
+	if codable, isCodable := value.(Codable); isCodable {
+		codable.Code(coder)
+	} else {
+		coder.firstError = binary.Read(coder, binary.LittleEndian, value)
+	}
 }
 
 // Read reads the next bytes from the underlying source.

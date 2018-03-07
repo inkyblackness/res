@@ -28,7 +28,11 @@ func (coder *Encoder) Code(value interface{}) {
 	if coder.firstError != nil {
 		return
 	}
-	coder.firstError = binary.Write(coder, binary.LittleEndian, value)
+	if codable, isCodable := value.(Codable); isCodable {
+		codable.Code(coder)
+	} else {
+		coder.firstError = binary.Write(coder, binary.LittleEndian, value)
+	}
 }
 
 // Write serializes the given data to the contained writer.

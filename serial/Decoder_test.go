@@ -119,6 +119,15 @@ func (suite *DecoderSuite) TestReadHandlesErrors() {
 	assert.NotNil(suite.T(), suite.coder.FirstError())
 }
 
+func (suite *DecoderSuite) TestCodeWithCodable() {
+	codable := new(MockedCodable)
+
+	suite.whenDecodingFrom([]byte{0x78, 0x12, 0x34})
+	suite.coder.Code(codable)
+
+	assert.Equal(suite.T(), suite.coder, codable.calledCoder, "Should be called with coder")
+}
+
 func (suite *DecoderSuite) whenDecodingFrom(data []byte) {
 	source := bytes.NewReader(data)
 	suite.coder = NewDecoder(source)

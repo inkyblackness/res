@@ -140,6 +140,13 @@ func (suite *EncoderSuite) TestWriteOnErrorCase() {
 	assert.EqualError(suite.T(), suite.coder.FirstError(), "errorBuffer on call number 1", "should set first error")
 }
 
+func (suite *EncoderSuite) TestCodeWithCodable() {
+	codable := new(MockedCodable)
+	suite.coder.Code(codable)
+
+	assert.Equal(suite.T(), suite.coder, codable.calledCoder, "Should be called with coder")
+}
+
 func (suite *EncoderSuite) verifyData(expected []byte) {
 	assert.Nil(suite.T(), suite.coder.FirstError())
 	result := suite.store.Data()
