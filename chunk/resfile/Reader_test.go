@@ -86,16 +86,16 @@ func TestReaderChunkReturnsChunkWithMetaInformation(t *testing.T) {
 	info := func(chunkID chunk.Identifier, name string, expected interface{}) string {
 		return fmt.Sprintf("Chunk 0x%04X should have %v = %v", chunkID.Value(), name, expected)
 	}
-	verifyChunk := func(chunkID chunk.Identifier, fragmented bool, contentType ContentType, compressed bool) {
+	verifyChunk := func(chunkID chunk.Identifier, fragmented bool, contentType chunk.ContentType, compressed bool) {
 		chunkReader, _ := reader.Chunk(chunkID)
 		assert.Equal(t, fragmented, chunkReader.Fragmented(), info(chunkID, "fragmented", fragmented))
 		assert.Equal(t, contentType, chunkReader.ContentType(), info(chunkID, "contentType", contentType))
 		assert.Equal(t, compressed, chunkReader.Compressed(), info(chunkID, "compressed", compressed))
 	}
-	verifyChunk(exampleChunkIDSingleBlockChunk, false, ContentType(0x01), false)
-	verifyChunk(exampleChunkIDSingleBlockChunkCompressed, false, ContentType(0x02), true)
-	verifyChunk(exampleChunkIDFragmentedChunk, true, ContentType(0x03), false)
-	verifyChunk(exampleChunkIDFragmentedChunkCompressed, true, ContentType(0x04), true)
+	verifyChunk(exampleChunkIDSingleBlockChunk, false, chunk.ContentType(0x01), false)
+	verifyChunk(exampleChunkIDSingleBlockChunkCompressed, false, chunk.ContentType(0x02), true)
+	verifyChunk(exampleChunkIDFragmentedChunk, true, chunk.ContentType(0x03), false)
+	verifyChunk(exampleChunkIDFragmentedChunkCompressed, true, chunk.ContentType(0x04), true)
 }
 
 func TestReaderChunkWithUncompressedSingleBlockContent(t *testing.T) {

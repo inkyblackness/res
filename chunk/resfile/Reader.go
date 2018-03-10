@@ -73,7 +73,7 @@ func (reader *Reader) Chunk(id chunk.Identifier) (*ChunkReader, error) {
 	chunkType := entry.chunkType()
 	compressed := (chunkType & chunkTypeFlagCompressed) != 0
 	fragmented := (chunkType & chunkTypeFlagFragmented) != 0
-	contentType := ContentType(entry.contentType())
+	contentType := chunk.ContentType(entry.contentType())
 
 	if fragmented {
 		return reader.newFragmentedChunkReader(entry, contentType, compressed, chunkStartOffset)
@@ -140,7 +140,7 @@ type blockListEntry struct {
 }
 
 func (reader *Reader) newFragmentedChunkReader(entry *chunkDirectoryEntry,
-	contentType ContentType, compressed bool, chunkStartOffset uint32) (*ChunkReader, error) {
+	contentType chunk.ContentType, compressed bool, chunkStartOffset uint32) (*ChunkReader, error) {
 	chunkDataReader := io.NewSectionReader(reader.source, int64(chunkStartOffset), int64(entry.packedLength()))
 
 	firstBlockOffset, blockList, err := reader.readBlockList(chunkDataReader)
@@ -208,7 +208,7 @@ func (reader *Reader) readBlockList(source io.Reader) (uint32, []blockListEntry,
 }
 
 func (reader *Reader) newSingleBlockChunkReader(entry *chunkDirectoryEntry,
-	contentType ContentType, compressed bool, chunkStartOffset uint32) (*ChunkReader, error) {
+	contentType chunk.ContentType, compressed bool, chunkStartOffset uint32) (*ChunkReader, error) {
 	blockReader := func(index int) (io.Reader, error) {
 		if index != 0 {
 			return nil, fmt.Errorf("block index wrong: %v/%v", index, 1)

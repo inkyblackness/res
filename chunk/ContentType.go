@@ -1,4 +1,4 @@
-package resfile
+package chunk
 
 // ContentType identifies how chunk data shall be interpreted.
 type ContentType byte

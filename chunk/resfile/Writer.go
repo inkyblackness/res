@@ -48,7 +48,8 @@ var errWriterFinished = errors.New("writer is finished")
 
 // CreateChunk adds a new single-block chunk to the current resource file.
 // This chunk is closed by creating another chunk, or by finishing the writer.
-func (writer *Writer) CreateChunk(id chunk.Identifier, contentType ContentType, compressed bool) (*BlockWriter, error) {
+func (writer *Writer) CreateChunk(id chunk.Identifier, contentType chunk.ContentType,
+	compressed bool) (*BlockWriter, error) {
 	if writer.encoder == nil {
 		return nil, errWriterFinished
 	}
@@ -75,7 +76,8 @@ func (writer *Writer) CreateChunk(id chunk.Identifier, contentType ContentType, 
 
 // CreateFragmentedChunk adds a new fragmented chunk to the current resource file.
 // This chunk is closed by creating another chunk, or by finishing the writer.
-func (writer *Writer) CreateFragmentedChunk(id chunk.Identifier, contentType ContentType, compressed bool) (*FragmentedChunkWriter, error) {
+func (writer *Writer) CreateFragmentedChunk(id chunk.Identifier, contentType chunk.ContentType,
+	compressed bool) (*FragmentedChunkWriter, error) {
 	if writer.encoder == nil {
 		return nil, errWriterFinished
 	}
@@ -133,7 +135,7 @@ func (writer *Writer) writeHeader() {
 	writer.encoder.Code(uint32(math.MaxUint32))
 }
 
-func (writer *Writer) addNewChunk(id chunk.Identifier, contentType ContentType, chunkType byte, newChunk chunkWriter) {
+func (writer *Writer) addNewChunk(id chunk.Identifier, contentType chunk.ContentType, chunkType byte, newChunk chunkWriter) {
 	entry := &chunkDirectoryEntry{ID: id.Value()}
 	entry.setContentType(byte(contentType))
 	entry.setChunkType(chunkType)

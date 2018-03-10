@@ -2,6 +2,8 @@ package resfile
 
 import (
 	"io"
+
+	"github.com/inkyblackness/res/chunk"
 )
 
 type blockReaderFunc func(index int) (io.Reader, error)
@@ -9,7 +11,7 @@ type blockReaderFunc func(index int) (io.Reader, error)
 // ChunkReader provides meta information as well as reader access to its contained blocks.
 type ChunkReader struct {
 	fragmented  bool
-	contentType ContentType
+	contentType chunk.ContentType
 	compressed  bool
 	blockCount  int
 	blockReader blockReaderFunc
@@ -22,7 +24,7 @@ func (reader *ChunkReader) Fragmented() bool {
 }
 
 // ContentType describes the nature of the data within the chunk - the format of the blocks.
-func (reader *ChunkReader) ContentType() ContentType {
+func (reader *ChunkReader) ContentType() chunk.ContentType {
 	return reader.contentType
 }
 
