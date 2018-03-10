@@ -5,6 +5,7 @@ import (
 
 	"github.com/inkyblackness/res/serial"
 
+	"github.com/inkyblackness/res/chunk"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,7 +40,7 @@ func TestWriterUncompressedSingleBlockChunkCanBeWritten(t *testing.T) {
 	data := []byte{0xAB, 0x01, 0xCD, 0x02, 0xEF}
 	store := serial.NewByteStore()
 	writer, _ := NewWriter(store)
-	chunkWriter, err := writer.CreateChunk(ChunkID(0x1234), ContentType(0x0A), false)
+	chunkWriter, err := writer.CreateChunk(chunk.ID(0x1234), ContentType(0x0A), false)
 	assert.Nil(t, err, "no error expected")
 	chunkWriter.Write(data)
 	writer.Finish()
@@ -64,7 +65,7 @@ func TestWriterUncompressedFragmentedChunkCanBeWritten(t *testing.T) {
 	blockData2 := []byte{0x11, 0x22, 0x33, 0x44}
 	store := serial.NewByteStore()
 	writer, _ := NewWriter(store)
-	chunkWriter, err := writer.CreateFragmentedChunk(ChunkID(0x5678), ContentType(0x0B), false)
+	chunkWriter, err := writer.CreateFragmentedChunk(chunk.ID(0x5678), ContentType(0x0B), false)
 	assert.Nil(t, err, "no error expected")
 	chunkWriter.CreateBlock().Write(blockData1)
 	chunkWriter.CreateBlock().Write(blockData2)
@@ -95,7 +96,7 @@ func TestWriterUncompressedFragmentedChunkCanBeWrittenWithPaddingForSpecialID(t 
 	blockData2 := []byte{0x11, 0x22, 0x33, 0x44}
 	store := serial.NewByteStore()
 	writer, _ := NewWriter(store)
-	chunkWriter, err := writer.CreateFragmentedChunk(ChunkID(0x08FD), ContentType(0x0B), false)
+	chunkWriter, err := writer.CreateFragmentedChunk(chunk.ID(0x08FD), ContentType(0x0B), false)
 	assert.Nil(t, err, "no error expected")
 	chunkWriter.CreateBlock().Write(blockData1)
 	chunkWriter.CreateBlock().Write(blockData2)
@@ -126,7 +127,7 @@ func TestWriterCompressedSingleBlockChunkCanBeWritten(t *testing.T) {
 	data := []byte{0x01, 0x02, 0x01, 0x02}
 	store := serial.NewByteStore()
 	writer, _ := NewWriter(store)
-	chunkWriter, err := writer.CreateChunk(ChunkID(0x1122), ContentType(0x0C), true)
+	chunkWriter, err := writer.CreateChunk(chunk.ID(0x1122), ContentType(0x0C), true)
 	assert.Nil(t, err, "no error expected")
 	chunkWriter.Write(data)
 	writer.Finish()
@@ -152,7 +153,7 @@ func TestWriterCompressedFragmentedChunkCanBeWritten(t *testing.T) {
 	blockData2 := []byte{0x01, 0x02, 0x01, 0x02}
 	store := serial.NewByteStore()
 	writer, _ := NewWriter(store)
-	chunkWriter, err := writer.CreateFragmentedChunk(ChunkID(0x5544), ContentType(0x09), true)
+	chunkWriter, err := writer.CreateFragmentedChunk(chunk.ID(0x5544), ContentType(0x09), true)
 	assert.Nil(t, err, "no error expected")
 	chunkWriter.CreateBlock().Write(blockData1)
 	chunkWriter.CreateBlock().Write(blockData2)

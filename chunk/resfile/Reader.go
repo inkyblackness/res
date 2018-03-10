@@ -8,7 +8,8 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/inkyblackness/res/resfile/compression"
+	"github.com/inkyblackness/res/chunk"
+	"github.com/inkyblackness/res/chunk/resfile/compression"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -52,10 +53,10 @@ func ReaderFrom(source io.ReaderAt) (reader *Reader, err error) {
 
 // IDs returns the chunk identifier available via this reader.
 // The order in the slice is the same as in the underlying serialized form.
-func (reader *Reader) IDs() []ChunkID {
-	ids := make([]ChunkID, len(reader.directory))
+func (reader *Reader) IDs() []chunk.Identifier {
+	ids := make([]chunk.Identifier, len(reader.directory))
 	for index, entry := range reader.directory {
-		ids[index] = ChunkID(entry.ID)
+		ids[index] = chunk.ID(entry.ID)
 	}
 	return ids
 }
@@ -64,7 +65,7 @@ var errInvalidIdentifier = errors.New("chunk: invalid identifier")
 
 // Chunk returns a reader for the specified chunk.
 // An error is returned if either the ID is not known, or the chunk could not be prepared.
-func (reader *Reader) Chunk(id Identifier) (*ChunkReader, error) {
+func (reader *Reader) Chunk(id chunk.Identifier) (*ChunkReader, error) {
 	chunkStartOffset, entry := reader.findEntry(id.Value())
 	if entry == nil {
 		return nil, errInvalidIdentifier

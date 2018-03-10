@@ -3,7 +3,7 @@ package resfile
 import (
 	"io"
 
-	"github.com/inkyblackness/res/resfile/compression"
+	"github.com/inkyblackness/res/chunk/resfile/compression"
 	"github.com/inkyblackness/res/serial"
 )
 

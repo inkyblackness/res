@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"github.com/inkyblackness/res/chunk"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -25,12 +26,10 @@ func emptyResourceFile() []byte {
 	return buf.Bytes()
 }
 
-const (
-	exampleChunkIDSingleBlockChunk           = ChunkID(0x4000)
-	exampleChunkIDSingleBlockChunkCompressed = ChunkID(0x1000)
-	exampleChunkIDFragmentedChunk            = ChunkID(0x2000)
-	exampleChunkIDFragmentedChunkCompressed  = ChunkID(0x5000)
-)
+var exampleChunkIDSingleBlockChunk = chunk.ID(0x4000)
+var exampleChunkIDSingleBlockChunkCompressed = chunk.ID(0x1000)
+var exampleChunkIDFragmentedChunk = chunk.ID(0x2000)
+var exampleChunkIDFragmentedChunkCompressed = chunk.ID(0x5000)
 
 func exampleResourceFile() []byte {
 	store := serial.NewByteStore()

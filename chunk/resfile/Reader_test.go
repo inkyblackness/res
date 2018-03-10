@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/inkyblackness/res/chunk"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -61,13 +63,13 @@ func TestReaderFromCanDecodeExampleResourceFile(t *testing.T) {
 func TestReaderIDsReturnsTheStoredChunkIDsInOrderFromFile(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
 
-	assert.Equal(t, []ChunkID{exampleChunkIDSingleBlockChunk, exampleChunkIDSingleBlockChunkCompressed,
+	assert.Equal(t, []chunk.Identifier{exampleChunkIDSingleBlockChunk, exampleChunkIDSingleBlockChunkCompressed,
 		exampleChunkIDFragmentedChunk, exampleChunkIDFragmentedChunkCompressed}, reader.IDs())
 }
 
 func TestReaderChunkReturnsErrorForUnknownID(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(emptyResourceFile()))
-	chunkReader, err := reader.Chunk(ChunkID(0x1111))
+	chunkReader, err := reader.Chunk(chunk.ID(0x1111))
 	assert.Nil(t, chunkReader, "no reader expected")
 	assert.NotNil(t, err)
 }
@@ -81,10 +83,10 @@ func TestReaderChunkReturnsAChunkReaderForKnownID(t *testing.T) {
 
 func TestReaderChunkReturnsChunkWithMetaInformation(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
-	info := func(chunkID ChunkID, name string, expected interface{}) string {
+	info := func(chunkID chunk.Identifier, name string, expected interface{}) string {
 		return fmt.Sprintf("Chunk 0x%04X should have %v = %v", chunkID.Value(), name, expected)
 	}
-	verifyChunk := func(chunkID ChunkID, fragmented bool, contentType ContentType, compressed bool) {
+	verifyChunk := func(chunkID chunk.Identifier, fragmented bool, contentType ContentType, compressed bool) {
 		chunkReader, _ := reader.Chunk(chunkID)
 		assert.Equal(t, fragmented, chunkReader.Fragmented(), info(chunkID, "fragmented", fragmented))
 		assert.Equal(t, contentType, chunkReader.ContentType(), info(chunkID, "contentType", contentType))
