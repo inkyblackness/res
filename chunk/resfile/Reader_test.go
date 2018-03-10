@@ -88,9 +88,9 @@ func TestReaderChunkReturnsChunkWithMetaInformation(t *testing.T) {
 	}
 	verifyChunk := func(chunkID chunk.Identifier, fragmented bool, contentType chunk.ContentType, compressed bool) {
 		chunkReader, _ := reader.Chunk(chunkID)
-		assert.Equal(t, fragmented, chunkReader.Fragmented(), info(chunkID, "fragmented", fragmented))
-		assert.Equal(t, contentType, chunkReader.ContentType(), info(chunkID, "contentType", contentType))
-		assert.Equal(t, compressed, chunkReader.Compressed(), info(chunkID, "compressed", compressed))
+		assert.Equal(t, fragmented, chunkReader.Fragmented, info(chunkID, "fragmented", fragmented))
+		assert.Equal(t, contentType, chunkReader.ContentType, info(chunkID, "contentType", contentType))
+		assert.Equal(t, compressed, chunkReader.Compressed, info(chunkID, "compressed", compressed))
 	}
 	verifyChunk(exampleChunkIDSingleBlockChunk, false, chunk.ContentType(0x01), false)
 	verifyChunk(exampleChunkIDSingleBlockChunkCompressed, false, chunk.ContentType(0x02), true)
@@ -133,8 +133,8 @@ func TestReaderChunkWithCompressedFragmentedContent(t *testing.T) {
 	verifyBlockContent(t, chunkReader, 2, []byte{0x42})
 }
 
-func verifyBlockContent(t *testing.T, chunkReader *ChunkReader, blockIndex int, expected []byte) {
-	blockReader, readerErr := chunkReader.Block(blockIndex)
+func verifyBlockContent(t *testing.T, blockProvider chunk.BlockProvider, blockIndex int, expected []byte) {
+	blockReader, readerErr := blockProvider.Block(blockIndex)
 	assert.Nil(t, readerErr, "error retrieving reader")
 	require.NotNil(t, blockReader, "reader is nil")
 	data, dataErr := ioutil.ReadAll(blockReader)
