@@ -14,11 +14,13 @@ import (
 )
 
 // Reader provides methods to extract resource data from a serialized form.
-// Chunks may be accessed concurrently due to the nature of the underlying io.ReaderAt.
+// Chunks may be accessed out of sequence due to the nature of the underlying io.ReaderAt.
 type Reader struct {
 	source           io.ReaderAt
 	firstChunkOffset uint32
 	directory        []chunkDirectoryEntry
+
+	cache map[uint16]*chunk.Chunk
 }
 
 var errSourceNil = errors.New("source is nil")
@@ -46,7 +48,8 @@ func ReaderFrom(source io.ReaderAt) (reader *Reader, err error) {
 	reader = &Reader{
 		source:           source,
 		firstChunkOffset: firstChunkOffset,
-		directory:        directory}
+		directory:        directory,
+		cache:            make(map[uint16]*chunk.Chunk)}
 
 	return
 }
@@ -63,7 +66,10 @@ func (reader *Reader) IDs() []chunk.Identifier {
 
 // Chunk returns a reader for the specified chunk.
 // An error is returned if either the ID is not known, or the chunk could not be prepared.
-func (reader *Reader) Chunk(id chunk.Identifier) (*chunk.Chunk, error) {
+func (reader *Reader) Chunk(id chunk.Identifier) (retrievedChunk *chunk.Chunk, err error) {
+	if retrievedChunk, existing := reader.cache[id.Value()]; existing {
+		return retrievedChunk, nil
+	}
 	chunkStartOffset, entry := reader.findEntry(id.Value())
 	if entry == nil {
 		return nil, chunk.ErrChunkDoesNotExist(id)
@@ -74,9 +80,14 @@ func (reader *Reader) Chunk(id chunk.Identifier) (*chunk.Chunk, error) {
 	contentType := chunk.ContentType(entry.contentType())
 
 	if fragmented {
-		return reader.newFragmentedChunkReader(entry, contentType, compressed, chunkStartOffset)
+		retrievedChunk, err = reader.newFragmentedChunkReader(entry, contentType, compressed, chunkStartOffset)
+	} else {
+		retrievedChunk, err = reader.newSingleBlockChunkReader(entry, contentType, compressed, chunkStartOffset)
 	}
-	return reader.newSingleBlockChunkReader(entry, contentType, compressed, chunkStartOffset)
+	if err == nil {
+		reader.cache[id.Value()] = retrievedChunk
+	}
+	return
 }
 
 func readAndVerifyHeader(source io.ReadSeeker) (dirOffset uint32, err error) {

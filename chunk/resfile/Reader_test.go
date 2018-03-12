@@ -98,6 +98,15 @@ func TestReaderChunkReturnsChunkWithMetaInformation(t *testing.T) {
 	verifyChunk(exampleChunkIDFragmentedChunkCompressed, true, chunk.ContentType(0x04), true)
 }
 
+func TestReaderChunkReturnsSameInstance(t *testing.T) {
+	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
+
+	c1, _ := reader.Chunk(exampleChunkIDSingleBlockChunk)
+	c2, _ := reader.Chunk(exampleChunkIDSingleBlockChunk)
+
+	assert.Equal(t, c1, c2, "Chunks should be the same")
+}
+
 func TestReaderChunkWithUncompressedSingleBlockContent(t *testing.T) {
 	reader, _ := ReaderFrom(bytes.NewReader(exampleResourceFile()))
 	chunkReader, _ := reader.Chunk(exampleChunkIDSingleBlockChunk)
