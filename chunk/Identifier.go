@@ -1,5 +1,7 @@
 package chunk
 
+import "fmt"
+
 // Identifier represents an integer key of chunks.
 type Identifier interface {
 	// Value returns the numerical value of the identifier.
@@ -17,4 +19,8 @@ type chunkID uint16
 // Value returns the numerical value of the identifier.
 func (id chunkID) Value() uint16 {
 	return uint16(id)
+}
+
+func (id chunkID) String() string {
+	return fmt.Sprintf("%04X", uint16(id))
 }

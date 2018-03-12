@@ -3,7 +3,6 @@ package data
 import (
 	"fmt"
 
-	"github.com/inkyblackness/res"
 	"github.com/inkyblackness/res/serial"
 )
 
@@ -17,7 +16,7 @@ const VideoClipSequenceEndTag = int16(0x010C)
 type VideoClipSequence struct {
 	Width       int16
 	Height      int16
-	FramesID    res.ResourceID
+	FramesID    uint16
 	Unknown0006 [6]byte
 	IntroFlag   int16
 	Entries     []*VideoClipSequenceEntry

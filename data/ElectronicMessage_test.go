@@ -1,11 +1,12 @@
 package data
 
 import (
-	"github.com/inkyblackness/res"
+	"io/ioutil"
+
 	"github.com/inkyblackness/res/chunk"
 	"github.com/inkyblackness/res/text"
 
-	check "gopkg.in/check.v1"
+	"gopkg.in/check.v1"
 )
 
 type ElectronicMessageSuite struct {
@@ -27,20 +28,20 @@ func (suite *ElectronicMessageSuite) TestEncodeBasicMessage(c *check.C) {
 	message.SetVerboseText("4")
 	message.SetTerseText("5")
 
-	holder := message.Encode(suite.cp)
+	encoded := message.Encode(suite.cp)
 
-	c.Assert(holder, check.NotNil)
-	c.Check(holder.ChunkType(), check.Equals, chunk.BasicChunkType.WithDirectory())
-	c.Check(holder.ContentType(), check.Equals, res.Text)
-	c.Assert(holder.BlockCount(), check.Equals, uint16(8))
-	c.Check(holder.BlockData(0), check.DeepEquals, []byte{0x00})
-	c.Check(holder.BlockData(1), check.DeepEquals, []byte{0x31, 0x00})
-	c.Check(holder.BlockData(2), check.DeepEquals, []byte{0x32, 0x00})
-	c.Check(holder.BlockData(3), check.DeepEquals, []byte{0x33, 0x00})
-	c.Check(holder.BlockData(4), check.DeepEquals, []byte{0x34, 0x00})
-	c.Check(holder.BlockData(5), check.DeepEquals, []byte{0x00})
-	c.Check(holder.BlockData(6), check.DeepEquals, []byte{0x35, 0x00})
-	c.Check(holder.BlockData(7), check.DeepEquals, []byte{0x00})
+	c.Assert(encoded, check.NotNil)
+	c.Check(encoded.Fragmented, check.Equals, true)
+	c.Check(encoded.ContentType, check.Equals, chunk.Text)
+	c.Assert(encoded.BlockCount(), check.Equals, 8)
+	suite.verifyBlock(c, 0, encoded, []byte{0x00})
+	suite.verifyBlock(c, 1, encoded, []byte{0x31, 0x00})
+	suite.verifyBlock(c, 2, encoded, []byte{0x32, 0x00})
+	suite.verifyBlock(c, 3, encoded, []byte{0x33, 0x00})
+	suite.verifyBlock(c, 4, encoded, []byte{0x34, 0x00})
+	suite.verifyBlock(c, 5, encoded, []byte{0x00})
+	suite.verifyBlock(c, 6, encoded, []byte{0x35, 0x00})
+	suite.verifyBlock(c, 7, encoded, []byte{0x00})
 }
 
 func (suite *ElectronicMessageSuite) TestEncodeMeta_A(c *check.C) {
@@ -51,11 +52,11 @@ func (suite *ElectronicMessageSuite) TestEncodeMeta_A(c *check.C) {
 	message.SetLeftDisplay(30)
 	message.SetRightDisplay(40)
 
-	holder := message.Encode(suite.cp)
+	encoded := message.Encode(suite.cp)
 
-	c.Assert(holder, check.NotNil)
-	c.Assert(holder.BlockCount() > 0, check.Equals, true)
-	c.Check(holder.BlockData(0), check.DeepEquals, suite.cp.Encode("i20 c13 30,40"))
+	c.Assert(encoded, check.NotNil)
+	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
+	suite.verifyBlock(c, 0, encoded, suite.cp.Encode("i20 c13 30,40"))
 }
 
 func (suite *ElectronicMessageSuite) TestEncodeMeta_B(c *check.C) {
@@ -64,11 +65,11 @@ func (suite *ElectronicMessageSuite) TestEncodeMeta_B(c *check.C) {
 	message.SetInterrupt(true)
 	message.SetLeftDisplay(31)
 
-	holder := message.Encode(suite.cp)
+	encoded := message.Encode(suite.cp)
 
-	c.Assert(holder, check.NotNil)
-	c.Assert(holder.BlockCount() > 0, check.Equals, true)
-	c.Check(holder.BlockData(0), check.DeepEquals, suite.cp.Encode("t 31"))
+	c.Assert(encoded, check.NotNil)
+	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
+	suite.verifyBlock(c, 0, encoded, suite.cp.Encode("t 31"))
 }
 
 func (suite *ElectronicMessageSuite) TestEncodeMeta_C(c *check.C) {
@@ -76,11 +77,11 @@ func (suite *ElectronicMessageSuite) TestEncodeMeta_C(c *check.C) {
 
 	message.SetInterrupt(true)
 
-	holder := message.Encode(suite.cp)
+	encoded := message.Encode(suite.cp)
 
-	c.Assert(holder, check.NotNil)
-	c.Assert(holder.BlockCount() > 0, check.Equals, true)
-	c.Check(holder.BlockData(0), check.DeepEquals, suite.cp.Encode("t"))
+	c.Assert(encoded, check.NotNil)
+	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
+	suite.verifyBlock(c, 0, encoded, suite.cp.Encode("t"))
 }
 
 func (suite *ElectronicMessageSuite) TestEncodeCreatesNewBlocksPerNewLine(c *check.C) {
@@ -89,18 +90,18 @@ func (suite *ElectronicMessageSuite) TestEncodeCreatesNewBlocksPerNewLine(c *che
 	message.SetVerboseText("line1\n\n\nline2")
 	message.SetTerseText("terse1\n\n\nterse2")
 
-	holder := message.Encode(suite.cp)
+	encoded := message.Encode(suite.cp)
 
-	c.Assert(holder, check.NotNil)
-	c.Assert(holder.BlockCount() > 0, check.Equals, true)
-	c.Check(holder.BlockData(4), check.DeepEquals, suite.cp.Encode("line1\n"))
-	c.Check(holder.BlockData(5), check.DeepEquals, suite.cp.Encode("\n"))
-	c.Check(holder.BlockData(6), check.DeepEquals, suite.cp.Encode("\n"))
-	c.Check(holder.BlockData(7), check.DeepEquals, suite.cp.Encode("line2"))
-	c.Check(holder.BlockData(9), check.DeepEquals, suite.cp.Encode("terse1\n"))
-	c.Check(holder.BlockData(10), check.DeepEquals, suite.cp.Encode("\n"))
-	c.Check(holder.BlockData(11), check.DeepEquals, suite.cp.Encode("\n"))
-	c.Check(holder.BlockData(12), check.DeepEquals, suite.cp.Encode("terse2"))
+	c.Assert(encoded, check.NotNil)
+	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
+	suite.verifyBlock(c, 4, encoded, suite.cp.Encode("line1\n"))
+	suite.verifyBlock(c, 5, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(c, 6, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(c, 7, encoded, suite.cp.Encode("line2"))
+	suite.verifyBlock(c, 9, encoded, suite.cp.Encode("terse1\n"))
+	suite.verifyBlock(c, 10, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(c, 11, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(c, 12, encoded, suite.cp.Encode("terse2"))
 }
 
 func (suite *ElectronicMessageSuite) TestEncodeBreaksUpLinesAfterLimitCharacters(c *check.C) {
@@ -108,13 +109,13 @@ func (suite *ElectronicMessageSuite) TestEncodeBreaksUpLinesAfterLimitCharacters
 
 	message.SetVerboseText("aaaaaaaaa bbbbbbbbb ccccccccc ddddddddd eeeeeeeee fffffffff ggggggggg hhhhhhhhh iiiiiiiii jjjjjjjjj kkkkk")
 
-	holder := message.Encode(suite.cp)
+	encoded := message.Encode(suite.cp)
 
-	c.Assert(holder, check.NotNil)
-	c.Assert(holder.BlockCount() > 0, check.Equals, true)
-	c.Check(holder.BlockData(4), check.DeepEquals,
+	c.Assert(encoded, check.NotNil)
+	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
+	suite.verifyBlock(c, 4, encoded,
 		suite.cp.Encode("aaaaaaaaa bbbbbbbbb ccccccccc ddddddddd eeeeeeeee fffffffff ggggggggg hhhhhhhhh iiiiiiiii jjjjjjjjj "))
-	c.Check(holder.BlockData(5), check.DeepEquals,
+	suite.verifyBlock(c, 5, encoded,
 		suite.cp.Encode("kkkkk"))
 }
 
@@ -215,7 +216,18 @@ func (suite *ElectronicMessageSuite) TestRecodeMessageWithMultipleNewLines(c *ch
 	c.Check(outMessage, check.DeepEquals, inMessage)
 }
 
-func (suite *ElectronicMessageSuite) holderWithMeta(meta string) chunk.BlockHolder {
+func (suite *ElectronicMessageSuite) verifyBlock(c *check.C, index int, provider chunk.BlockProvider, expected []byte) {
+	reader, readerErr := provider.Block(index)
+	if readerErr != nil {
+		c.Assert(readerErr, check.IsNil)
+		return
+	}
+	data, dataErr := ioutil.ReadAll(reader)
+	c.Assert(dataErr, check.IsNil)
+	c.Check(data, check.DeepEquals, expected)
+}
+
+func (suite *ElectronicMessageSuite) holderWithMeta(meta string) chunk.BlockProvider {
 	blocks := [][]byte{
 		suite.cp.Encode(meta),
 		suite.cp.Encode("title"),
@@ -226,10 +238,10 @@ func (suite *ElectronicMessageSuite) holderWithMeta(meta string) chunk.BlockHold
 		suite.cp.Encode("terse"),
 		suite.cp.Encode("")}
 
-	return chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Text, blocks)
+	return chunk.MemoryBlockProvider(blocks)
 }
 
-func (suite *ElectronicMessageSuite) vanillaStubMail() chunk.BlockHolder {
+func (suite *ElectronicMessageSuite) vanillaStubMail() chunk.BlockProvider {
 	// The string resources contain a few mails which aren't used.
 	// They are missing the terminating line for the verbose text.
 	blocks := [][]byte{
@@ -241,10 +253,10 @@ func (suite *ElectronicMessageSuite) vanillaStubMail() chunk.BlockHolder {
 		suite.cp.Encode("stub email"),
 		suite.cp.Encode("")}
 
-	return chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Text, blocks)
+	return chunk.MemoryBlockProvider(blocks)
 }
 
-func (suite *ElectronicMessageSuite) holderWithMissingTerminatingLine() chunk.BlockHolder {
+func (suite *ElectronicMessageSuite) holderWithMissingTerminatingLine() chunk.BlockProvider {
 	// This case is encountered once in gerstrng.res
 	blocks := [][]byte{
 		suite.cp.Encode(""),
@@ -257,5 +269,5 @@ func (suite *ElectronicMessageSuite) holderWithMissingTerminatingLine() chunk.Bl
 		suite.cp.Encode("terse "),
 		suite.cp.Encode("text")}
 
-	return chunk.NewBlockHolder(chunk.BasicChunkType.WithDirectory(), res.Text, blocks)
+	return chunk.MemoryBlockProvider(blocks)
 }

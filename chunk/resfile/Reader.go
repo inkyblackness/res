@@ -61,14 +61,12 @@ func (reader *Reader) IDs() []chunk.Identifier {
 	return ids
 }
 
-var errInvalidIdentifier = errors.New("chunk: invalid identifier")
-
 // Chunk returns a reader for the specified chunk.
 // An error is returned if either the ID is not known, or the chunk could not be prepared.
 func (reader *Reader) Chunk(id chunk.Identifier) (*chunk.Chunk, error) {
 	chunkStartOffset, entry := reader.findEntry(id.Value())
 	if entry == nil {
-		return nil, errInvalidIdentifier
+		return nil, chunk.ErrChunkDoesNotExist(id)
 	}
 	chunkType := entry.chunkType()
 	compressed := (chunkType & chunkTypeFlagCompressed) != 0
