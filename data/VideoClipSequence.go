@@ -19,8 +19,9 @@ type VideoClipSequence struct {
 	FramesID    uint16
 	Unknown0006 [6]byte
 	IntroFlag   int16
-	Entries     []*VideoClipSequenceEntry
 	EndTag      int16
+
+	Entries []*VideoClipSequenceEntry
 }
 
 // DefaultVideoClipSequence returns a sequence instance with an initialized list of entries.
@@ -50,7 +51,7 @@ func (sequence *VideoClipSequence) Code(coder serial.Coder) {
 }
 
 func (sequence *VideoClipSequence) String() (result string) {
-	result += fmt.Sprintf("%dx%d, Frames: 0x%04X\n", sequence.Width, sequence.Height, uint16(sequence.FramesID))
+	result += fmt.Sprintf("%dx%d, Frames: 0x%04X\n", sequence.Width, sequence.Height, sequence.FramesID)
 	result += fmt.Sprintf("IntroFlag: %d, Entries: %d\n", sequence.IntroFlag, len(sequence.Entries))
 	for index, entry := range sequence.Entries {
 		result += fmt.Sprintf("%d: %v\n", index, entry)

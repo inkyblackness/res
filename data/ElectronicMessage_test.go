@@ -2,24 +2,29 @@ package data
 
 import (
 	"io/ioutil"
+	"testing"
 
 	"github.com/inkyblackness/res/chunk"
 	"github.com/inkyblackness/res/text"
-
-	"gopkg.in/check.v1"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type ElectronicMessageSuite struct {
+	suite.Suite
 	cp text.Codepage
 }
 
-var _ = check.Suite(&ElectronicMessageSuite{})
+func TestElectronicMessageSuite(t *testing.T) {
+	suite.Run(t, new(ElectronicMessageSuite))
+}
 
-func (suite *ElectronicMessageSuite) SetUpTest(c *check.C) {
+func (suite *ElectronicMessageSuite) SetupTest() {
 	suite.cp = text.DefaultCodepage()
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeBasicMessage(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeBasicMessage() {
 	message := NewElectronicMessage()
 
 	message.SetTitle("1")
@@ -30,21 +35,22 @@ func (suite *ElectronicMessageSuite) TestEncodeBasicMessage(c *check.C) {
 
 	encoded := message.Encode(suite.cp)
 
-	c.Assert(encoded, check.NotNil)
-	c.Check(encoded.Fragmented, check.Equals, true)
-	c.Check(encoded.ContentType, check.Equals, chunk.Text)
-	c.Assert(encoded.BlockCount(), check.Equals, 8)
-	suite.verifyBlock(c, 0, encoded, []byte{0x00})
-	suite.verifyBlock(c, 1, encoded, []byte{0x31, 0x00})
-	suite.verifyBlock(c, 2, encoded, []byte{0x32, 0x00})
-	suite.verifyBlock(c, 3, encoded, []byte{0x33, 0x00})
-	suite.verifyBlock(c, 4, encoded, []byte{0x34, 0x00})
-	suite.verifyBlock(c, 5, encoded, []byte{0x00})
-	suite.verifyBlock(c, 6, encoded, []byte{0x35, 0x00})
-	suite.verifyBlock(c, 7, encoded, []byte{0x00})
+	require.NotNil(suite.T(), encoded)
+	assert.Equal(suite.T(), true, encoded.Fragmented)
+	assert.Equal(suite.T(), chunk.Text, encoded.ContentType)
+	assert.Equal(suite.T(), 8, encoded.BlockCount())
+
+	suite.verifyBlock(0, encoded, []byte{0x00})
+	suite.verifyBlock(1, encoded, []byte{0x31, 0x00})
+	suite.verifyBlock(2, encoded, []byte{0x32, 0x00})
+	suite.verifyBlock(3, encoded, []byte{0x33, 0x00})
+	suite.verifyBlock(4, encoded, []byte{0x34, 0x00})
+	suite.verifyBlock(5, encoded, []byte{0x00})
+	suite.verifyBlock(6, encoded, []byte{0x35, 0x00})
+	suite.verifyBlock(7, encoded, []byte{0x00})
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeMeta_A(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeMeta_A() {
 	message := NewElectronicMessage()
 
 	message.SetNextMessage(0x20)
@@ -54,12 +60,12 @@ func (suite *ElectronicMessageSuite) TestEncodeMeta_A(c *check.C) {
 
 	encoded := message.Encode(suite.cp)
 
-	c.Assert(encoded, check.NotNil)
-	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
-	suite.verifyBlock(c, 0, encoded, suite.cp.Encode("i20 c13 30,40"))
+	require.NotNil(suite.T(), encoded)
+	require.Equal(suite.T(), true, encoded.BlockCount() > 0)
+	suite.verifyBlock(0, encoded, suite.cp.Encode("i20 c13 30,40"))
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeMeta_B(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeMeta_B() {
 	message := NewElectronicMessage()
 
 	message.SetInterrupt(true)
@@ -67,24 +73,24 @@ func (suite *ElectronicMessageSuite) TestEncodeMeta_B(c *check.C) {
 
 	encoded := message.Encode(suite.cp)
 
-	c.Assert(encoded, check.NotNil)
-	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
-	suite.verifyBlock(c, 0, encoded, suite.cp.Encode("t 31"))
+	require.NotNil(suite.T(), encoded)
+	require.Equal(suite.T(), true, encoded.BlockCount() > 0)
+	suite.verifyBlock(0, encoded, suite.cp.Encode("t 31"))
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeMeta_C(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeMeta_C() {
 	message := NewElectronicMessage()
 
 	message.SetInterrupt(true)
 
 	encoded := message.Encode(suite.cp)
 
-	c.Assert(encoded, check.NotNil)
-	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
-	suite.verifyBlock(c, 0, encoded, suite.cp.Encode("t"))
+	require.NotNil(suite.T(), encoded)
+	require.Equal(suite.T(), true, encoded.BlockCount() > 0)
+	suite.verifyBlock(0, encoded, suite.cp.Encode("t"))
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeCreatesNewBlocksPerNewLine(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeCreatesNewBlocksPerNewLine() {
 	message := NewElectronicMessage()
 
 	message.SetVerboseText("line1\n\n\nline2")
@@ -92,95 +98,95 @@ func (suite *ElectronicMessageSuite) TestEncodeCreatesNewBlocksPerNewLine(c *che
 
 	encoded := message.Encode(suite.cp)
 
-	c.Assert(encoded, check.NotNil)
-	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
-	suite.verifyBlock(c, 4, encoded, suite.cp.Encode("line1\n"))
-	suite.verifyBlock(c, 5, encoded, suite.cp.Encode("\n"))
-	suite.verifyBlock(c, 6, encoded, suite.cp.Encode("\n"))
-	suite.verifyBlock(c, 7, encoded, suite.cp.Encode("line2"))
-	suite.verifyBlock(c, 9, encoded, suite.cp.Encode("terse1\n"))
-	suite.verifyBlock(c, 10, encoded, suite.cp.Encode("\n"))
-	suite.verifyBlock(c, 11, encoded, suite.cp.Encode("\n"))
-	suite.verifyBlock(c, 12, encoded, suite.cp.Encode("terse2"))
+	require.NotNil(suite.T(), encoded)
+	require.Equal(suite.T(), true, encoded.BlockCount() > 0)
+	suite.verifyBlock(4, encoded, suite.cp.Encode("line1\n"))
+	suite.verifyBlock(5, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(6, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(7, encoded, suite.cp.Encode("line2"))
+	suite.verifyBlock(9, encoded, suite.cp.Encode("terse1\n"))
+	suite.verifyBlock(10, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(11, encoded, suite.cp.Encode("\n"))
+	suite.verifyBlock(12, encoded, suite.cp.Encode("terse2"))
 }
 
-func (suite *ElectronicMessageSuite) TestEncodeBreaksUpLinesAfterLimitCharacters(c *check.C) {
+func (suite *ElectronicMessageSuite) TestEncodeBreaksUpLinesAfterLimitCharacters() {
 	message := NewElectronicMessage()
 
 	message.SetVerboseText("aaaaaaaaa bbbbbbbbb ccccccccc ddddddddd eeeeeeeee fffffffff ggggggggg hhhhhhhhh iiiiiiiii jjjjjjjjj kkkkk")
 
 	encoded := message.Encode(suite.cp)
 
-	c.Assert(encoded, check.NotNil)
-	c.Assert(encoded.BlockCount() > 0, check.Equals, true)
-	suite.verifyBlock(c, 4, encoded,
+	require.NotNil(suite.T(), encoded)
+	require.Equal(suite.T(), true, encoded.BlockCount() > 0)
+	suite.verifyBlock(4, encoded,
 		suite.cp.Encode("aaaaaaaaa bbbbbbbbb ccccccccc ddddddddd eeeeeeeee fffffffff ggggggggg hhhhhhhhh iiiiiiiii jjjjjjjjj "))
-	suite.verifyBlock(c, 5, encoded,
+	suite.verifyBlock(5, encoded,
 		suite.cp.Encode("kkkkk"))
 }
 
-func (suite *ElectronicMessageSuite) TestDecodeMeta(c *check.C) {
+func (suite *ElectronicMessageSuite) TestDecodeMeta() {
 	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("i20 c13 30,40"))
 
-	c.Assert(err, check.IsNil)
-	c.Assert(message, check.NotNil)
-	c.Check(message.NextMessage(), check.Equals, 0x20)
-	c.Check(message.ColorIndex(), check.Equals, 0x13)
-	c.Check(message.LeftDisplay(), check.Equals, 30)
-	c.Check(message.RightDisplay(), check.Equals, 40)
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), message)
+	assert.Equal(suite.T(), 0x20, message.NextMessage())
+	assert.Equal(suite.T(), 0x13, message.ColorIndex())
+	assert.Equal(suite.T(), 30, message.LeftDisplay())
+	assert.Equal(suite.T(), 40, message.RightDisplay())
 }
 
-func (suite *ElectronicMessageSuite) TestDecodeMeta_Failure(c *check.C) {
+func (suite *ElectronicMessageSuite) TestDecodeMeta_Failure() {
 	_, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("i20 c 13 30,40"))
 
-	c.Check(err, check.NotNil)
+	assert.NotNil(suite.T(), err)
 }
 
-func (suite *ElectronicMessageSuite) TestDecodeMetaColorIs8BitUnsigned(c *check.C) {
+func (suite *ElectronicMessageSuite) TestDecodeMetaColorIs8BitUnsigned() {
 	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("cD1"))
 
-	c.Assert(err, check.IsNil)
-	c.Assert(message, check.NotNil)
-	c.Check(message.ColorIndex(), check.Equals, 0xD1)
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), message)
+	assert.Equal(suite.T(), 0xD1, message.ColorIndex())
 }
 
-func (suite *ElectronicMessageSuite) TestDecodeMessage(c *check.C) {
+func (suite *ElectronicMessageSuite) TestDecodeMessage() {
 	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMeta("10"))
 
-	c.Assert(err, check.IsNil)
-	c.Assert(message, check.NotNil)
-	c.Check(message.Title(), check.Equals, "title")
-	c.Check(message.Sender(), check.Equals, "sender")
-	c.Check(message.Subject(), check.Equals, "subject")
-	c.Check(message.VerboseText(), check.Equals, "verbose")
-	c.Check(message.TerseText(), check.Equals, "terse")
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), message)
+	assert.Equal(suite.T(), "title", message.Title())
+	assert.Equal(suite.T(), "sender", message.Sender())
+	assert.Equal(suite.T(), "subject", message.Subject())
+	assert.Equal(suite.T(), "verbose", message.VerboseText())
+	assert.Equal(suite.T(), "terse", message.TerseText())
 }
 
-func (suite *ElectronicMessageSuite) TestDecodeMessageIsPossibleForVanillaDummyMails(c *check.C) {
+func (suite *ElectronicMessageSuite) TestDecodeMessageIsPossibleForVanillaDummyMails() {
 	message, err := DecodeElectronicMessage(suite.cp, suite.vanillaStubMail())
 
-	c.Assert(err, check.IsNil)
-	c.Assert(message, check.NotNil)
-	c.Check(message.Title(), check.Equals, "")
-	c.Check(message.Sender(), check.Equals, "")
-	c.Check(message.Subject(), check.Equals, "")
-	c.Check(message.VerboseText(), check.Equals, "stub emailstub email")
-	c.Check(message.TerseText(), check.Equals, "")
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), message)
+	assert.Equal(suite.T(), "", message.Title())
+	assert.Equal(suite.T(), "", message.Sender())
+	assert.Equal(suite.T(), "", message.Subject())
+	assert.Equal(suite.T(), "stub emailstub email", message.VerboseText())
+	assert.Equal(suite.T(), "", message.TerseText())
 }
 
-func (suite *ElectronicMessageSuite) TestDecodeMessageIsPossibleForMissingTerminatingLine(c *check.C) {
+func (suite *ElectronicMessageSuite) TestDecodeMessageIsPossibleForMissingTerminatingLine() {
 	message, err := DecodeElectronicMessage(suite.cp, suite.holderWithMissingTerminatingLine())
 
-	c.Assert(err, check.IsNil)
-	c.Assert(message, check.NotNil)
-	c.Check(message.Title(), check.Equals, "title")
-	c.Check(message.Sender(), check.Equals, "sender")
-	c.Check(message.Subject(), check.Equals, "subject")
-	c.Check(message.VerboseText(), check.Equals, "verbose text")
-	c.Check(message.TerseText(), check.Equals, "terse text")
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), message)
+	assert.Equal(suite.T(), "title", message.Title())
+	assert.Equal(suite.T(), "sender", message.Sender())
+	assert.Equal(suite.T(), "subject", message.Subject())
+	assert.Equal(suite.T(), "verbose text", message.VerboseText())
+	assert.Equal(suite.T(), "terse text", message.TerseText())
 }
 
-func (suite *ElectronicMessageSuite) TestRecodeMessage(c *check.C) {
+func (suite *ElectronicMessageSuite) TestRecodeMessage() {
 	inMessage := NewElectronicMessage()
 	inMessage.SetInterrupt(true)
 	inMessage.SetNextMessage(0x10)
@@ -193,12 +199,12 @@ func (suite *ElectronicMessageSuite) TestRecodeMessage(c *check.C) {
 	holder := inMessage.Encode(suite.cp)
 	outMessage, err := DecodeElectronicMessage(suite.cp, holder)
 
-	c.Assert(err, check.IsNil)
-	c.Assert(outMessage, check.NotNil)
-	c.Check(outMessage, check.DeepEquals, inMessage)
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), outMessage)
+	assert.Equal(suite.T(), inMessage, outMessage)
 }
 
-func (suite *ElectronicMessageSuite) TestRecodeMessageWithMultipleNewLines(c *check.C) {
+func (suite *ElectronicMessageSuite) TestRecodeMessageWithMultipleNewLines() {
 	inMessage := NewElectronicMessage()
 	inMessage.SetInterrupt(true)
 	inMessage.SetNextMessage(0x10)
@@ -211,20 +217,17 @@ func (suite *ElectronicMessageSuite) TestRecodeMessageWithMultipleNewLines(c *ch
 	holder := inMessage.Encode(suite.cp)
 	outMessage, err := DecodeElectronicMessage(suite.cp, holder)
 
-	c.Assert(err, check.IsNil)
-	c.Assert(outMessage, check.NotNil)
-	c.Check(outMessage, check.DeepEquals, inMessage)
+	require.Nil(suite.T(), err)
+	require.NotNil(suite.T(), outMessage)
+	assert.Equal(suite.T(), inMessage, outMessage)
 }
 
-func (suite *ElectronicMessageSuite) verifyBlock(c *check.C, index int, provider chunk.BlockProvider, expected []byte) {
+func (suite *ElectronicMessageSuite) verifyBlock(index int, provider chunk.BlockProvider, expected []byte) {
 	reader, readerErr := provider.Block(index)
-	if readerErr != nil {
-		c.Assert(readerErr, check.IsNil)
-		return
-	}
+	require.Nil(suite.T(), readerErr)
 	data, dataErr := ioutil.ReadAll(reader)
-	c.Assert(dataErr, check.IsNil)
-	c.Check(data, check.DeepEquals, expected)
+	require.Nil(suite.T(), dataErr)
+	assert.Equal(suite.T(), expected, data)
 }
 
 func (suite *ElectronicMessageSuite) holderWithMeta(meta string) chunk.BlockProvider {
